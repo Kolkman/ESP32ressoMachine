@@ -265,11 +265,11 @@ void loop() {
     
 
     // create status String (JSON)
-    gStatusAsJson = statusAsJson();
+    //gStatusAsJson = statusAsJson();
    
 
 #ifdef ENABLE_MQTT
-    loopMQTT();
+    loopMQTT(statusAsJson());
 #endif
 
 #ifdef ENABLE_TELNET

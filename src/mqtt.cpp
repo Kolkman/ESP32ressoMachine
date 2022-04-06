@@ -4,9 +4,10 @@
 //
 // MQTT integration
 //
+#include "ESPressiot.h"
 
-#define MQTT_DEBUG
-#include<ESPressiot.h>
+
+
 
 #ifdef ENABLE_MQTT
 
@@ -82,7 +83,7 @@ void setupMQTT() {
   client.setCallback(MQTT_callback);
 }
 
-void loopMQTT() {
+void loopMQTT(String jsonstring) {
 
   for (int i = 0; i < MAX_CONNECTION_RETRIES && !client.connected(); i++) {
     MQTT_reconnect();
@@ -91,7 +92,7 @@ void loopMQTT() {
   }
 
   client.loop();
-  client.publish(mqttStatusTopic, gStatusAsJson.c_str());
+  client.publish(mqttStatusTopic, jsonstring.c_str());
 }
 
 #endif // ENABLE_MQTT
