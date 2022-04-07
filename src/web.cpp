@@ -111,7 +111,7 @@ void handleConfig() {
   message += "D <input type=\"text\" name=\"adgain\" value=\"" + String(gaD) + "\"><br><br>\n";
 #ifdef DEBUG
   message += "Pid Interval <input type=\"text\" name=\"PidInterval\" value=\"" + String(gPIDint) + "\"><br><br>\n";
-  message += "Heater Interval <input type=\"text\" name=\"HeaterInterval\" value=\"" + String(gHEATERint) + "\"><br><br>\n"; 
+  message += "Heater Interval <input type=\"text\" name=\"HeaterInterval\" value=\"" + String(heaterDriver.getHeaterInterval()) + "\"><br><br>\n"; 
   message += "MAX Sample <input type=\"text\" name=\"MAXSampleInterval\" value=\"" + String(gMAXsample) + "\"><br><br>\n"; 
 #endif
   message += "<input type=\"submit\" value=\"Submit\">\n</form>";
@@ -202,11 +202,11 @@ void handleSetConfig() {
     else if (server.argName(i) == "PidInterval") {
       message += "new PidInterval: " + server.arg ( i ) + "<br/>\n";
       gPIDint = ( (server.arg(i)).toFloat() );
-       ESPPID.SetSampleTime(gPIDint); 
+       espPid.SetSampleTime(gPIDint); 
     }
     else if (server.argName(i) == "HeaterInterval") {
       message += "new HeaterInterval: " + server.arg ( i ) + "<br/>\n";
-      gHEATERint = ( (server.arg(i)).toFloat() );
+      heaterDriver.setHeaterInterval( (server.arg(i)).toFloat() );
     }
     else if (server.argName(i) == "MAXSampleInterval") {
       message += "new MAXSampleInterval: " + server.arg ( i ) + "<br/>\n";
@@ -215,11 +215,11 @@ void handleSetConfig() {
  
 #endif  
    if ( abs(gTargetTemp - gInputTemp) >= gOvershoot ) {
-          ESPPID.SetTunings(gaP, gaI, gaD,P_ON_E);
+          espPid.SetTunings(gaP, gaI, gaD,P_ON_E);
    }else{
            //force reinitialize PID at equibrilibrium-power (manually determined)
         
-        ESPPID.SetTunings(gP, gI, gD,P_ON_M); 
+        espPid.SetTunings(gP, gI, gD,P_ON_M); 
        
    }
   }

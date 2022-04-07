@@ -2,9 +2,12 @@
 #define ESPRressiot_MAIN_H
 
 #include <Arduino.h>
+#include "heater.h"
+#include <PID_v1.h>
 
 #define CURRENTFIRMWARE "ESPressIOT-PlatFormIO"
 #define DEBUG
+#define MQTT_DEBUG
 
 #define MAX_CONNECTION_RETRIES 60
 
@@ -16,8 +19,8 @@
 #define ENABLE_SERIAL
 
 
+// Default PID settings
 //above target temp
-
 #define S_P 50
 #define S_I 0.5
 #define S_D 500
@@ -45,11 +48,18 @@
 
 
 
+
+
+// GPIO PINS
+#define HEAT_RELAY_PIN 13 // 13 + GND are close on the ESP23 DEV Board
+
+
 /////////////////////////////////////////////////
 // global variables
 
 extern double gPIDint;
-extern double gHEATERint;
+
+
 extern double gEqPwr;
 
 extern double gMAXsample;
@@ -79,6 +89,7 @@ extern boolean externalControlMode;
 extern String gStatusAsJson;
 extern String gDebugAsJson;
 
-extern class PID ESPPID;
+extern PID espPid;
+extern HEATER heaterDriver;
 
 #endif

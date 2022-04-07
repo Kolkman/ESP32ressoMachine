@@ -17,10 +17,9 @@
 #include "tuning.h"
 
 
-//
-// global classes
-PID ESPPID(&gInputTemp, &gOutputPwr, &gTargetTemp, gaP, gaI, gaD, P_ON_E, DIRECT);
 
+PID espPid(&gInputTemp, &gOutputPwr, &gTargetTemp, gaP, gaI, gaD, P_ON_E, DIRECT);
+HEATER heaterDriver(HEAT_RELAY_PIN,HEATER_INTERVAL,false);
 
 /////////////////////////////////////////////////
 // global variables (all declared in ESPressiot)
@@ -62,6 +61,7 @@ void serialStatus() {
 
 void setup() {
   gOutputPwr = gEqPwr;
+
 
   Serial.begin(115200);
   // Need to print something to get the serial monitor setled
@@ -119,7 +119,7 @@ void setup() {
    delay(2);
     Serial.println("something");
 
-  
+
 
 #ifdef ENABLE_TELNET
   setupTelnet();
@@ -138,14 +138,14 @@ void setup() {
 #endif
 
   // setup components
-  setupHeater();
+
   setupSensor();
 
   // start PID
-  ESPPID.SetTunings(gP, gI, gD);
-  ESPPID.SetSampleTime(gPIDint);
-  ESPPID.SetOutputLimits(0, 1000);
-  ESPPID.SetMode(AUTOMATIC);
+  espPid.SetTunings(gP, gI, gD);
+  espPid.SetSampleTime(gPIDint);
+  espPid.SetOutputLimits(0, 1000);
+  espPid.SetMode(AUTOMATIC);
   gInputTemp = getTemp();
   coldstart = (gInputTemp < COLDSTART);
   osmode=(abs(gTargetTemp - gInputTemp) >= gOvershoot);
@@ -186,18 +186,18 @@ void loop() {
 
 
   if (!coldstart && gInputTemp < 80){
-      ESPPID.SetTunings(12.5, 0, 0,P_ON_E);
-      ESPPID.SetOutputLimits(0,700);
+      espPid.SetTunings(12.5, 0, 0,P_ON_E);
+      espPid.SetOutputLimits(0,700);
       coldstart=true;
     } else if(coldstart && gInputTemp > 80){
          coldstart=false;
          osmode=(abs(gTargetTemp - gInputTemp) >= gOvershoot);
     }
    if (!coldstart &&  !osmode && abs(gTargetTemp - gInputTemp) >= gOvershoot ) {
-          ESPPID.SetTunings(gaP, gaI, gaD,P_ON_E);
+          espPid.SetTunings(gaP, gaI, gaD,P_ON_E);
          
-          if (gInputTemp < gTargetTemp)ESPPID.SetOutputLimits(0,500);
-          if (gInputTemp > gTargetTemp)ESPPID.SetOutputLimits(0,30);
+          if (gInputTemp < gTargetTemp)espPid.SetOutputLimits(0,500);
+          if (gInputTemp > gTargetTemp)espPid.SetOutputLimits(0,30);
           osmode = true;  
   
    }
@@ -206,26 +206,26 @@ void loop() {
 
         //force reinitialize PID at equibrilibrium-power (manually determined)
         
-        ESPPID.SetMode(0);
+        espPid.SetMode(0);
         gOutputPwr=gEqPwr;  
-        ESPPID.SetMode(1);
+        espPid.SetMode(1);
         
-        ESPPID.SetTunings(gP, gI, gD,P_ON_E);
-        ESPPID.SetOutputLimits(5,90);
+        espPid.SetTunings(gP, gI, gD,P_ON_E);
+        espPid.SetOutputLimits(5,90);
         osmode = false;
     }
     if (!osmode && !abovetarget && (gInputTemp> gTargetTemp)){
         abovetarget=true;
-   //     ESPPID.SetTunings(gP, gI, 0,P_ON_E);
+   //     espPid.SetTunings(gP, gI, 0,P_ON_E);
     } else if (!osmode && abovetarget && (gInputTemp < gTargetTemp)){
-       ESPPID.SetTunings(gP, gI, gD,P_ON_E);
+       espPid.SetTunings(gP, gI, gD,P_ON_E);
        abovetarget=false;
     }
     if (osmode && !abovetarget && (gInputTemp> gTargetTemp)){
       abovetarget=true;
- //       ESPPID.SetTunings(gaP, gaI, 0,P_ON_E);
+ //       espPid.SetTunings(gaP, gaI, 0,P_ON_E);
     } else if (osmode && abovetarget && (gInputTemp < gTargetTemp)){
-       ESPPID.SetTunings(gaP, gaI, gaD,P_ON_E);
+       espPid.SetTunings(gaP, gaI, gaD,P_ON_E);
        abovetarget=false;
     }
 
@@ -234,11 +234,11 @@ void loop() {
 
     if (poweroffMode == true) {
       gOutputPwr = 0;
-      setHeatPowerPercentage(gOutputPwr);
+    heaterDriver.setHeatPowerPercentage(gOutputPwr);
     }
     else if (externalControlMode == true) {
       gOutputPwr = 1000 * gButtonState;
-      setHeatPowerPercentage(gOutputPwr);
+      heaterDriver.setHeatPowerPercentage(gOutputPwr);
     }
     else if (tuning == true)
     {
@@ -246,7 +246,7 @@ void loop() {
     }
     // temperature well below the range where the PID kicks in.
 
-    else if (ESPPID.Compute() == true) {
+    else if (espPid.Compute() == true) {
         // failsafe
        if (gInputTemp > 115) gOutputPwr=0;
 //        // smooth thepower 
@@ -259,13 +259,13 @@ void loop() {
 //            gOldPwr=gOutputPwr;
 //          }
 //        }
-        setHeatPowerPercentage(gOutputPwr);
+        heaterDriver.setHeatPowerPercentage(gOutputPwr);
     }
 
     
 
     // create status String (JSON)
-    //gStatusAsJson = statusAsJson();
+  gStatusAsJson = statusAsJson();
    
 
 #ifdef ENABLE_MQTT
@@ -283,7 +283,7 @@ void loop() {
     time_last = time_now;
   }
 
-  updateHeater();
+  heaterDriver.updateHeater(time_now);
 
 
 

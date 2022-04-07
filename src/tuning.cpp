@@ -25,12 +25,12 @@ void tuning_on() {
   tune_count = 0;
   UpperCnt = 0; LowerCnt = 0;
   AvgUpperT = 0; AvgLowerT = 0;
-  ESPPID.SetMode(MANUAL);
+  espPid.SetMode(MANUAL);
   tuning = true;
 }
 
 void tuning_off() {
-  ESPPID.SetMode(AUTOMATIC);
+  espPid.SetMode(AUTOMATIC);
   tuning = false;
 
   double dt = float(tune_time - tune_start) / tune_count;
@@ -58,7 +58,7 @@ void tuning_loop() {
       LowerCnt++;
     }
     gOutputPwr = aTuneStep;
-    setHeatPowerPercentage(aTuneStep);
+    heaterDriver.setHeatPowerPercentage(aTuneStep);
   }
   else if (gInputTemp > (gTargetTemp + aTuneThres)) { // above upper threshold -> power off
     if (gOutputPwr == aTuneStep) { // just crossed upper threshold
@@ -66,6 +66,6 @@ void tuning_loop() {
       UpperCnt++;
     }
     gOutputPwr = 0;
-    setHeatPowerPercentage(0);
+    heaterDriver.setHeatPowerPercentage(0);
   }
 }
