@@ -109,37 +109,5 @@ void setup()
 
 void loop()
 {
-  // put your main code here, to run repeatedly:
-
-  /* -----
-  #ifdef ENABLE_SWITCH_DETECTION
-    loopSwitch();
-  #endif
-
-    gStatusAsJson = statusAsJson();
-
-  #ifdef ENABLE_MQTT
-    loopMQTT(statusAsJson());
-  #endif
-
-  #ifdef ENABLE_TELNET
-    loopTelnet(statusAsJson());
-  #endif
-
-  #ifdef ENABLE_SERIAL
-    serialStatus();
-  #endif
-
-    //  time_last = time_now;
-    //}
-
-    // ESPressoMachineterDriver.updateHeater(time_now);
-
-  #ifdef ENABLE_HTTP
-    loopWebSrv();
-  #endif
-
-  */
-  myRancilio.heatLoop();
-  myRancilio.myInterface->loop();
+  if (myRancilio.heatLoop())  myRancilio.myInterface->loop();
 }

@@ -45,7 +45,7 @@ public:
   void manageTemp();
   String statusAsJson();
   void startMachine();
-  void heatLoop();
+  bool heatLoop(); // returnes true if the loop executed something
 
   void reConfig(); // Apply all config in the Config object to the machine
 

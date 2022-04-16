@@ -101,7 +101,7 @@ String ESPressoMachine::statusAsJson()
     return outputString;
 }
 
-void ESPressoMachine::heatLoop()
+bool ESPressoMachine::heatLoop()
 {
     time_now = millis();
 
@@ -136,6 +136,9 @@ void ESPressoMachine::heatLoop()
             myHeater->setHeatPowerPercentage(outputPwr);
         }
         time_last = time_now;
+        return(true);
+    }else{
+        return(false);
     }
 }
 
