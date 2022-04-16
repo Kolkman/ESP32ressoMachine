@@ -17,9 +17,9 @@
 #define S_aI 0.1
 #define S_aD 400
 
-#define S_TSET 97.5
+#define S_TSET 98.5
 #define S_TBAND 1.5
-#define EQUILIBRIUM_POWER 32 // this is the power at which temperature can be maintained at target. Rough estimate will do.
+#define EQUILIBRIUM_POWER 32.5 // this is the power at which temperature can be maintained at target. Rough estimate will do.
 #define MAX_POWER 500  // this is the maximum power when the temperature is above COLDSTART (see below) and still more
                       // than S_TBAND below the S_TSET  target temperature 
 #define FAILSAFE_TEMP 112.5 // turn heater off above this temp  should the PID run away.
@@ -32,8 +32,6 @@
 
 
 
-
-
 // GPIO PINS
 #define HEAT_RELAY_PIN 13 // 13 + GND are close on the ESP23 DEV Board
 
@@ -43,7 +41,7 @@
 // 
 // Compile time - not to be user configured.
 //
-#define COLDSTART_TEMP 80 // Below the COLDSTART_TEMP the PID vallue will be set to {P,I,D}={COLDSTART_P,0,0}
+#define COLDSTART_TEMP_OFFSET 20 // Below  (S_TSET-COLDSTART_TEMP_OFFSET) the PID vallue will be set to {P,I,D}={COLDSTART_P,0,0}
 #define COLDSTART_P 15   // At 20C that is approx full power
 #define COLDSTART_MAX_POWER 1000 // play with these vallues if the coldstart starts to slow or overshoots to easy.
 

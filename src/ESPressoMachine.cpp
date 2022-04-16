@@ -23,12 +23,12 @@ ESPressoMachine::ESPressoMachine()
     myInterface = new ESPressoInterface(this);
     time_last = millis();
     time_now = millis();
-    osmode=false;
+    osmode = false;
     outputPwr = 0.0;
     oldTemp = 0.0;
     oldPwr = 0;
     tuning = false;
-    externalControlMode=false;
+    externalControlMode = false;
 }
 
 void ESPressoMachine::startMachine()
@@ -40,18 +40,33 @@ void ESPressoMachine::startMachine()
     myPID->SetMode(AUTOMATIC);
     myInterface->setup();
     outputPwr = myConfig->eqPwr;
-    time_now=millis();
-    time_last=time_now; 
+    time_now = millis();
+    time_last = time_now;
     Serial.println("Machine Started");
-
 };
 
 void ESPressoMachine::manageTemp()
 {
     mySensor->updateTempSensor(myConfig->sensorSampleInterval);
     inputTemp = mySensor->getTemp(oldTemp);
-    coldstart = (inputTemp < COLDSTART_TEMP);
-    osmode = (abs(myConfig->targetTemp - inputTemp) >= myConfig->overShoot);
+    coldstart = (inputTemp < (myConfig->targetTemp - COLDSTART_TEMP_OFFSET));
+    osmode = ( abs(myConfig->targetTemp - inputTemp) >= myConfig->temperatureBand);
+
+/*
+#ifdef DEBUG
+    Serial.print("inputTemp: " + String(inputTemp) + " coldstart,osmode=");
+    if (coldstart)
+        Serial.print("true");
+    else
+        Serial.print("false");
+    Serial.print(",");
+    if (osmode)
+        Serial.print("true");
+    else
+        Serial.print("false");
+    Serial.println(" Target: "+String(myConfig->targetTemp)+" Oversh: "+String(myConfig->temperatureBand));
+#endif
+*/
     // If we are not in overshoot-mode we only accept a certain amount of downward temperature gradient.
     // (Natural cooling of the boiler)
     // If the gradient is faster we top it off.
@@ -113,22 +128,22 @@ void ESPressoMachine::heatLoop()
         }
         else if (myPID->Compute() == true)
         {
-            if (inputTemp > FAILSAFE_TEMP){
-                Serial.println("FAILSAFE"+String(FAILSAFE_TEMP));
+            if (inputTemp > FAILSAFE_TEMP)
+            {
+                Serial.println("FAILSAFE" + String(FAILSAFE_TEMP));
                 outputPwr = 0; // FAILSAFE
             }
             myHeater->setHeatPowerPercentage(outputPwr);
         }
         time_last = time_now;
-
     }
- }
+}
 
 void ESPressoMachine::updatePIDSettings()
 {
     manageTemp();
 
-    if (!coldstart && inputTemp < COLDSTART_TEMP)
+    if (!coldstart && (inputTemp < (myConfig->targetTemp - COLDSTART_TEMP_OFFSET)))
     {
         // Below coldstart treshold
         // Coldstart treshold is defined in ESPressoMachineDefaults
@@ -136,13 +151,13 @@ void ESPressoMachine::updatePIDSettings()
         myPID->SetOutputLimits(0, COLDSTART_MAX_POWER); // Go full power
         coldstart = true;
     }
-    else if (coldstart && inputTemp > COLDSTART_TEMP)
+    else if (coldstart && (inputTemp > (myConfig->targetTemp - COLDSTART_TEMP_OFFSET)))
     {
         coldstart = false;
-        osmode = (abs(myConfig->targetTemp = -inputTemp) >= myConfig->overShoot);
+        osmode = (abs(myConfig->targetTemp = -inputTemp) >= myConfig->temperatureBand);
     }
 
-    if (!coldstart && !osmode && abs(myConfig->targetTemp - inputTemp) >= myConfig->overShoot)
+    if (!coldstart && !osmode && abs(myConfig->targetTemp - inputTemp) >= myConfig->temperatureBand)
     {
         // between coldstart and still more than overshoot away from the target
         // osmode  is therefore true, and we set values accordingly.
@@ -153,7 +168,7 @@ void ESPressoMachine::updatePIDSettings()
             myPID->SetOutputLimits(0, myConfig->eqPwr); // We don't want noise to
         osmode = true;
     }
-    else if (osmode && abs(myConfig->targetTemp - inputTemp) < myConfig->overShoot)
+    else if (osmode && abs(myConfig->targetTemp - inputTemp) < myConfig->temperatureBand)
     {
         // Within the defined/configured offset from the target temperature
 
@@ -171,17 +186,18 @@ void ESPressoMachine::updatePIDSettings()
     }
 }
 
-void  ESPressoMachine::reConfig(){
+void ESPressoMachine::reConfig()
+{
     myPID->SetSampleTime(myConfig->pidInt);
     myHeater->setHeaterInterval(myConfig->heaterInterval);
-    if (abs(myConfig->targetTemp - inputTemp) >= myConfig->overShoot)
+    if (abs(myConfig->targetTemp - inputTemp) >= myConfig->temperatureBand)
     {
-      myPID->SetTunings(myConfig->awayTarget.P, myConfig->awayTarget.I, myConfig->awayTarget.D, P_ON_E);
+        myPID->SetTunings(myConfig->awayTarget.P, myConfig->awayTarget.I, myConfig->awayTarget.D, P_ON_E);
     }
     else
     {
-      // force reinitialize PID at equibrilibrium-power (manually determined)
+        // force reinitialize PID at equibrilibrium-power (manually determined)
 
-      myPID->SetTunings(myConfig->nearTarget.P, myConfig->nearTarget.I, myConfig->nearTarget.D, P_ON_M);
+        myPID->SetTunings(myConfig->nearTarget.P, myConfig->nearTarget.I, myConfig->nearTarget.D, P_ON_M);
     }
 }

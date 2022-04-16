@@ -1,16 +1,15 @@
-//
-// ESPressIoT Controller for Espresso Machines
-// 2016-2021 by Roman Schmitz
+// Based on work by 2016-2021 by Roman Schmitz
+// Adopted and refactored by Olaf Kolkman, 2022.
 //
 // MQTT integration
 //
 #include "ESPressoMachine.h"
 
 #ifdef ENABLE_MQTT
-#define MQTT_DEBUG 
+#define MQTT_DEBUG
 
 // char buf_msg[2048];
-
+#include "Arduino.h"
 #include <SPI.h>
 #include <Ethernet.h>
 #include <WiFiClient.h>
@@ -38,8 +37,8 @@ void MQTTInterface::MQTT_reconnect()
     if (client.connect(clientId.c_str(), MQTT_USER, MQTT_PASS))
     {
       Serial.println("connected");
-      client.subscribe(mqttConfigTopic, 1); // We should be OK with QOS 0 
-      Serial.println("Subscribed to "+String(mqttConfigTopic));
+      client.subscribe(mqttConfigTopic, 1); // We should be OK with QOS 0
+      Serial.println("Subscribed to " + String(mqttConfigTopic));
     }
     else
     {
@@ -66,27 +65,57 @@ void MQTTInterface::MQTT_callback(char *topic, byte *payload, unsigned int lengt
   }
 #ifdef MQTT_DEBUG
   Serial.println("'");
-#endif // MQTT_DEBUG  
-Serial.println("Digging into ones data");
-Serial.println(myMachine->myConfig->targetTemp);
+#endif // MQTT_DEBUG
 
-  double val = msg.toFloat();
-  Serial.println(val);
-  bool reconf=false;
-  if (strstr(topic, "/config/tset"))
+  DynamicJsonDocument jsonDocument(CONFIG_BUF_SIZE);
+  DeserializationError parsingError = deserializeJson(jsonDocument, msg);
+  if (parsingError)
   {
-    if (val > 1e-3)
-      myMachine->myConfig->targetTemp = val;
-      reconf=true;
-      Serial.println("targetTemp set to "+String(val));
+    Serial.println("Failed to deserialize json message from MQTT");
+    Serial.println(parsingError.c_str());
+    return;
   }
-  else if (strstr(topic, "/config/toggle"))
+  if (jsonDocument["targetTemp"])
   {
-    myMachine->poweroffMode = (!myMachine->poweroffMode);    
+    myMachine->myConfig->targetTemp = jsonDocument["targetTemp"];
+    Serial.println("tset: " + String(myMachine->myConfig->targetTemp));
   }
-  if (reconf){
-    myMachine->reConfig();
+  if (jsonDocument["poweroffMode"])
+  {
+    if (strcasecmp(jsonDocument["poweroffMode"], "true"))
+      myMachine->poweroffMode = true;
+    else if (strcasecmp(jsonDocument["poweroffMode"], "false"))
+      myMachine->poweroffMode = false;
+    else /// I know this is not very comprehensive checking.
+      myMachine->poweroffMode = false;
+
+    Serial.print("poweroffMoade: ");
+    if (myMachine->poweroffMode)
+      Serial.println("true");
+    else
+      Serial.println("false");
   }
+
+  /*
+    if (strstr(topic, "/config/tset"))
+    {
+
+
+
+
+      if (val > 1e-3)
+        myMachine->myConfig->targetTemp = val;
+        reconf=true;
+        Serial.println("targetTemp set to "+String(val));
+    }
+    else if (strstr(topic, "/config/toggle"))
+    {
+      myMachine->poweroffMode = (!myMachine->poweroffMode);
+    }
+    if (reconf){
+      myMachine->reConfig();
+    }
+    */
 }
 
 void MQTTInterface::setupMQTT(ESPressoMachine *machine)

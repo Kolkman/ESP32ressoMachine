@@ -1,7 +1,6 @@
+// Based on work by 2016-2021 by Roman Schmitz
+// Adopted and refactored by Olaf Kolkman, 2022.
 //
-// ESPressIoT Controller for Espresso Machines
-// Initially based on code by
-// 2016-2021 by Roman Schmitz
 //
 // Simplified Heater PWM - just connect SSR to HEAT_RELAY_PIN
 //

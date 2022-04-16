@@ -16,7 +16,7 @@
 #endif
 
 
-#define MAX31855_SMP_TIME 10 // sample time
+#define MAX31855_SMP_TIME 5 // sample time
 
 
 class TempSensor : public Adafruit_MAX31855 

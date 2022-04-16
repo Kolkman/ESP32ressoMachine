@@ -1,4 +1,6 @@
-
+// Based on work by 2016-2021 by Roman Schmitz
+// Adopted and refactored by Olaf Kolkman, 2022.
+//
 
 #include <Arduino.h>
 #include "interface.h"

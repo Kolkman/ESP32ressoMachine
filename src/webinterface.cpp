@@ -51,13 +51,12 @@ void WebInterface::handleNotFound()
 
 void WebInterface::handleRoot()
 {
-  Serial.println("WebInterface::handleroot()");
   String powerOnColor = String(ONCOLOR);
   String powerOffColor = String(OFFCOLOR);
   String pidModeColor = "98B4D4";
   String extModeColor = "DCDCDC";
 
-    if (myMachine->poweroffMode)
+  if (myMachine->poweroffMode)
   {
     powerOnColor = String(OFFCOLOR);
     powerOffColor = String(ONCOLOR);
@@ -90,7 +89,6 @@ void WebInterface::handleRoot()
 
   message += "<hr/>\n";
 
-
   server->send(200, "text/html", message);
 }
 
@@ -114,11 +112,11 @@ void WebInterface::handleConfig()
   message += "<form action=\"set_config\">\nTarget Temperature:<br>\n";
   message += "<input type=\"text\" name=\"tset\" value=\"" + String(myMachine->myConfig->targetTemp) + "\"><br/><br/>\n";
   message += "<form action=\"set_config\">\nThreshold for PID control:<br>\n";
-  message += "<input type=\"text\" name=\"tband\" value=\"" + String(myMachine->myConfig->overShoot) + "\"><br/><br/>\n";
+  message += "<input type=\"text\" name=\"tband\" value=\"" + String(myMachine->myConfig->temperatureBand) + "\"><br/><br/>\n";
   message += "<form action=\"set_config\">\nEstimated power to maintain Equilibrium at " + String(myMachine->myConfig->targetTemp) + ":<br>\n";
   message += "<input type=\"text\" name=\"epwr\" value=\"" + String(myMachine->myConfig->eqPwr) + "\"><br/><br/>\n";
-  message += "PID within " + String(myMachine->myConfig->targetTemp - myMachine->myConfig->overShoot) + " to " +
-             String(myMachine->myConfig->targetTemp + myMachine->myConfig->overShoot) +
+  message += "PID within " + String(myMachine->myConfig->targetTemp - myMachine->myConfig->temperatureBand) + " to " +
+             String(myMachine->myConfig->targetTemp + myMachine->myConfig->temperatureBand) +
              " band:<br>\n P <input type=\"text\" name=\"pgain\" value=\"" +
              String(myMachine->myConfig->nearTarget.P) + "\"><br/>\n";
   message += "I <input type=\"text\" name=\"igain\" value=\"" + String(myMachine->myConfig->nearTarget.I) + "\"><br/>\n";
@@ -129,7 +127,7 @@ void WebInterface::handleConfig()
 #ifdef DEBUG
   message += "Pid Interval <input type=\"text\" name=\"PidInterval\" value=\"" + String(myMachine->myConfig->pidInt) + "\"><br><br>\n";
   message += "Heater Interval <input type=\"text\" name=\"Heater Interval\" value=\"" + String(myMachine->myHeater->getHeaterInterval()) + "\"><br><br>\n";
-  message += "MAX Sample <input type=\"text\" name=\"Sensor Sample Interval\" value=\"" + String(myMachine->myConfig->sensorSampleInterval) + "\"><br><br>\n";
+  message += "Sensor Sample Interval Sample <input type=\"text\" name=\"SensorSampleInterval\" value=\"" + String(myMachine->myConfig->sensorSampleInterval) + "\"><br><br>\n";
 #endif
   message += "<input type=\"submit\" value=\"Submit\">\n</form>";
 
@@ -188,59 +186,59 @@ void WebInterface::handleSetConfig()
     if (server->argName(i) == "tset")
     {
       message += "new tset: " + server->arg(i) + "<br/>\n";
-      myMachine->myConfig->targetTemp = ((server->arg(i)).toFloat());
+      myMachine->myConfig->targetTemp = ((server->arg(i)).toDouble());
     }
     else if (server->argName(i) == "tband")
     {
       message += "new tset: " + server->arg(i) + "<br/>\n";
-      myMachine->myConfig->overShoot = ((server->arg(i)).toFloat());
+      myMachine->myConfig->temperatureBand = ((server->arg(i)).toDouble());
     }
     else if (server->argName(i) == "epwr")
     {
       message += "new Eq. Pwr: " + server->arg(i) + "<br/>\n";
-      myMachine->myConfig->eqPwr = ((server->arg(i)).toFloat());
+      myMachine->myConfig->eqPwr = ((server->arg(i)).toDouble());
     }
     else if (server->argName(i) == "pgain")
     {
       message += "new pgain: " + server->arg(i) + "<br/>\n";
-      myMachine->myConfig->nearTarget.P = ((server->arg(i)).toFloat());
+      myMachine->myConfig->nearTarget.P = ((server->arg(i)).toDouble());
       reconf = true;
     }
     else if (server->argName(i) == "igain")
     {
       message += "new igain: " + server->arg(i) + "<br/>\n";
-      myMachine->myConfig->nearTarget.I = ((server->arg(i)).toFloat());
+      myMachine->myConfig->nearTarget.I = ((server->arg(i)).toDouble());
       reconf = true;
     }
     else if (server->argName(i) == "dgain")
     {
       message += "new pgain: " + server->arg(i) + "<br/>\n";
-      myMachine->myConfig->nearTarget.D = ((server->arg(i)).toFloat());
+      myMachine->myConfig->nearTarget.D = ((server->arg(i)).toDouble());
       reconf = true;
     }
     else if (server->argName(i) == "apgain")
     {
       message += "new pgain: " + server->arg(i) + "<br/>\n";
-      myMachine->myConfig->awayTarget.P = ((server->arg(i)).toFloat());
+      myMachine->myConfig->awayTarget.P = ((server->arg(i)).toDouble());
       reconf = true;
     }
     else if (server->argName(i) == "aigain")
     {
       message += "new igain: " + server->arg(i) + "<br/>\n";
-      myMachine->myConfig->awayTarget.I = ((server->arg(i)).toFloat());
+      myMachine->myConfig->awayTarget.I = ((server->arg(i)).toDouble());
       reconf = true;
     }
     else if (server->argName(i) == "adgain")
     {
       message += "new pgain: " + server->arg(i) + "<br/>\n";
-      myMachine->myConfig->awayTarget.D = ((server->arg(i)).toFloat());
+      myMachine->myConfig->awayTarget.D = ((server->arg(i)).toDouble());
       reconf = true;
     }
 #ifdef DEBUG
     else if (server->argName(i) == "PidInterval")
     {
       message += "new PidInterval: " + server->arg(i) + "<br/>\n";
-      myMachine->myConfig->pidInt = ((server->arg(i)).toFloat());
+      myMachine->myConfig->pidInt = ((server->arg(i)).toInt());
       reconf = true;
     }
     else if (server->argName(i) == "HeaterInterval")
@@ -249,10 +247,10 @@ void WebInterface::handleSetConfig()
       myMachine->myConfig->heaterInterval = (abs((server->arg(i)).toInt()));
       reconf = true;
     }
-    else if (server->argName(i) == "MAXSampleInterval")
+    else if (server->argName(i) == "SensorSampleInterval")
     {
-      message += "new MAXSampleInterval: " + server->arg(i) + "<br/>\n";
-      myMachine->myConfig->sensorSampleInterval = ((server->arg(i)).toFloat());
+      message += "new Sensor Sample Interval: " + server->arg(i) + "<br/>\n";
+      myMachine->myConfig->sensorSampleInterval = ((server->arg(i)).toInt());
       // reconfig not needed
     }
 
@@ -288,7 +286,10 @@ void WebInterface::handleLoadConfig()
 {
   String message = "<head><meta http-equiv=\"refresh\" content=\"2;url=/config\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><title>EspressIoT</title></head>";
   if (myMachine->myConfig->loadConfig())
+  {
+    myMachine->reConfig();
     message += "<h1>Configuration loaded !</h1>\n";
+  }
   else
     message += "<h1>Error loading configuration !</h1>\n";
   server->send(200, "text/html", message);
