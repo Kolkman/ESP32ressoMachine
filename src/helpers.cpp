@@ -5,9 +5,8 @@
 //
 
 #include <Arduino.h>
-#include <ESPressiot.h>
-#include <ArduinoJson.h>
-#include <StreamUtils.h>
+//#include <ArduinoJson.h>
+//#include <StreamUtils.h>
 #include <helpers.h>
 
 
@@ -30,18 +29,4 @@ String macToString(const uint8_t* mac) {
   return result;
 }
 
-String statusAsJson() {
-  StaticJsonDocument<1024> statusObject;
-  String outputString;
-  statusObject["time"] = time_now;
-  statusObject["measuredTemperature"] = gInputTemp;
-  statusObject["targetTemperature"] = gTargetTemp;
-  statusObject["heaterPower"] = gOutputPwr;
-  statusObject["externalControlMode"] = externalControlMode;
-  statusObject["externalButtonState"] = gButtonState;
-  statusObject["PowerOffMode"] = poweroffMode;
-
-  serializeJson(statusObject, outputString);
-  return outputString;
-}
 

@@ -1,97 +1,76 @@
+//
+// ESPressIoT Controller for Espresso Machines
+// Based on work by 2016-2021 by Roman Schmitz
+// Adopted and refactored by Olaf Kolkman, 2022.
+//
+
 #include <Arduino.h>
 #include <WiFi.h>
 #include <SPIFFS.h>
 #include <PID_v1.h>
 
 // local Includes
-#include "ESPressiot.h"
+#include "ESPressoMachine.h"
 #include "WiFiSecrets.h"
 #include "config.h"
 #include "helpers.h"
 
-#include "telnet.h"
-#include "web.h"
-#include "heater.h"
-#include "sensor_max31855.h"
-#include "mqtt.h"
-#include "tuning.h"
+#include "telnetinterface.h"
+#include "webinterface.h"
+#include "mqttinterface.h"
+#include "pidtuner.h"
 
-
-
-PID espPid(&gInputTemp, &gOutputPwr, &gTargetTemp, gaP, gaI, gaD, P_ON_E, DIRECT);
-HEATER heaterDriver(HEAT_RELAY_PIN,HEATER_INTERVAL,false);
+ESPressoMachine myRancilio;
+// HEATER heaterDriver(HEAT_RELAY_PIN,HEATER_INTERVAL,false);
 
 /////////////////////////////////////////////////
 // global variables (all declared in ESPressiot)
 
-double gPIDint = PID_INTERVAL;
-double gHEATERint = HEATER_INTERVAL;
-double gEqPwr=EQUILIBRIUM_POWER;
-
-double gMAXsample = 4;
-
-double gTargetTemp = S_TSET;
-double gOvershoot = S_TBAND;
-double gInputTemp = 20.0;
-double gOutputPwr = 0.0;
-double gOldTemp =0.0;
-double gOldPwr=0;
-double gP = S_P, gI = S_I, gD = S_D;
-double gaP = S_aP, gaI = S_aI, gaD = S_aD;
-
-unsigned long time_now = 0;
-unsigned long time_last = 0;
-
 int gButtonState = 0;
 uint8_t mac[6];
 
-boolean tuning = false;
-boolean osmode = false;
-boolean coldstart = false;
-boolean abovetarget = false;
-boolean poweroffMode = false;
-boolean externalControlMode = false;
-
-String gStatusAsJson; 
-
-void serialStatus() {
-  Serial.println(gStatusAsJson);
-}
-
-
-void setup() {
-  gOutputPwr = gEqPwr;
-
-
+void setup()
+{
   Serial.begin(115200);
   // Need to print something to get the serial monitor setled
-  for (int i = 0; i < 5 ; i++){
+  for (int i = 0; i < 5; i++)
+  {
     Serial.print("Initializing (");
     Serial.print(i);
     Serial.println(")");
     delay(100);
   }
 
-  
   Serial.println("Mounting SPIFFS...");
-  if (!prepareFS()) {
+  if (!myRancilio.myConfig->prepareFS())
+  {
     Serial.println("Failed to mount SPIFFS !");
-  } else {
+  }
+  else
+  {
     Serial.println("Mounted.");
   }
 
   Serial.println("Loading config...");
-  if (!loadConfig()) {
+  if (!myRancilio.myConfig->loadConfig())
+  {
     Serial.println("Failed to load config. Using default values and creating config...");
-    if (!saveConfig()) {
+    if (!myRancilio.myConfig->saveConfig())
+    {
       Serial.println("Failed to save config");
-    } else {
+    }
+    else
+    {
       Serial.println("Config saved");
     }
-  } else {
+  }
+  else
+  {
     Serial.println("Config loaded");
   }
 
+  Serial.print("Firmware Version");
+  Serial.println(String(CURRENTFIRMWARE) +" "+ String(F(__DATE__))+":"+String(F(__TIME__)));
   Serial.println("Settin up PID...");
   WiFi.begin(WIFI_SSID, WIFI_PASS);
   WiFi.macAddress(mac);
@@ -99,14 +78,15 @@ void setup() {
   Serial.print("MAC address: ");
   Serial.println(macToString(mac));
 
-
   Serial.print("Connecting to Wifi AP");
-  for (int i = 0; i < MAX_CONNECTION_RETRIES && WiFi.status() != WL_CONNECTED; i++) {
+  for (int i = 0; i < MAX_CONNECTION_RETRIES && WiFi.status() != WL_CONNECTED; i++)
+  {
     delay(500);
     Serial.print(".");
   }
 
-  if (WiFi.status() != WL_CONNECTED) {
+  if (WiFi.status() != WL_CONNECTED)
+  {
     Serial.print("Error connection to AP after ");
     Serial.print(MAX_CONNECTION_RETRIES);
     Serial.println(" retries.");
@@ -116,184 +96,50 @@ void setup() {
   Serial.println("WiFi connected.");
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
-   delay(2);
-    Serial.println("something");
+  delay(2);
+  Serial.println("something");
 
-
-
-#ifdef ENABLE_TELNET
-  setupTelnet();
-#endif
-
-#ifdef ENABLE_HTTP
-  setupWebSrv();
-#endif
-
-#ifdef ENABLE_MQTT
-  setupMQTT();
-#endif
-
-#ifdef ENABLE_SWITCH_DETECTION
-  setupSwitch();
-#endif
-
-  // setup components
-
-  setupSensor();
+  // setup the Machine
 
   // start PID
-  espPid.SetTunings(gP, gI, gD);
-  espPid.SetSampleTime(gPIDint);
-  espPid.SetOutputLimits(0, 1000);
-  espPid.SetMode(AUTOMATIC);
-  gInputTemp = getTemp();
-  coldstart = (gInputTemp < COLDSTART);
-  osmode=(abs(gTargetTemp - gInputTemp) >= gOvershoot);
-  time_now = millis();
-  time_last = time_now;
-
-
-
+  myRancilio.startMachine();
+  myRancilio.manageTemp();
+  
 }
 
-void loop() {
+void loop()
+{
   // put your main code here, to run repeatedly:
 
- time_now = millis();
-  updateTempSensor();
+  /* -----
+  #ifdef ENABLE_SWITCH_DETECTION
+    loopSwitch();
+  #endif
 
-#ifdef ENABLE_SWITCH_DETECTION
-  loopSwitch();
-#endif
+    gStatusAsJson = statusAsJson();
 
-  if ( (max(time_now, time_last) - min(time_now, time_last)) >= gPIDint or time_last > time_now) {
-
-    gInputTemp = getTemp();
-
-
-     //Maximum descent when high
-//    if  (gInputTemp> (gTargetTemp-gOvershoot)) &&
-    if  (!osmode  &&
-      ((gOldTemp-gInputTemp) > (0.040 * gPIDint/1000)) ){
-      gInputTemp=gOldTemp - 0.040*gPIDint/1000;
-      gOldTemp=gInputTemp;
-    }else{
-      gOldTemp=gInputTemp;
-    }
-
-   
-    Serial.println(gInputTemp);
-
-
-  if (!coldstart && gInputTemp < 80){
-      espPid.SetTunings(12.5, 0, 0,P_ON_E);
-      espPid.SetOutputLimits(0,700);
-      coldstart=true;
-    } else if(coldstart && gInputTemp > 80){
-         coldstart=false;
-         osmode=(abs(gTargetTemp - gInputTemp) >= gOvershoot);
-    }
-   if (!coldstart &&  !osmode && abs(gTargetTemp - gInputTemp) >= gOvershoot ) {
-          espPid.SetTunings(gaP, gaI, gaD,P_ON_E);
-         
-          if (gInputTemp < gTargetTemp)espPid.SetOutputLimits(0,500);
-          if (gInputTemp > gTargetTemp)espPid.SetOutputLimits(0,30);
-          osmode = true;  
-  
-   }
-    // entering band    
-    else if ( osmode && abs(gTargetTemp - gInputTemp) < gOvershoot ) {
-
-        //force reinitialize PID at equibrilibrium-power (manually determined)
-        
-        espPid.SetMode(0);
-        gOutputPwr=gEqPwr;  
-        espPid.SetMode(1);
-        
-        espPid.SetTunings(gP, gI, gD,P_ON_E);
-        espPid.SetOutputLimits(5,90);
-        osmode = false;
-    }
-    if (!osmode && !abovetarget && (gInputTemp> gTargetTemp)){
-        abovetarget=true;
-   //     espPid.SetTunings(gP, gI, 0,P_ON_E);
-    } else if (!osmode && abovetarget && (gInputTemp < gTargetTemp)){
-       espPid.SetTunings(gP, gI, gD,P_ON_E);
-       abovetarget=false;
-    }
-    if (osmode && !abovetarget && (gInputTemp> gTargetTemp)){
-      abovetarget=true;
- //       espPid.SetTunings(gaP, gaI, 0,P_ON_E);
-    } else if (osmode && abovetarget && (gInputTemp < gTargetTemp)){
-       espPid.SetTunings(gaP, gaI, gaD,P_ON_E);
-       abovetarget=false;
-    }
-
-   
-
-
-    if (poweroffMode == true) {
-      gOutputPwr = 0;
-    heaterDriver.setHeatPowerPercentage(gOutputPwr);
-    }
-    else if (externalControlMode == true) {
-      gOutputPwr = 1000 * gButtonState;
-      heaterDriver.setHeatPowerPercentage(gOutputPwr);
-    }
-    else if (tuning == true)
-    {
-      tuning_loop();
-    }
-    // temperature well below the range where the PID kicks in.
-
-    else if (espPid.Compute() == true) {
-        // failsafe
-       if (gInputTemp > 115) gOutputPwr=0;
-//        // smooth thepower 
-//        if ( (abs(gTargetTemp - gInputTemp) < gOvershoot)){
-//          if (gOutputPwr> (gOldPwr+1.5 )){
-//            gOutputPwr=gOldPwr+1.5;
-//            gOldPwr=gOutputPwr;
-//          }else if(gOutputPwr < (gOldPwr-1.5 )){
-//            gOutputPwr=gOldPwr-1.5;
-//            gOldPwr=gOutputPwr;
-//          }
-//        }
-        heaterDriver.setHeatPowerPercentage(gOutputPwr);
-    }
-
-    
-
-    // create status String (JSON)
-  gStatusAsJson = statusAsJson();
-   
-
-#ifdef ENABLE_MQTT
+  #ifdef ENABLE_MQTT
     loopMQTT(statusAsJson());
-#endif
+  #endif
 
-#ifdef ENABLE_TELNET
-    loopTelnet();
-#endif
+  #ifdef ENABLE_TELNET
+    loopTelnet(statusAsJson());
+  #endif
 
-#ifdef ENABLE_SERIAL
+  #ifdef ENABLE_SERIAL
     serialStatus();
-#endif
+  #endif
 
-    time_last = time_now;
-  }
+    //  time_last = time_now;
+    //}
 
-  heaterDriver.updateHeater(time_now);
-
-
-
-
-
-
+    // ESPressoMachineterDriver.updateHeater(time_now);
 
   #ifdef ENABLE_HTTP
     loopWebSrv();
-  #endif  
+  #endif
 
-
+  */
+  myRancilio.heatLoop();
+  myRancilio.myInterface->loop();
 }

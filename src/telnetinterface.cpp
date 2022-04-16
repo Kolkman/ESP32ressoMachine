@@ -4,39 +4,55 @@
 //
 // Telnet Server
 //
-#include "ESPressiot.h"
+#include "ESPressoMachine.h"
 #include "WIFI.h"
-#include "helpers.h"
+//#include "helpers.h"
 
 #ifdef ENABLE_TELNET
-#include <telnet.h>
-WiFiServer telnetServer(23);
-WiFiClient telnetClient;
+#include <telnetinterface.h>
 
-void telnetStatus() {
-  telnetClient.println(gStatusAsJson);
+TelnetInterface::TelnetInterface() : telnetServer(23), telnetClient()
+{
+  // empty
 }
 
-void setupTelnet() {
+void TelnetInterface::telnetStatus(String statusAsJson)
+{
+  if (!telnetClient)
+    return; // error condition
+  telnetClient.println(statusAsJson);
+}
+
+void TelnetInterface::setupTelnet()
+{
+
   telnetServer.begin();
   telnetServer.setNoDelay(true);
-  Serial.println("Please connect Telnet Client, exit with ^] and 'quit'");
 
+  Serial.println("Please connect Telnet Client, exit with ^] and 'quit'");
   Serial.print("Free Heap[B]: ");
   Serial.println(ESP.getFreeHeap());
 }
 
-void loopTelnet() {
-  if (telnetServer.hasClient()) {
-    if (!telnetClient || !telnetClient.connected()) {
-      if (telnetClient) telnetClient.stop();
+void TelnetInterface::loopTelnet(String reportstring)
+{
+  if (telnetServer.hasClient())
+  {
+    if (!telnetClient || !telnetClient.connected())
+    { // short circuit when NULL.
+      if (telnetClient)
+        telnetClient.stop();
+
       telnetClient = telnetServer.available();
-    } else {
+    }
+    else
+    {
       telnetServer.available().stop();
     }
   }
-  if (telnetClient && telnetClient.connected() && telnetClient.available()) {
-    telnetStatus();
+  if (telnetClient && telnetClient.connected() && telnetClient.available())
+  {
+    telnetStatus(reportstring);
   }
 }
 

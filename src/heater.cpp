@@ -11,7 +11,16 @@
 
 
 
-HEATER::HEATER(int pin, unsigned long i=1000, bool mode=false){
+Heater::Heater(int pin, unsigned long i, bool mode){
+  init(pin,i,mode);
+} 
+
+Heater::Heater(){
+  init(HEAT_RELAY_PIN,HEATER_INTERVAL,false);
+}
+
+void Heater::init(int pin, unsigned long i, bool mode)
+{
   heatCycles = 0;
   heaterState = false;
   heatCurrentTime = 0, heatLastTime = 0;
@@ -22,17 +31,16 @@ HEATER::HEATER(int pin, unsigned long i=1000, bool mode=false){
     pinMode(pin , OUTPUT);
   }
 
-} 
-
-void HEATER::setHeaterInterval(unsigned long interval){
+}
+void Heater::setHeaterInterval(unsigned long interval){
   heaterInterval=interval;
 }
 
-unsigned long HEATER::getHeaterInterval(){
+unsigned long Heater::getHeaterInterval(){
   return heaterInterval;
 }
 
-void HEATER::updateHeater(unsigned long t) {
+void Heater::updateHeater(unsigned long t) {
   heatCurrentTime =  t;
 
   if (heatCurrentTime - heatLastTime >=  heaterInterval or heatLastTime > heatCurrentTime) { //second statement prevents overflow errors
@@ -46,7 +54,7 @@ void HEATER::updateHeater(unsigned long t) {
 }
 
 
-void HEATER::setHeatPowerPercentage(float power) {
+void Heater::setHeatPowerPercentage(float power) {
   if (power < 0.0) {
     power = 0.0;
   }
@@ -59,11 +67,11 @@ void HEATER::setHeatPowerPercentage(float power) {
   
 }
 
-float HEATER::getHeatCycles() {
+float Heater::getHeatCycles() {
   return heatCycles;
 }
 
-void HEATER::turnHeatElementOnOff(boolean on) {
+void Heater::turnHeatElementOnOff(boolean on) {
   digitalWrite(gpioPin, on); //turn pin high
   heaterState = on;
 }

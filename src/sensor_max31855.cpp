@@ -8,74 +8,72 @@
 #ifndef SIMULATION_MODE
 #include <Wire.h>
 #include <SPI.h>
+#include "sensor_max31855.h"
 
-#include <Adafruit_MAX31855.h>
-#include <ESPressiot.h>
-#include <sensor_max31855.h>
+TempSensor::TempSensor() : Adafruit_MAX31855(SENSOR_MAX_CLK, SENSOR_MAX_CS, SENSOR_MAX_DO){
 
+lastT = 0.0;
+SumT = 0.0;
+lastI = 0.0;
+SumI = 0.0;
 
-
-// Example creating a thermocouple instance with software SPI on three digital IO pins
-#define MAXDO   26
-#define MAXCS   27
-#define MAXCLK  14
-
-#define MAX31855_SMP_TIME 10
-
-
-// initialize the Thermocouple
-Adafruit_MAX31855 thermoc(MAXCLK, MAXCS, MAXDO);
+lastErr = 0.0;
+CntT = 0;
+CntI = 0;
+lastSensTime=0;
 
 
+}
 
-double lastT = 0.0;
-double SumT = 0.0;
-double lastI = 0.0;
-double SumI = 0.0;
 
-double lastErr = 0.0;
-int CntT = 0;
-int CntI = 0;
-unsigned long lastSensTime;
 
-void setupSensor() {
+void TempSensor::setupSensor()
+{
 
-  while (!Serial) delay(1); // wait for Serial on Leonardo/Zero, etc
+  while (!Serial)
+    delay(1); // wait for Serial on Leonardo/Zero, etc
 
   Serial.println("MAX31855 test");
   // wait for MAX chip to stabilize
   delay(500);
   Serial.print("Initializing sensor...");
-  if (!thermoc.begin()) {
+  if (!begin())
+  {
     Serial.println("ERROR.");
-    while (1) delay(10);
+    while (1)
+      delay(10);
   }
   Serial.println("DONE.");
 }
 
-void updateTempSensor() {
+void TempSensor::updateTempSensor(double sensorSampleInterval)
+{
 
   time_now = millis();
 
-  if ( (max(time_now, lastSensTime) - min(time_now, lastSensTime)) >= gMAXsample) {
-    double i = thermoc.readInternal();
-    double c = thermoc.readCelsius();
-    if (isnan(c) || isnan(i) ){
+  if ((max(time_now, lastSensTime) - min(time_now, lastSensTime)) >= sensorSampleInterval)
+  {
+    double i = readInternal();
+    double c = readCelsius();
+    if (isnan(c) || isnan(i))
+    {
       Serial.println("Could not get read temperature, Something wrong with thermocouple!");
     }
     else
     {
       double curT = c;
       double curI = i;
-      // very simple selection of noise hits/invalid values 
+      // very simple selection of noise hits/invalid values
       // the weed-out vallue is rather high, to low will cause runnaway
       // heating cycles.
-      if (abs(curT - lastT) < 15 || lastT < 1) {
+      if (abs(curT - lastT) < 15 || lastT < 1)
+      {
         SumT += curT;
         lastT = curT;
         CntT++;
       }
-     if (abs(curI - lastI) < 15 || lastI < 1) {
+      if (abs(curI - lastI) < 15 || lastI < 1)
+      {
         SumI += curI;
         lastI = curI;
         CntI++;
@@ -87,10 +85,11 @@ void updateTempSensor() {
 }
 
 
-
-float getTemp() {
-  float retVal = gInputTemp;
-  if (CntT >= 1) {
+float TempSensor::getTemp(float temp)
+{
+  float retVal = temp; //default to return
+  if (CntT >= 1)
+  {
     retVal = (SumT / CntT);
     SumT = 0.;
     CntT = 0;
@@ -100,9 +99,12 @@ float getTemp() {
 }
 
 
-float getItemp() {
+/* - - -  Not Needed - - - - -
+float TempSensor::getItemp()
+{
   float retVal = 0;
-  if (CntI >= 1) {
+  if (CntI >= 1)
+  {
     retVal = (SumI / CntI);
     SumI = 0.;
     CntI = 0;
@@ -110,5 +112,8 @@ float getItemp() {
 
   return retVal;
 }
+- - - - - - - - - - */
+
+
 
 #endif

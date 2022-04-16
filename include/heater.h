@@ -1,18 +1,25 @@
 #ifndef ESPressiot_HEATER_H
 #define ESPressiot_HEATER_H
+#include "ESPressoMachineDefaults.h"
+
+#ifndef HEAT_RELAY_PIN
+  #define HEAT_RELAY_PIN 13
+#endif
+
+#ifndef HEATER_INTERVAL
+    #define HEATER_INTERVAL 1000
+#endif
 
 
-
-
-
-class HEATER {
+class Heater {
     public:
-        HEATER(int, unsigned long, bool);  //constructor 
+        Heater(int, unsigned long, bool);  //constructor 
 
                                 //1st argument is the GPIO pin that drives the relais
                                 //2nd argument the intervall (ms) by which the heater will be polled (default 1000)
-                                //3rd agrument true if in simulation mode (Default false
+                                //3rd agrument true if in simulation mode (Default false)
  
+        Heater();   
         void setHeatPowerPercentage(float);
         float getHeatCycles();
         void updateHeater(unsigned long); // argument: time_now
@@ -27,6 +34,7 @@ class HEATER {
         unsigned long heaterInterval;
         unsigned long heatCurrentTime, heatLastTime;
         void turnHeatElementOnOff(bool);
+        void init(int,unsigned long, bool);
 
 
 };

@@ -1,9 +1,20 @@
 
 
 #include <config.h>
-#include <ESPressiot.h>
+#include <ESPressoMachine.h>
+#include <Arduino.h>
 
-bool prepareFS() {
+EspressoConfig::EspressoConfig(){
+ resetConfig();
+ ptargetTemp=&targetTemp;
+}
+
+EspressoConfig::~EspressoConfig(){
+  Serial.println("Deleteing an instance of EspressoConfig");
+  delete ptargetTemp;
+}
+
+bool EspressoConfig::prepareFS() {
   
   if (!SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED)) {
     Serial.println("Failed to mount file system");
@@ -12,14 +23,14 @@ bool prepareFS() {
   return true;
 }
 
-bool loadConfig() {
+bool EspressoConfig::loadConfig() {
   File configFile = SPIFFS.open("/config.json", "r");
   if (!configFile) {
     Serial.println("Failed to open config file");
     return false;
   }
 
-  DynamicJsonDocument jsonDocument(BUF_SIZE);
+  DynamicJsonDocument jsonDocument(CONFIG_BUF_SIZE);
   ReadLoggingStream loggingStream(configFile, Serial);
 
   DeserializationError parsingError = deserializeJson(jsonDocument, loggingStream);
@@ -29,21 +40,21 @@ bool loadConfig() {
     return false;
   }
 
-  gTargetTemp = jsonDocument["tset"];
-  gOvershoot = jsonDocument["tband"];
-  gP = jsonDocument["P"], gI = jsonDocument["I"], gD = jsonDocument["D"];
-  gaP = jsonDocument["aP"], gaI = jsonDocument["aI"], gaD = jsonDocument["aD"];
-  gEqPwr = jsonDocument["Ep"];
+  targetTemp = jsonDocument["tset"];
+  overShoot = jsonDocument["tband"];
+  nearTarget.P = jsonDocument["P"], nearTarget.I = jsonDocument["I"], nearTarget.D = jsonDocument["D"];
+  awayTarget.P = jsonDocument["aP"], awayTarget.I = jsonDocument["aI"], awayTarget.D = jsonDocument["aD"];
+  eqPwr = jsonDocument["Ep"];
 
   return true;
 }
 
-bool saveConfig() {
-  DynamicJsonDocument jsonDocument(BUF_SIZE);
-  jsonDocument["tset"] = gTargetTemp;  jsonDocument["tband"] = gOvershoot;
-  jsonDocument["P"] = gP, jsonDocument["I"] = gI, jsonDocument["D"] = gD;
-  jsonDocument["aP"] = gaP, jsonDocument["aI"] = gaI, jsonDocument["aD"] = gaD;
-  jsonDocument["Ep"] = gEqPwr;
+bool EspressoConfig::saveConfig() {
+  DynamicJsonDocument jsonDocument(CONFIG_BUF_SIZE);
+  jsonDocument["tset"] = targetTemp;  jsonDocument["tband"] = overShoot;
+  jsonDocument["P"] = nearTarget.P, jsonDocument["I"] = nearTarget.I, jsonDocument["D"] = nearTarget.D;
+  jsonDocument["aP"] = awayTarget.P, jsonDocument["aI"] = awayTarget.I, jsonDocument["aD"] = awayTarget.D;
+  jsonDocument["Ep"] = eqPwr;
 
   File configFile = SPIFFS.open("/config.json", "w");
   if (!configFile) {
@@ -65,10 +76,16 @@ bool saveConfig() {
   return true;
 }
 
-void resetConfig() {
-  gP = S_P; gI = S_I; gD = S_D;
-  gaP = S_aP; gaI = S_aI; gaD = S_aD;
-  gTargetTemp = S_TSET;
-  gOvershoot = S_TBAND;
-  gEqPwr = EQUILIBRIUM_POWER;
+
+void EspressoConfig::resetConfig(){
+   nearTarget=(PIDval){.P=S_P,.I=S_I,.D=S_D};
+   awayTarget=(PIDval){.P=S_aP,.I=S_aI,.D=S_aD};  
+   targetTemp=S_TSET;
+   temperatureBand=S_TBAND;
+   eqPwr=EQUILIBRIUM_POWER;
+   mxPwr=MAX_POWER;
+   overShoot=false;
+   pidInt=PID_INTERVAL;
+   sensorSampleInterval=MAX31855_SMP_TIME; ///<=== TODO
+
 }
