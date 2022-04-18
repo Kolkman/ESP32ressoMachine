@@ -20,13 +20,9 @@
 #include "mqttinterface.h"
 #include "pidtuner.h"
 
-ESPressoMachine myRancilio;
-// HEATER heaterDriver(HEAT_RELAY_PIN,HEATER_INTERVAL,false);
+ESPressoMachine  myRancilio;
 
-/////////////////////////////////////////////////
-// global variables (all declared in ESPressiot)
 
-int gButtonState = 0;
 uint8_t mac[6];
 
 void setup()
@@ -40,6 +36,8 @@ void setup()
     Serial.println(")");
     delay(100);
   }
+
+
 
   Serial.println("Mounting SPIFFS...");
   if (!myRancilio.myConfig->prepareFS())
@@ -90,6 +88,7 @@ void setup()
     Serial.print("Error connection to AP after ");
     Serial.print(MAX_CONNECTION_RETRIES);
     Serial.println(" retries.");
+    throw("Could not connect to WIFI");
   }
 
   Serial.println("");

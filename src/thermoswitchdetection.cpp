@@ -12,6 +12,8 @@
 
 unsigned long lastSwitchTime;
 
+int gButtonState = 0; 
+
 void setupSwitch() {
   pinMode(SWITCH_GPIO, INPUT);
 }

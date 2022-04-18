@@ -27,6 +27,7 @@ void Heater::init(int pin, unsigned long i, bool mode)
   gpioPin=pin;
   simmulationMode=mode;
   if(! simmulationMode){
+    Serial.println("Setting up heater on pin "+String(pin));
     pinMode(pin , OUTPUT);
   }
 
@@ -39,8 +40,8 @@ unsigned long Heater::getHeaterInterval(){
   return heaterInterval;
 }
 
-void Heater::updateHeater(unsigned long t) {
-  heatCurrentTime =  t;
+void Heater::updateHeater() {
+  heatCurrentTime =  millis();
 
   if (heatCurrentTime - heatLastTime >=  heaterInterval or heatLastTime > heatCurrentTime) { //second statement prevents overflow errors
     // begin cycle
@@ -71,8 +72,11 @@ float Heater::getHeatCycles() {
 }
 
 void Heater::turnHeatElementOnOff(boolean on) {
-  digitalWrite(gpioPin, on); //turn pin high
+  digitalWrite(gpioPin, on); //turn on/offpin high
   heaterState = on;
+  #ifdef DEBUG
+  if(on) Serial.print("+"); else Serial.print("-");
+  #endif
 }
 
 // End Heater Control

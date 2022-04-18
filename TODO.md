@@ -7,3 +7,5 @@
 * The simmulation code has not been integratd or tested. Behavior is unpredicted.
 * The release needs to be complimented with README files and some description of the project, including motivations for changing this code.
 * More and better error/bounds checking. At this point **DO NOT RUN ON NETWORKS WITH UNTRUSTED ENTITIES**
+* buttonstate (thermoswitchdetection.cpp) is not yet integrated
+* Tuning still needs to be done

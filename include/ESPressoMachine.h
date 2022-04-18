@@ -67,6 +67,7 @@ public:
   bool tuning;
   bool poweroffMode;
   bool externalControlMode;
+  int buttonState;
 
 private:
   void updatePIDSettings();

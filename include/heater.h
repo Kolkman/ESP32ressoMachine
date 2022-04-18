@@ -22,7 +22,7 @@ class Heater {
         Heater();   
         void setHeatPowerPercentage(float);
         float getHeatCycles();
-        void updateHeater(unsigned long); // argument: time_now
+        void updateHeater(); 
         void setHeaterInterval(unsigned long);
         unsigned long getHeaterInterval();
 

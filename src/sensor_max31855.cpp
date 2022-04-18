@@ -10,22 +10,21 @@
 #include <SPI.h>
 #include "sensor_max31855.h"
 
-TempSensor::TempSensor() : Adafruit_MAX31855(SENSOR_MAX_CLK, SENSOR_MAX_CS, SENSOR_MAX_DO){
+#undef DEBUG
 
-lastT = 0.0;
-SumT = 0.0;
-lastI = 0.0;
-SumI = 0.0;
+TempSensor::TempSensor() : Adafruit_MAX31855(SENSOR_MAX_CLK, SENSOR_MAX_CS, SENSOR_MAX_DO)
+{
 
-lastErr = 0.0;
-CntT = 0;
-CntI = 0;
-lastSensTime=0;
+  lastT = 0.0;
+  SumT = 0.0;
+  lastI = 0.0;
+  SumI = 0.0;
 
-
+  lastErr = 0.0;
+  CntT = 0;
+  CntI = 0;
+  lastSensTime = 0;
 }
-
-
 
 void TempSensor::setupSensor()
 {
@@ -36,14 +35,40 @@ void TempSensor::setupSensor()
   Serial.println("MAX31855 test");
   // wait for MAX chip to stabilize
   delay(500);
-  Serial.print("Initializing sensor...");
+  Serial.println("Initializing sensor...");
   if (!begin())
   {
     Serial.println("ERROR.");
     while (1)
       delay(10);
   }
-  Serial.println("DONE.");
+  Serial.print("Measuring initial temperature");
+
+  {
+    int x = 0;
+    double t = 0;
+    for (int i = 0; i < 5; i++)
+    {
+
+      double c = readCelsius();
+      if (isnan(c))
+      {
+        Serial.println("ThermoCouple Error");
+      }
+      else
+      {
+        t += c;
+        x++;
+      }
+      Serial.print(".");
+      sleep(1);
+    }
+    Serial.println();
+    lastT = t / x;
+    Serial.println("Initial temperature: " + String(lastT));
+    if (x == 0)
+      throw("ThermoCoupleFail");
+  }
 }
 
 void TempSensor::updateTempSensor(double sensorSampleInterval)
@@ -53,11 +78,11 @@ void TempSensor::updateTempSensor(double sensorSampleInterval)
 
   if ((max(time_now, lastSensTime) - min(time_now, lastSensTime)) >= sensorSampleInterval)
   {
-    double i = readInternal();
+   double i = readInternal();  
     double c = readCelsius();
     if (isnan(c) || isnan(i))
     {
-      Serial.println("Could not get read temperature, Something wrong with thermocouple!");
+      Serial.println("ThermoCouple Error");
     }
     else
     {
@@ -66,38 +91,45 @@ void TempSensor::updateTempSensor(double sensorSampleInterval)
       // very simple selection of noise hits/invalid values
       // the weed-out vallue is rather high, to low will cause runnaway
       // heating cycles.
-      if (abs(curT - lastT) < 15 || lastT < 1)
+      if (abs(curT - lastT) < 15)
       {
         SumT += curT;
         lastT = curT;
         CntT++;
       }
-      if (abs(curI - lastI) < 15 || lastI < 1)
-      {
-        SumI += curI;
-        lastI = curI;
-        CntI++;
-      }
+      
+        if (abs(curI - lastI) < 15 || lastI < 1)
+        {
+          SumI += curI;
+          lastI = curI;
+          CntI++;
+        }
 
       lastSensTime = millis();
     }
   }
 }
 
-
 float TempSensor::getTemp(float temp)
 {
-  float retVal = temp; //default to return
+  float retVal = temp; // default to return
   if (CntT >= 1)
   {
     retVal = (SumT / CntT);
     SumT = 0.;
     CntT = 0;
   }
-
+  else
+  {
+#ifdef DEBUG
+    Serial.println("No new temp measure");
+#endif
+  }
+#ifdef DEBUG
+  Serial.println("old/ret: " + String(temp)+"," + String(retVal));
+#endif
   return retVal;
 }
-
 
 /* - - -  Not Needed - - - - -
 float TempSensor::getItemp()
@@ -113,7 +145,5 @@ float TempSensor::getItemp()
   return retVal;
 }
 - - - - - - - - - - */
-
-
 
 #endif
