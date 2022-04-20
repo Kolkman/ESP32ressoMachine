@@ -31,7 +31,6 @@ PidTuner::PidTuner(ESPressoMachine *mach)
 bool PidTuner::tuning_on()
 {
   tune_time = 0;
-  TuneStep = 0;
   tune_count = 0;
   UpperCnt = 0;
   LowerCnt = 0;

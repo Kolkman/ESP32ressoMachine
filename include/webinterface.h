@@ -40,6 +40,9 @@ private:
     void handlePidOff();
     void handleTuningMode();
     void handleReset();
+    void handleApiStatus();
+    void handleApiFirmware();   
+    void handleCSS();
 };
 
 #endif

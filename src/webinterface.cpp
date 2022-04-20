@@ -10,6 +10,7 @@
 
 #include "webinterface.h"
 #include "config.h"
+#include <Arduino.h>
 
 #ifdef ENABLE_HTTP
 
@@ -51,45 +52,13 @@ void WebInterface::handleNotFound()
 
 void WebInterface::handleRoot()
 {
-  String powerOnColor = String(ONCOLOR);
-  String powerOffColor = String(OFFCOLOR);
-  String pidModeColor = "98B4D4";
-  String extModeColor = "DCDCDC";
-
-  if (myMachine->poweroffMode)
+ File dataFile = SPIFFS.open("/index.html", "r");
+  if (dataFile)
   {
-    powerOnColor = String(OFFCOLOR);
-    powerOffColor = String(ONCOLOR);
+    server->streamFile(dataFile, "text/html");
   }
+  dataFile.close();
 
-  if (myMachine->externalControlMode)
-  {
-    extModeColor = pidModeColor;
-    pidModeColor = "DCDCDC";
-  }
-
-  String message = "<head><meta http-equiv=\"refresh\" content=\"2\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n<title>EspressIoT</title></head><h1>EspressIoT</h1>\n";
-  message += "<hr/>";
-  message += "<h2>Status<br/>\n";
-  message += "<h3>Measured Temperature: " + String(myMachine->inputTemp) + "<br/>\n";
-  message += "Target Temperature: " + String(myMachine->myConfig->targetTemp) + "<br/>\n";
-  message += "Heater Power: " + String(myMachine->outputPwr) + "</h3>\n";
-  message += "<hr/>";
-  message += "<h2> Operational Mode (PID / external trigger) </h2>";
-  message += "<a href=\"./pid_on\"><button style=\"background-color:#" + pidModeColor + "\">PID</button></a>\n";
-  message += "<a href=\"./pid_off\"><button style=\"background-color:#" + extModeColor + "\">external trigger</button></a><br/>\n";
-  message += "<hr/>\n";
-  // if (poweroffMode) message += "<a href=\"./toggleheater\"><button style=\"background-color:#FF0000\">Toggle Heater</button></a><br/>\n";
-  // else message += "<a href=\"./toggleheater\"><button style=\"background-color:#00FF00\">Toggle Heater</button></a><br/>\n";
-  message += "<a href=\"./heater_on\"><button style=\"background-color:#" + powerOnColor + "\">Turn Heater On</button></a>\n";
-  message += "<a href=\"./heater_off\"><button style=\"background-color:#" + powerOffColor + "\">Turn Heater Off</button></a><br/>\n";
-  message += "<a href=\"./config\"><button>Settings</button></a><br/>\n";
-  message += "<hr/>\n";
-  message += "<font size=\"-2\">Firmware: " + String(CURRENTFIRMWARE) + "-" + String(F(__DATE__)) + ":" + String(F(__TIME__)) + "</font><br/>\n";
-
-  message += "<hr/>\n";
-
-  server->send(200, "text/html", message);
 }
 
 void WebInterface::handleConfig()
@@ -142,7 +111,7 @@ void WebInterface::handleConfig()
   message += "<a href=\"./update\"><button>Update Firmware</button></a><br/>\n";
   message += "<a href=\"./reset\"><button>Reset Device</button></a><br/>\n";
   message += "<hr/>\n";
-  message += "<form action=\"set_tuning\">\nTuning Threshold (°C):<br>\n";
+  message += "<form action=\"set_tuning\">\nTuning Threshold (&deg;C):<br>\n";
   message += "<input type=\"text\" name=\"tunethres\" value=\"" + String(myMachine->myTuner->getTuneThres()) + "\"><br>\n";
   message += "Tuning Power (heater)<br>\n";
   message += "<input type=\"text\" name=\"tunestep\" value=\"" + String(myMachine->myTuner->getTuneStep()) + "\"><br><br>\n";
@@ -168,8 +137,8 @@ void WebInterface::handleTuningStats()
   message += "Total power-on-cycles: " + String(myMachine->myTuner->getTuneCount()) + "<br/>\n";
   message += "Time elapsed: " + String(myMachine->myTuner->timeElapsed()) + " ms<br/>\n";
   message += "Average Period: " + String(myMachine->myTuner->averagePeriod()) + " ms<br/>\n";
-  message += "Upper Average: " + String(myMachine->myTuner->upperAverage()) + " °C<br/>\n";
-  message += "Lower Average: " + String(myMachine->myTuner->lowerAverage()) + " °C<br/>\n";
+  message += "Upper Average: " + String(myMachine->myTuner->upperAverage()) + " &deg;C<br/>\n";
+  message += "Lower Average: " + String(myMachine->myTuner->lowerAverage()) + " &deg;C<br/>\n";
   message += "<hr/>\n";
   message += "<a href=\"./tuningmode\"><button style=\"background-color:#7070EE\">Finish PID Tuning Mode</button></a><br/>\n";
   message += "<hr/>\n";
@@ -356,26 +325,49 @@ void WebInterface::handlePidOff()
   server->send(200, "text/html", message);
 }
 
+void WebInterface::handleCSS()
+{
+  File dataFile = SPIFFS.open("/ESPresso.css", "r");
+  if (dataFile)
+  {
+    server->streamFile(dataFile, "text/css");
+  }
+  dataFile.close();
+}
+
 void WebInterface::handleTuningMode()
 {
   String message = "<head><meta http-equiv=\"refresh\" content=\"2;url=/config\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><title>EspressIoT</title></head>";
   if (!myMachine->tuning)
   {
-    myMachine->myTuner->tuning_on();
+    myMachine->tuning = myMachine->myTuner->tuning_on();
+
     message += "<h1> Started ! </h1>";
   }
   else
   {
     message = "<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><title>EspressIoT</title></head>";
-    myMachine->myTuner->tuning_off();
+    myMachine->tuning = myMachine->myTuner->tuning_off();
     message += "<h1> Finished and new parameters calculated ! </h1>";
     message += "Total power-on-cycles: " + String(myMachine->myTuner->getTuneCount()) + "<br/>\n";
     message += "Average Period: " + String(myMachine->myTuner->averagePeriod()) + " ms<br/>\n";
-    message += "Average Peak-To-Peak Temperature: " + String(myMachine->myTuner->averagePeakToPeak()) + " °C<br/>\n";
+    message += "Average Peak-To-Peak Temperature: " + String(myMachine->myTuner->averagePeakToPeak()) + " &deg;C<br/>\n";
     message += "<a href=\"/config\"><button>Back</button></a><br/>\n";
   }
 
   server->send(200, "text/html", message);
+}
+
+void WebInterface::handleApiStatus()
+{
+  String message = myMachine->statusAsJson();
+  server->send(200, "application/json", message);
+}
+
+void WebInterface::handleApiFirmware()
+{
+  String message = "{\"version\": \"" + String(CURRENTFIRMWARE) + "-" + String(F(__DATE__)) + ":" + String(F(__TIME__)) + "\"}";
+  server->send(200, "application/json", message);
 }
 
 void WebInterface::handleReset()
@@ -413,7 +405,9 @@ void WebInterface::setupWebSrv(ESPressoMachine *machine)
   server->on("/pid_off", std::bind(&WebInterface::handlePidOff, this));
   server->onNotFound(std::bind(&WebInterface::handleNotFound, this));
   server->on("/reset", std::bind(&WebInterface::handleReset, this));
-
+  server->on("/api/v1/status", std::bind(&WebInterface::handleApiStatus, this));
+  server->on("/api/v1/firmware", std::bind(&WebInterface::handleApiFirmware, this));
+  server->on("/ESPresso.css", std::bind(&WebInterface::handleCSS, this));
   server->begin();
   Serial.println("HTTP server started");
 }

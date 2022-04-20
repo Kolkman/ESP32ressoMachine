@@ -1,0 +1,144 @@
+div.State {
+width:80%;
+margin:auto;
+}
+div.header{
+    padding-top: 2.5ex;
+    font-size: x-large;
+
+}
+
+div.statusLine {
+    width:60%;
+    margin-right:auto;
+}
+
+div.statusLine div {
+    display: inline-block;  
+}
+div.statusLine div.measure {
+    width: 40%;
+    font-size:larger;
+    text-align: left;
+    
+}
+div.statusLine div.value {
+    width: 40%;
+    font-size:larger;
+    margin-left:auto;
+    text-align: right;
+}
+
+h1 {
+    text-align: center;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+   color: cornsilk;
+   background-color: #8e2d18;
+   font-size: xx-large ;
+   padding: 10px;
+   letter-spacing: .4em;
+   margin-bottom: 1em;
+
+}
+
+#firmware {
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    color: #3366cc;
+    font-weight: normal;
+    font-size: xx-small;
+    color:#8e2d18;
+    margin-bottom: 1em;
+    text-transform: lowercase;  
+    border-top:1px solid;
+    border-top-color:#3366cc;    /* Red */
+}
+.body {
+ font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+div.PID {
+    width: 80%;
+    margin: auto;
+}
+
+div.buttonwrapper div  {
+    display: inline-block;
+    color:cornsilk;
+    text-align: center;
+    border-color: black;
+    border: solid #000;
+    margin: 4px;
+    padding: 3px;
+    border-width: 1 1px;
+    border-radius: 12px;
+    width: 40%;
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+}
+
+div.buttonwrapper  a {
+    color: cornsilk;
+    text-decoration: none;
+}
+div.buttonwrapper a:visited {
+    color: cornsilk;
+}
+
+div.buttonOn{
+    background-color: #8e2d18;
+}
+div.buttonOff {
+    background-color: #555259;
+}
+
+div#pidMode1.button{
+    background-color: #555259;
+}
+div#extcontrolMode1.button {
+    background-color: #8e2d18;
+}
+
+div.powerswitch {
+    width: 80%;
+    margin: auto;
+}
+
+div#heater_on_0.button{
+    background-color: #8e2d18;
+}
+div#heater_on_1.button {
+    background-color: #555259;
+}
+
+div#heater_off_0.button {
+    background-color: #555259;
+}
+div#heater_off_1.button {
+    background-color: #8e2d18;
+}
+
+
+.Settings {
+    border-top:1px solid;
+    margin-top:5px;
+  
+    padding-top:15px;
+    padding-bottom: 15px;
+}
+
+a#settingbutton {
+    color:cornsilk;
+    text-align: center;
+    border-color: black;
+    border: solid #000;
+    margin: 4px;
+    padding: 3px;
+    border-width: 1 1px;
+    border-radius: 12px;
+    padding-left: 30px;
+    padding-right: 30px;
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+    background-color: #6d18045d;
+
+
+
+}

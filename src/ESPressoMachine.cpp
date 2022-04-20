@@ -94,7 +94,7 @@ String ESPressoMachine::statusAsJson()
     statusObject["externalControlMode"] = externalControlMode;
     statusObject["externalButtonState"] = buttonState;
     statusObject["PowerOffMode"] = poweroffMode;
-
+    statusObject["tuning"] = tuning;
     serializeJson(statusObject, outputString);
     return outputString;
 }
@@ -126,7 +126,7 @@ bool ESPressoMachine::heatLoop()
         }
         else if (tuning == true)
         {
-            // tuning_loop();  //<<< ==== TODO
+            myTuner->tuning_loop();  //<<< ==== TODO
         }
         else if (myPID->Compute() == true)
         {

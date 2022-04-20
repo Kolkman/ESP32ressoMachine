@@ -1,0 +1,134 @@
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="ESPresso.css" media="all" />
+    <script>
+
+
+
+        function statusUpdate() {
+
+            fetch('api/v1/status')
+                .then(function (response) {
+                    return response.json()
+                })
+                .then(function (data) {
+                    parseState(data);
+                })
+                .catch(function (err) {
+                    console.log('error' + err);
+                });
+        }
+
+        statusUpdate();
+        setInterval(statusUpdate, 2000);
+
+        fetch('api/v1/firmware')
+            .then(function (response) {
+                return response.json()
+            })
+            .then(function (data) {
+                parseFirmware(data);
+            })
+            .catch(function (err) {
+                console.log('error' + err);
+            });
+
+
+        function buildStatusLine(measure, value, verbatim) {
+            divStatusLine = document.createElement("div");
+            var divStatusMeasure = document.createElement("div");
+            var divStatusValue = document.createElement("div");
+            divStatusLine.setAttribute("class", "statusLine");
+
+            divStatusMeasure.setAttribute("class", "measure");
+            divStatusValue.setAttribute("class", "value");
+
+            divStatusLine.setAttribute("id", measure)
+            divStatusMeasure.setAttribute("id", measure);
+            divStatusValue.setAttribute("id", measure)
+
+            divStatusMeasure.innerHTML = verbatim;
+            divStatusLine.appendChild(divStatusMeasure);
+            divStatusValue.innerHTML = value;
+            divStatusLine.appendChild(divStatusValue);
+            return divStatusLine;
+
+        }
+        function parseState(data) {
+            var machineState = document.getElementById("machineState");
+            while (machineState.firstChild) {
+                machineState.removeChild(machineState.firstChild);
+            }
+            machineState.setAttribute("class", "State");
+            machineState.setAttribute("class", "State");
+            machineState.appendChild(buildStatusLine("measuredTemperature", data.measuredTemperature.toFixed(2) + "&deg;C", "Measured Temperature"));
+            machineState.appendChild(buildStatusLine("targetTemperature", data.targetTemperature.toFixed(2) + "&deg;C", "Target Temperature"));
+            machineState.appendChild(buildStatusLine("heaterPower", data.heaterPower.toFixed(0), "Heater Power"));
+            var heaterOnButton = document.getElementById("heater_on");
+            var heaterOffButton = document.getElementById("heater_off")
+            if (data.PowerOffMode) {
+                heaterOnButton.setAttribute("class", "buttonOff");
+                heaterOffButton.setAttribute("class", "buttonOn");
+
+            } else {
+                heaterOnButton.setAttribute("class", "buttonOn");
+                heaterOffButton.setAttribute("class", "buttonOff");
+            }
+
+            var pidModeButton = document.getElementById("pidMode");
+            var extCtrlButton = document.getElementById("extcontrolMode")
+            if (data.externalControlMode) {
+                pidModeButton.setAttribute("class", "buttonOff");
+                extCtrlButton.setAttribute("class", "buttonOn");
+
+            } else {
+                pidModeButton.setAttribute("class", "buttonOn");
+                extCtrlButton.setAttribute("class", "buttonOff");
+            }
+
+
+
+
+
+        }
+        function parseFirmware(data) {
+            var divFirmware = document.getElementById("firmware")
+            divFirmware.innerHTML = "Firmware:" + data.version;
+        }
+
+
+    </script>
+</head>
+
+<body>
+    <h1>ESPresso Machine</h1>
+
+    <div id="machineState"></div>
+
+    <div class="PID">
+        <div class="header" id="PIDmode"> Operational Mode (PID / external trigger) </div>
+        <div class="buttonwrapper">
+            <div id="pidMode"><a href="./pid_on">PID</a></div>
+            <div id="extcontrolMode"><a href="./pid_off">External Trigger</a></div>
+        </div>
+    </div>
+    <div class="powerswitch">
+        <div class="header" id="heater">Heater Power</div>
+        <div class="buttonwrapper">
+            <div id="heater_on"> <a href="./heater_on">Turn Heater On</a></div>
+            <div id="heater_off"> <a href="./heater_off">Turn Heater Off</a></div>
+        </div>
+    </div>
+    <div class=Settings><a href="./config" id="settingbutton">Settings</a></div>
+
+    <div id="firmware"></div>
+
+
+
+
+
+</body>
+
+</html>
