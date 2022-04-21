@@ -45,7 +45,7 @@
 #define COLDSTART_P 15   // At 20C that is approx full power
 #define COLDSTART_MAX_POWER 1000 // play with these vallues if the coldstart starts to slow or overshoots to easy.
 
-
+#define MAX_COOL 0.025 // 1.5 deg/min
 
 // Compiler options
 // options for special modules

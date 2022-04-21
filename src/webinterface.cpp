@@ -97,7 +97,8 @@ void WebInterface::handleConfig()
   message += "Pid Interval <input type=\"text\" name=\"PidInterval\" value=\"" + String(myMachine->myConfig->pidInt) + "\"><br><br>\n";
   message += "Heater Interval <input type=\"text\" name=\"Heater Interval\" value=\"" + String(myMachine->myHeater->getHeaterInterval()) + "\"><br><br>\n";
   message += "Sensor Sample Interval Sample <input type=\"text\" name=\"SensorSampleInterval\" value=\"" + String(myMachine->myConfig->sensorSampleInterval) + "\"><br><br>\n";
-#endif
+  message += "Max Cool (natural cooling rate) <input type=\"text\" name=\"maxCool\" value=\"" + String(myMachine->myConfig->maxCool) + "\"><br><br>\n";
+ #endif
   message += "<input type=\"submit\" value=\"Submit\">\n</form>";
 
   message += "<hr/>";
@@ -222,6 +223,11 @@ void WebInterface::handleSetConfig()
       myMachine->myConfig->sensorSampleInterval = ((server->arg(i)).toInt());
       // reconfig not needed
     }
+     else if (server->argName(i) == "maxCool")
+     {
+      message += "new Max Cool: " + server->arg(i) + "<br/>\n";
+      myMachine->myConfig->maxCool = ((server->arg(i)).toDouble());
+     }
 
 #endif
   }

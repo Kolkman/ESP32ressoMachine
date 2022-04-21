@@ -66,9 +66,9 @@ void ESPressoMachine::manageTemp()
     inputTemp = mySensor->getTemp(oldTemp);
 
     if (!(abs(myConfig->targetTemp - inputTemp) >= myConfig->temperatureBand) &&
-        ((oldTemp - inputTemp) > (0.050 * myConfig->pidInt / 1000)))
+        ((oldTemp - inputTemp) > (myConfig->maxCool * myConfig->pidInt / 1000)))
     {
-        inputTemp = oldTemp - 0.050 * myConfig->pidInt / 1000;
+        inputTemp = oldTemp - myConfig->maxCool * myConfig->pidInt / 1000;
         oldTemp = inputTemp;
 #ifdef DEBUG
         Serial.println("Smoothing Downward");

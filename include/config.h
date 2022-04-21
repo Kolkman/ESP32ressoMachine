@@ -5,6 +5,7 @@
 #include <SPIFFS.h>
 #include <Arduino.h>
 #include <ArduinoJson.h>
+#include "ESPressoMachineDefaults.h"
 
 #define FORMAT_SPIFFS_IF_FAILED true
 #define CONFIG_BUF_SIZE 2048
@@ -50,6 +51,11 @@
 #define HEATER_INTERVAL 100
 #endif
 
+
+#ifndef MAX_COOL
+#define MAX_COOL 0.025 // 1.5 deg/min
+#endif
+
 // Struct to store pid values
 struct PIDval
 {
@@ -74,6 +80,7 @@ public:
     double temperatureBand;
     double eqPwr;
     double mxPwr;
+    double maxCool;
     unsigned int sensorSampleInterval;
     unsigned int heaterInterval;
     int pidInt;

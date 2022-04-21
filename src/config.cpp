@@ -54,7 +54,7 @@ bool EspressoConfig::loadConfig()
   awayTarget.P = jsonDocument["aP"], awayTarget.I = jsonDocument["aI"], awayTarget.D = jsonDocument["aD"];
   eqPwr = jsonDocument["Ep"], heaterInterval = jsonDocument["hi"], pidInt = jsonDocument["pidi"],
   sensorSampleInterval = jsonDocument["ssi"];
-
+  maxCool= jsonDocument["maxcool"];
   return true;
 }
 
@@ -67,7 +67,7 @@ bool EspressoConfig::saveConfig()
   jsonDocument["aP"] = awayTarget.P, jsonDocument["aI"] = awayTarget.I, jsonDocument["aD"] = awayTarget.D;
   jsonDocument["Ep"] = eqPwr, jsonDocument["hi"] = heaterInterval, jsonDocument["pidi"] = pidInt,
   jsonDocument["ssi"] = sensorSampleInterval;
-
+  jsonDocument["maxcool"] = maxCool;  
   File configFile = SPIFFS.open("/config.json", "w");
   if (!configFile)
   {
@@ -100,5 +100,6 @@ void EspressoConfig::resetConfig()
   mxPwr = MAX_POWER;
   pidInt = PID_INTERVAL;
   heaterInterval = HEATER_INTERVAL;
+  maxCool = MAX_COOL;
   sensorSampleInterval = MAX31855_SMP_TIME; ///<=== TODO
 }
