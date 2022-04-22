@@ -5,19 +5,14 @@
 #include <WebServer.h>
 #include <HTTPUpdateServer.h>
 
-
-
-
-
-
 class WebInterface
 {
 public:
-
     WebInterface();
-    ~ WebInterface();
+    ~WebInterface();
     void setupWebSrv(ESPressoMachine *);
     void loopWebSrv();
+
 private:
     ESPressoMachine *myMachine;
     WebServer *server;
@@ -41,7 +36,8 @@ private:
     void handleTuningMode();
     void handleReset();
     void handleApiStatus();
-    void handleApiFirmware();   
+    void handleApiFirmware();
+    void handleApiSet();
     void handleCSS();
 };
 

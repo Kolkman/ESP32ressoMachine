@@ -65,7 +65,7 @@ public:
   double inputTemp;
   double outputTemp;
   bool tuning;
-  bool poweroffMode;
+  bool powerOffMode;
   bool externalControlMode;
   int buttonState;
 

@@ -5,7 +5,7 @@
     <link rel="stylesheet" type="text/css" href="ESPresso.css" media="all" />
     <script>
 
-
+        var powerState = new Boolean(false)
 
         function statusUpdate() {
 
@@ -67,14 +67,17 @@
             machineState.appendChild(buildStatusLine("targetTemperature", data.targetTemperature.toFixed(2) + "&deg;C", "Target Temperature"));
             machineState.appendChild(buildStatusLine("heaterPower", data.heaterPower.toFixed(0), "Heater Power"));
             var heaterOnButton = document.getElementById("heater_on");
-            var heaterOffButton = document.getElementById("heater_off")
-            if (data.PowerOffMode) {
+           // var heaterOffButton = document.getElementById("heater_off")
+            if (data.powerOffMode) {
                 heaterOnButton.setAttribute("class", "buttonOff");
-                heaterOffButton.setAttribute("class", "buttonOn");
-
+                //heaterOffButton.setAttribute("class", "buttonOn");
+                heaterOnButton.innerHTML="Turn On";
+                powerState = false;
             } else {
                 heaterOnButton.setAttribute("class", "buttonOn");
-                heaterOffButton.setAttribute("class", "buttonOff");
+                // heaterOffButton.setAttribute("class", "buttonOff");
+                heaterOnButton.innerHTML="Turn Off";
+                powerState = true;
             }
 
             var pidModeButton = document.getElementById("pidMode");
@@ -97,7 +100,17 @@
             var divFirmware = document.getElementById("firmware")
             divFirmware.innerHTML = "Firmware:" + data.version;
         }
+        function heater_on() {
+            var heaterOnButton = document.getElementById("heater_on");
+            heaterOnButton.setAttribute("class", "buttonPressed");
+            if (powerState) {
+                fetch('api/v1/set?powerOffMode=true');
+            } else {
+                fetch('api/v1/set?powerOffMode=false');
+            }
 
+        }
+        
 
     </script>
 </head>
@@ -117,8 +130,8 @@
     <div class="powerswitch">
         <div class="header" id="heater">Heater Power</div>
         <div class="buttonwrapper">
-            <div id="heater_on"> <a href="./heater_on">Turn Heater On</a></div>
-            <div id="heater_off"> <a href="./heater_off">Turn Heater Off</a></div>
+            <div id="heater_on" onclick="heater_on()"> Turn Heater Off</div>
+
         </div>
     </div>
     <div class=Settings><a href="./config" id="settingbutton">Settings</a></div>

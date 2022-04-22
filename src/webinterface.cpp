@@ -52,20 +52,19 @@ void WebInterface::handleNotFound()
 
 void WebInterface::handleRoot()
 {
- File dataFile = SPIFFS.open("/index.html", "r");
+  File dataFile = SPIFFS.open("/index.html", "r");
   if (dataFile)
   {
     server->streamFile(dataFile, "text/html");
   }
   dataFile.close();
-
 }
 
 void WebInterface::handleConfig()
 {
   String powerOnColor = String(ONCOLOR);
   String powerOffColor = String(OFFCOLOR);
-  if (myMachine->poweroffMode)
+  if (myMachine->powerOffMode)
   {
     powerOnColor = String(OFFCOLOR);
     powerOffColor = String(ONCOLOR);
@@ -97,8 +96,8 @@ void WebInterface::handleConfig()
   message += "Pid Interval <input type=\"text\" name=\"PidInterval\" value=\"" + String(myMachine->myConfig->pidInt) + "\"><br><br>\n";
   message += "Heater Interval <input type=\"text\" name=\"Heater Interval\" value=\"" + String(myMachine->myHeater->getHeaterInterval()) + "\"><br><br>\n";
   message += "Sensor Sample Interval Sample <input type=\"text\" name=\"SensorSampleInterval\" value=\"" + String(myMachine->myConfig->sensorSampleInterval) + "\"><br><br>\n";
-  message += "Max Cool (natural cooling rate) <input type=\"text\" name=\"maxCool\" value=\"" + String(myMachine->myConfig->maxCool) + "\"><br><br>\n";
- #endif
+  message += "Max Cool (natural cooling rate) <input type=\"text\" name=\"maxCool\" value=\"" + String(myMachine->myConfig->maxCool, 4) + "\"><br><br>\n";
+#endif
   message += "<input type=\"submit\" value=\"Submit\">\n</form>";
 
   message += "<hr/>";
@@ -223,11 +222,11 @@ void WebInterface::handleSetConfig()
       myMachine->myConfig->sensorSampleInterval = ((server->arg(i)).toInt());
       // reconfig not needed
     }
-     else if (server->argName(i) == "maxCool")
-     {
+    else if (server->argName(i) == "maxCool")
+    {
       message += "new Max Cool: " + server->arg(i) + "<br/>\n";
       myMachine->myConfig->maxCool = ((server->arg(i)).toDouble());
-     }
+    }
 
 #endif
   }
@@ -293,7 +292,7 @@ void WebInterface::handleToggleHeater()
 {
   String message = "<head><meta http-equiv=\"refresh\" content=\"2;url=/\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><title>EspressIoT</title></head>";
   message += "<h1> Done ! </h1>";
-  myMachine->poweroffMode = (!myMachine->poweroffMode);
+  myMachine->powerOffMode = (!myMachine->powerOffMode);
   server->send(200, "text/html", message);
 }
 
@@ -301,7 +300,7 @@ void WebInterface::handleHeaterSwitch(boolean newMode)
 {
   String message = "<head><meta http-equiv=\"refresh\" content=\"2;url=/\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><title>EspressIoT</title></head>";
   message += "<h1> Done ! </h1>";
-  myMachine->poweroffMode = (newMode);
+  myMachine->powerOffMode = (newMode);
   server->send(200, "text/html", message);
 }
 
@@ -376,6 +375,126 @@ void WebInterface::handleApiFirmware()
   server->send(200, "application/json", message);
 }
 
+String addjson(bool &firstarg, String argument, String value)
+{
+  String msg = "";
+  if (!firstarg)
+    msg += ",";
+  else
+    firstarg = false;
+  msg += "\"" + argument + "\":" + value;
+  return msg;
+}
+
+void WebInterface::handleApiSet()
+{
+  bool reconf = false;
+  bool firstarg = true;
+
+  String message = "{";
+
+  for (uint8_t i = 0; i < server->args(); i++)
+  {
+    if (server->argName(i) == "tset")
+    {
+      message += addjson(firstarg, "tset", server->arg(i));
+      myMachine->myConfig->targetTemp = ((server->arg(i)).toDouble());
+    }
+    else if (server->argName(i) == "tband")
+    {
+      message += addjson(firstarg, "tband", server->arg(i));
+      myMachine->myConfig->temperatureBand = ((server->arg(i)).toDouble());
+    }
+    else if (server->argName(i) == "epwr")
+    {
+      message += addjson(firstarg, "EqPwr", server->arg(i));
+      myMachine->myConfig->eqPwr = ((server->arg(i)).toDouble());
+    }
+    else if (server->argName(i) == "pgain")
+    {
+      message += addjson(firstarg, "pgain", server->arg(i));
+      myMachine->myConfig->nearTarget.P = ((server->arg(i)).toDouble());
+      reconf = true;
+    }
+    else if (server->argName(i) == "igain")
+    {
+      message += addjson(firstarg, "igain", server->arg(i));
+      myMachine->myConfig->nearTarget.I = ((server->arg(i)).toDouble());
+      reconf = true;
+    }
+    else if (server->argName(i) == "dgain")
+    {
+      message += addjson(firstarg, "pgain", server->arg(i));
+      myMachine->myConfig->nearTarget.D = ((server->arg(i)).toDouble());
+      reconf = true;
+    }
+    else if (server->argName(i) == "apgain")
+    {
+      message += addjson(firstarg, "pgain", server->arg(i));
+      myMachine->myConfig->awayTarget.P = ((server->arg(i)).toDouble());
+      reconf = true;
+    }
+    else if (server->argName(i) == "aigain")
+    {
+      message += addjson(firstarg, "igain", server->arg(i));
+      myMachine->myConfig->awayTarget.I = ((server->arg(i)).toDouble());
+      reconf = true;
+    }
+    else if (server->argName(i) == "adgain")
+    {
+      message += addjson(firstarg, "pgain", server->arg(i));
+      myMachine->myConfig->awayTarget.D = ((server->arg(i)).toDouble());
+      reconf = true;
+    }
+    else if (server->argName(i) == "powerOffMode")
+    {
+      if (String("true").equalsIgnoreCase(server->arg(i)))
+      {
+        myMachine->powerOffMode = true;
+        message += addjson(firstarg, "powerOffMode", "true");
+      }
+      else
+      {
+        myMachine->powerOffMode = false;
+        message += addjson(firstarg, "powerOffMode", "false");
+      }
+    }
+
+#ifdef DEBUG
+    else if (server->argName(i) == "PidInterval")
+    {
+      message += addjson(firstarg, "PidInterval", server->arg(i));
+      myMachine->myConfig->pidInt = ((server->arg(i)).toInt());
+      reconf = true;
+    }
+    else if (server->argName(i) == "HeaterInterval")
+    {
+      message += addjson(firstarg, "HeaterInterval", server->arg(i));
+      myMachine->myConfig->heaterInterval = (abs((server->arg(i)).toInt()));
+      reconf = true;
+    }
+    else if (server->argName(i) == "SensorSampleInterval")
+    {
+      message += addjson(firstarg, "Sensor Sample Interval", server->arg(i));
+      myMachine->myConfig->sensorSampleInterval = ((server->arg(i)).toInt());
+      // reconfig not needed
+    }
+    else if (server->argName(i) == "maxCool")
+    {
+      message += addjson(firstarg, "Max Cool", server->arg(i));
+      myMachine->myConfig->maxCool = ((server->arg(i)).toDouble());
+    }
+
+#endif
+  }
+  if (reconf)
+  {
+    myMachine->reConfig(); // apply all settings
+  }
+  message += "}";
+  server->send(200, "application/json", message);
+}
+
 void WebInterface::handleReset()
 {
   String message = "<head><meta http-equiv=\"refresh\" content=\"2;url=/\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><title>EspressIoT</title></head>";
@@ -413,6 +532,7 @@ void WebInterface::setupWebSrv(ESPressoMachine *machine)
   server->on("/reset", std::bind(&WebInterface::handleReset, this));
   server->on("/api/v1/status", std::bind(&WebInterface::handleApiStatus, this));
   server->on("/api/v1/firmware", std::bind(&WebInterface::handleApiFirmware, this));
+  server->on("/api/v1/set", std::bind(&WebInterface::handleApiSet, this));
   server->on("/ESPresso.css", std::bind(&WebInterface::handleCSS, this));
   server->begin();
   Serial.println("HTTP server started");

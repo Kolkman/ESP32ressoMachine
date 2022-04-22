@@ -82,15 +82,15 @@ void MQTTInterface::MQTT_callback(char *topic, byte *payload, unsigned int lengt
   }
   if (jsonDocument["poweroffMode"])
   {
-    if (strcasecmp(jsonDocument["poweroffMode"], "true"))
-      myMachine->poweroffMode = true;
-    else if (strcasecmp(jsonDocument["poweroffMode"], "false"))
-      myMachine->poweroffMode = false;
+    if (strcasecmp(jsonDocument["powerOffMode"], "true"))
+      myMachine->powerOffMode = true;
+    else if (strcasecmp(jsonDocument["powerOffMode"], "false"))
+      myMachine->powerOffMode = false;
     else /// I know this is not very comprehensive checking.
-      myMachine->poweroffMode = false;
+      myMachine->powerOffMode = false;
 
-    Serial.print("poweroffMoade: ");
-    if (myMachine->poweroffMode)
+    Serial.print("powerOffMoade: ");
+    if (myMachine->powerOffMode)
       Serial.println("true");
     else
       Serial.println("false");

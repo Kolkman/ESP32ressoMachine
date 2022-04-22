@@ -93,7 +93,7 @@ String ESPressoMachine::statusAsJson()
     statusObject["heaterPower"] = outputPwr;
     statusObject["externalControlMode"] = externalControlMode;
     statusObject["externalButtonState"] = buttonState;
-    statusObject["PowerOffMode"] = poweroffMode;
+    statusObject["powerOffMode"] = powerOffMode;
     statusObject["tuning"] = tuning;
     serializeJson(statusObject, outputString);
     return outputString;
@@ -114,7 +114,7 @@ bool ESPressoMachine::heatLoop()
         manageTemp();   
 
         updatePIDSettings();
-        if (poweroffMode == true)
+        if (powerOffMode == true)
         {
             outputPwr = 0;
             myHeater->setHeatPowerPercentage(0);
