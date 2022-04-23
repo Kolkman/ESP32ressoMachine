@@ -15,6 +15,9 @@ This work is based on Roman's previous work with with IoT, MQTT and his small co
 
 Roman Schmit, some of the code is a literal copy of his, some of it is butchered. All good idea's are his, the errors introduced are mine.
 
+The webpages uses the gauge.min.js from https://canvas-gauges.com/
+And button.css by Ashley Watson-Nolan from htps://codepen.io/ashleynolan/pen/wBppKzt
+
 
 ## Dependencies
 
