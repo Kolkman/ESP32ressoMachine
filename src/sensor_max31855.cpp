@@ -61,8 +61,8 @@ void TempSensor::setupSensor()
         x++;
       }
       Serial.print(".");
-      sleep(1);
-    }
+      delay(100);
+    } 
     Serial.println();
     lastT = t / x;
     Serial.println("Initial temperature: " + String(lastT));
