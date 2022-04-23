@@ -1,37 +1,23 @@
-div.State {
-width:100%;
-margin:auto;
-}
-div.header{
-    padding-top: 2.5ex;
-    font-size: x-large;
-
-}
-
-div.statusLine {
-    width:80%;
+body{
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    background: linear-gradient(0deg, #8e2d18 0%, #626262 10%,  #361e1c 200%);
+    color:antiquewhite;
+   }
+   
+div.gauges {
+    width:100%;
     margin:auto;
 }
 
-div.statusLine div {
-    display: inline-block;  
+canvas{
+    display: block;
+    width: 300px;
+    margin: auto;
 }
-div.statusLine div.measure {
-    width: 40%;
-    font-size:larger;
-    text-align: left;
-    
-}
-div.statusLine div.value {
-    width: 40%;
-    font-size:larger;
-    text-align: center;
 
-}
 
 h1 {
     text-align: center;
-    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
    color: cornsilk;
    background-color: #8e2d18;
    font-size: xx-large ;
@@ -43,27 +29,36 @@ h1 {
 
 #firmware {
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-    color: #3366cc;
     font-weight: normal;
     font-size: xx-small;
-    color:#8e2d18;
+    color:#caa299;
     margin-bottom: 1em;
     text-transform: lowercase;  
+    padding-top:2ex;
     border-top:1px solid;
-    border-top-color:#3366cc;    /* Red */
-}
-.body {
- font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    border-top-color:#8e2d18;    /* Red */
 }
 
-div.PID {
-    width: 80%;
-    margin: auto;
+
+
+div.hardwareswitches{
+
+    display: block;
+    padding: 1em;
+    min-width: 295px;
+    width:50%;
+    margin-left:auto;
+    margin-right:auto;
 }
-div.powerswitch {
-    width: 80%;
-    margin: auto;
+
+
+
+div.switchlabel {
+    text-align: center;   
+    margin-top: 3ex;
+    margin-bottom: 1ex;
 }
+
 
 div.buttonwrapper div  {
     display: inline-block;
@@ -121,4 +116,9 @@ a#settingbutton {
     padding-right: 30px;
     box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
     background-color: #6d18045d;
+
 }
+
+
+
+

@@ -330,12 +330,37 @@ void WebInterface::handlePidOff()
   server->send(200, "text/html", message);
 }
 
-void WebInterface::handleCSS()
+void WebInterface::handleESPressoCSS()
 {
+
   File dataFile = SPIFFS.open("/ESPresso.css", "r");
   if (dataFile)
   {
     server->streamFile(dataFile, "text/css");
+  }
+  dataFile.close();
+}
+
+void WebInterface::handleButtonCSS()
+{
+
+  File dataFile = SPIFFS.open("/button.css", "r");
+  if (dataFile)
+  {
+    server->streamFile(dataFile, "text/css");
+  }
+  dataFile.close();
+}
+
+
+
+void WebInterface::handleGaugeJS()
+{
+
+  File dataFile = SPIFFS.open("/gauge.min.js", "r");
+  if (dataFile)
+  {
+    server->streamFile(dataFile, "text/javascript");
   }
   dataFile.close();
 }
@@ -460,6 +485,22 @@ void WebInterface::handleApiSet()
       }
     }
 
+else if (server->argName(i) == "externalControlMode")
+    {
+      if (String("true").equalsIgnoreCase(server->arg(i)))
+      {
+        myMachine->externalControlMode = true;
+        message += addjson(firstarg, "externalControlMode", "true");
+      }
+      else
+      {
+        myMachine->externalControlMode = false;
+        message += addjson(firstarg, "externalControlMode", "false");
+      }
+    }
+
+
+
 #ifdef DEBUG
     else if (server->argName(i) == "PidInterval")
     {
@@ -533,7 +574,9 @@ void WebInterface::setupWebSrv(ESPressoMachine *machine)
   server->on("/api/v1/status", std::bind(&WebInterface::handleApiStatus, this));
   server->on("/api/v1/firmware", std::bind(&WebInterface::handleApiFirmware, this));
   server->on("/api/v1/set", std::bind(&WebInterface::handleApiSet, this));
-  server->on("/ESPresso.css", std::bind(&WebInterface::handleCSS, this));
+  server->on("/ESPresso.css", std::bind(&WebInterface::handleESPressoCSS, this));
+  server->on("/button.css", std::bind(&WebInterface::handleButtonCSS, this));
+  server->on("/gauge.min.js", std::bind(&WebInterface::handleGaugeJS, this));
   server->begin();
   Serial.println("HTTP server started");
 }

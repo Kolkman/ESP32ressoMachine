@@ -38,7 +38,9 @@ private:
     void handleApiStatus();
     void handleApiFirmware();
     void handleApiSet();
-    void handleCSS();
+    void handleESPressoCSS();
+     void handleGaugeJS();
+    void handleButtonCSS();
 };
 
 #endif
