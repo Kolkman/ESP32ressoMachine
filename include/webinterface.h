@@ -1,9 +1,10 @@
 #ifndef ESPRressoMach_WEB_H
 #define ESPRressoMach_WEB_H
 
-#include "webinterface.h"
-#include <WebServer.h>
-#include <HTTPUpdateServer.h>
+#include <WiFi.h>
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+#include "ESPressoMachine.h"
 
 class WebInterface
 {
@@ -11,36 +12,36 @@ public:
     WebInterface();
     ~WebInterface();
     void setupWebSrv(ESPressoMachine *);
-    void loopWebSrv();
+
 
 private:
     ESPressoMachine *myMachine;
-    WebServer *server;
-    HTTPUpdateServer *httpUpdater;
+    AsyncWebServer *server;
+   // HTTPUpdateServer *httpUpdater;
 
-    void handleNotFound();
-    void handleRoot();
-    void handleConfig();
-    void handleTuningStats();
-    void handleSetConfig();
-    void handleSetTuning();
-    void handleLoadConfig();
-    void handleSaveConfig();
-    void handleResetConfig();
-    void handleToggleHeater();
-    void handleHeaterSwitch(boolean);
-    void handleHeaterOn();
-    void handleHeaterOff();
-    void handlePidOn();
-    void handlePidOff();
-    void handleTuningMode();
-    void handleReset();
-    void handleApiStatus();
-    void handleApiFirmware();
-    void handleApiSet();
-    void handleESPressoCSS();
-     void handleGaugeJS();
-    void handleButtonCSS();
+    void handleNotFound(AsyncWebServerRequest *);
+    void handleRoot(AsyncWebServerRequest *);
+    void handleConfig(AsyncWebServerRequest *);
+    void handleTuningStats(AsyncWebServerRequest *);
+    void handleSetConfig(AsyncWebServerRequest *);
+    void handleSetTuning(AsyncWebServerRequest *);
+    void handleLoadConfig(AsyncWebServerRequest *);
+    void handleSaveConfig(AsyncWebServerRequest *);
+    void handleResetConfig(AsyncWebServerRequest *);
+    void handleToggleHeater(AsyncWebServerRequest *);
+    void handleHeaterSwitch(AsyncWebServerRequest *, boolean);
+    void handleHeaterOn(AsyncWebServerRequest *);
+    void handleHeaterOff(AsyncWebServerRequest *);
+    void handlePidOn(AsyncWebServerRequest *);
+    void handlePidOff(AsyncWebServerRequest *);
+    void handleTuningMode(AsyncWebServerRequest *);
+    void handleReset(AsyncWebServerRequest *);
+    void handleApiStatus(AsyncWebServerRequest *);
+    void handleApiFirmware(AsyncWebServerRequest *);
+    void handleApiSet(AsyncWebServerRequest *);
+    void handleESPressoCSS(AsyncWebServerRequest *);
+    void handleGaugeJS(AsyncWebServerRequest *);
+    void handleButtonCSS(AsyncWebServerRequest *);
 };
 
 #endif
