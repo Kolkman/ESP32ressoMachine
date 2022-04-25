@@ -50,11 +50,9 @@
 // Compiler options
 // options for special modules
 
-
-#define ENABLE_HTTP
 #define ENABLE_TELNET
 #define ENABLE_MQTT
-//#define ENABLE_SERIAL
+#define ENABLE_SERIAL
 
 
 

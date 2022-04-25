@@ -11,8 +11,8 @@
 #include "webinterface.h"
 #include "config.h"
 #include <Arduino.h>
+#include <AsyncElegantOTA.h>
 
-#ifdef ENABLE_HTTP
 
 #define ONCOLOR "CD212A"
 #define OFFCOLOR "DCDCDC"
@@ -22,7 +22,7 @@ WebInterface::WebInterface()
   Serial.println("Webinterfce Constructor");
   server = nullptr;
   myMachine = nullptr;
-  httpUpdater = new HTTPUpdateServer;
+//  httpUpdater = new HTTPUpdateServer;
 }
 
 WebInterface::~WebInterface()
@@ -30,37 +30,34 @@ WebInterface::~WebInterface()
   Serial.println("Webinterfce Destructor");
 }
 
-void WebInterface::handleNotFound()
+void WebInterface::handleNotFound(AsyncWebServerRequest * request)
 {
 
   String message = "File Not Found\n\n";
   message += "URI: ";
-  message += server->uri();
+  message += request->url();
   message += "\nMethod: ";
-  message += (server->method() == HTTP_GET) ? "GET" : "POST";
+  message += (request->method() == HTTP_GET) ? "GET" : "POST";
   message += "\nArguments: ";
-  message += server->args();
+  message += request->args();
   message += "\n";
 
-  for (uint8_t i = 0; i < server->args(); i++)
+  for (uint8_t i = 0; i < request->args(); i++)
   {
-    message += " " + server->argName(i) + ": " + server->arg(i) + "\n";
+    message += " " + request->argName(i) + ": " + request->arg(i) + "\n";
   }
 
-  server->send(404, "text/plain", message);
+  request->send(404, "text/plain", message);
 }
 
-void WebInterface::handleRoot()
+void WebInterface::handleRoot(AsyncWebServerRequest *request)
 {
-  File dataFile = SPIFFS.open("/index.html", "r");
-  if (dataFile)
-  {
-    server->streamFile(dataFile, "text/html");
-  }
-  dataFile.close();
+
+  request->send(SPIFFS, "/index.html","text/html");  
+
 }
 
-void WebInterface::handleConfig()
+void WebInterface::handleConfig(AsyncWebServerRequest *request)
 {
   String powerOnColor = String(ONCOLOR);
   String powerOffColor = String(OFFCOLOR);
@@ -127,10 +124,10 @@ void WebInterface::handleConfig()
 
   message += "<hr/>\n";
 
-  server->send(200, "text/html", message);
+  request->send(200, "text/html", message);
 }
 
-void WebInterface::handleTuningStats()
+void WebInterface::handleTuningStats(AsyncWebServerRequest *request)
 {
   String message = "<head><meta http-equiv=\"refresh\" content=\"5\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><title>EspressIoT Configuration</title></head><h1>EspressIoT</h1>\n";
   message += "<h1> PID TUNING STATS </h1>";
@@ -143,89 +140,89 @@ void WebInterface::handleTuningStats()
   message += "<a href=\"./tuningmode\"><button style=\"background-color:#7070EE\">Finish PID Tuning Mode</button></a><br/>\n";
   message += "<hr/>\n";
   message += "<a href=\"/config\"><button>Back</button></a><br/>\n";
-  server->send(200, "text/html", message);
+  request->send(200, "text/html", message);
 }
 
-void WebInterface::handleSetConfig()
+void WebInterface::handleSetConfig(AsyncWebServerRequest *request)
 {
   bool reconf = false;
   String message = "<head><meta http-equiv=\"refresh\" content=\"2;url=/config\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><title>EspressIoT</title></head><h1>Configuration changed !</h1>\n";
-  for (uint8_t i = 0; i < server->args(); i++)
+  for (uint8_t i = 0; i < request->args(); i++)
   {
-    if (server->argName(i) == "tset")
+    if (request->argName(i) == "tset")
     {
-      message += "new tset: " + server->arg(i) + "<br/>\n";
-      myMachine->myConfig->targetTemp = ((server->arg(i)).toDouble());
+      message += "new tset: " + request->arg(i) + "<br/>\n";
+      myMachine->myConfig->targetTemp = ((request->arg(i)).toDouble());
     }
-    else if (server->argName(i) == "tband")
+    else if (request->argName(i) == "tband")
     {
-      message += "new tset: " + server->arg(i) + "<br/>\n";
-      myMachine->myConfig->temperatureBand = ((server->arg(i)).toDouble());
+      message += "new tset: " + request->arg(i) + "<br/>\n";
+      myMachine->myConfig->temperatureBand = ((request->arg(i)).toDouble());
     }
-    else if (server->argName(i) == "epwr")
+    else if (request->argName(i) == "epwr")
     {
-      message += "new Eq. Pwr: " + server->arg(i) + "<br/>\n";
-      myMachine->myConfig->eqPwr = ((server->arg(i)).toDouble());
+      message += "new Eq. Pwr: " + request->arg(i) + "<br/>\n";
+      myMachine->myConfig->eqPwr = ((request->arg(i)).toDouble());
     }
-    else if (server->argName(i) == "pgain")
+    else if (request->argName(i) == "pgain")
     {
-      message += "new pgain: " + server->arg(i) + "<br/>\n";
-      myMachine->myConfig->nearTarget.P = ((server->arg(i)).toDouble());
+      message += "new pgain: " + request->arg(i) + "<br/>\n";
+      myMachine->myConfig->nearTarget.P = ((request->arg(i)).toDouble());
       reconf = true;
     }
-    else if (server->argName(i) == "igain")
+    else if (request->argName(i) == "igain")
     {
-      message += "new igain: " + server->arg(i) + "<br/>\n";
-      myMachine->myConfig->nearTarget.I = ((server->arg(i)).toDouble());
+      message += "new igain: " + request->arg(i) + "<br/>\n";
+      myMachine->myConfig->nearTarget.I = ((request->arg(i)).toDouble());
       reconf = true;
     }
-    else if (server->argName(i) == "dgain")
+    else if (request->argName(i) == "dgain")
     {
-      message += "new pgain: " + server->arg(i) + "<br/>\n";
-      myMachine->myConfig->nearTarget.D = ((server->arg(i)).toDouble());
+      message += "new pgain: " + request->arg(i) + "<br/>\n";
+      myMachine->myConfig->nearTarget.D = ((request->arg(i)).toDouble());
       reconf = true;
     }
-    else if (server->argName(i) == "apgain")
+    else if (request->argName(i) == "apgain")
     {
-      message += "new pgain: " + server->arg(i) + "<br/>\n";
-      myMachine->myConfig->awayTarget.P = ((server->arg(i)).toDouble());
+      message += "new pgain: " + request->arg(i) + "<br/>\n";
+      myMachine->myConfig->awayTarget.P = ((request->arg(i)).toDouble());
       reconf = true;
     }
-    else if (server->argName(i) == "aigain")
+    else if (request->argName(i) == "aigain")
     {
-      message += "new igain: " + server->arg(i) + "<br/>\n";
-      myMachine->myConfig->awayTarget.I = ((server->arg(i)).toDouble());
+      message += "new igain: " + request->arg(i) + "<br/>\n";
+      myMachine->myConfig->awayTarget.I = ((request->arg(i)).toDouble());
       reconf = true;
     }
-    else if (server->argName(i) == "adgain")
+    else if (request->argName(i) == "adgain")
     {
-      message += "new pgain: " + server->arg(i) + "<br/>\n";
-      myMachine->myConfig->awayTarget.D = ((server->arg(i)).toDouble());
+      message += "new pgain: " + request->arg(i) + "<br/>\n";
+      myMachine->myConfig->awayTarget.D = ((request->arg(i)).toDouble());
       reconf = true;
     }
 #ifdef DEBUG
-    else if (server->argName(i) == "PidInterval")
+    else if (request->argName(i) == "PidInterval")
     {
-      message += "new PidInterval: " + server->arg(i) + "<br/>\n";
-      myMachine->myConfig->pidInt = ((server->arg(i)).toInt());
+      message += "new PidInterval: " + request->arg(i) + "<br/>\n";
+      myMachine->myConfig->pidInt = ((request->arg(i)).toInt());
       reconf = true;
     }
-    else if (server->argName(i) == "HeaterInterval")
+    else if (request->argName(i) == "HeaterInterval")
     {
-      message += "new HeaterInterval: " + server->arg(i) + "<br/>\n";
-      myMachine->myConfig->heaterInterval = (abs((server->arg(i)).toInt()));
+      message += "new HeaterInterval: " + request->arg(i) + "<br/>\n";
+      myMachine->myConfig->heaterInterval = (abs((request->arg(i)).toInt()));
       reconf = true;
     }
-    else if (server->argName(i) == "SensorSampleInterval")
+    else if (request->argName(i) == "SensorSampleInterval")
     {
-      message += "new Sensor Sample Interval: " + server->arg(i) + "<br/>\n";
-      myMachine->myConfig->sensorSampleInterval = ((server->arg(i)).toInt());
+      message += "new Sensor Sample Interval: " + request->arg(i) + "<br/>\n";
+      myMachine->myConfig->sensorSampleInterval = ((request->arg(i)).toInt());
       // reconfig not needed
     }
-    else if (server->argName(i) == "maxCool")
+    else if (request->argName(i) == "maxCool")
     {
-      message += "new Max Cool: " + server->arg(i) + "<br/>\n";
-      myMachine->myConfig->maxCool = ((server->arg(i)).toDouble());
+      message += "new Max Cool: " + request->arg(i) + "<br/>\n";
+      myMachine->myConfig->maxCool = ((request->arg(i)).toDouble());
     }
 
 #endif
@@ -234,29 +231,29 @@ void WebInterface::handleSetConfig()
   {
     myMachine->reConfig(); // apply all settings
   }
-  server->send(200, "text/html", message);
+  request->send(200, "text/html", message);
 }
 
-void WebInterface::handleSetTuning()
+void WebInterface::handleSetTuning(AsyncWebServerRequest *request)
 {
   String message = "<head><meta http-equiv=\"refresh\" content=\"2;url=/config\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><title>EspressIoT</title></head><h1>Configuration changed !</h1>\n";
-  for (uint8_t i = 0; i < server->args(); i++)
+  for (uint8_t i = 0; i < request->args(); i++)
   {
-    if (server->argName(i) == "tunethres")
+    if (request->argName(i) == "tunethres")
     {
-      message += "new tuning threshold: " + server->arg(i) + "<br/>\n";
-      myMachine->myTuner->setTuneThres(((server->arg(i)).toDouble()));
+      message += "new tuning threshold: " + request->arg(i) + "<br/>\n";
+      myMachine->myTuner->setTuneThres(((request->arg(i)).toDouble()));
     }
-    else if (server->argName(i) == "tunestep")
+    else if (request->argName(i) == "tunestep")
     {
-      message += "new tuning power: " + server->arg(i) + "<br/>\n";
-      myMachine->myTuner->setTuneStep((server->arg(i)).toDouble());
+      message += "new tuning power: " + request->arg(i) + "<br/>\n";
+      myMachine->myTuner->setTuneStep((request->arg(i)).toDouble());
     }
   }
-  server->send(200, "text/html", message);
+  request->send(200, "text/html", message);
 }
 
-void WebInterface::handleLoadConfig()
+void WebInterface::handleLoadConfig(AsyncWebServerRequest *request)
 {
   String message = "<head><meta http-equiv=\"refresh\" content=\"2;url=/config\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><title>EspressIoT</title></head>";
   if (myMachine->myConfig->loadConfig())
@@ -266,106 +263,89 @@ void WebInterface::handleLoadConfig()
   }
   else
     message += "<h1>Error loading configuration !</h1>\n";
-  server->send(200, "text/html", message);
+  request->send(200, "text/html", message);
 }
 
-void WebInterface::handleSaveConfig()
+void WebInterface::handleSaveConfig(AsyncWebServerRequest *request)
 {
   String message = "<head><meta http-equiv=\"refresh\" content=\"2;url=/config\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><title>EspressIoT</title></head>";
   if (myMachine->myConfig->saveConfig())
     message += "<h1>Configuration saved !</h1>\n";
   else
     message += "<h1>Error saving configuration !</h1>\n";
-  server->send(200, "text/html", message);
+  request->send(200, "text/html", message);
 }
 
-void WebInterface::handleResetConfig()
+void WebInterface::handleResetConfig(AsyncWebServerRequest *request)
 {
   String message = "<head><meta http-equiv=\"refresh\" content=\"2;url=/config\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><title>EspressIoT</title></head>";
   myMachine->myConfig->resetConfig();
   myMachine->reConfig();
   message += "<h1>Configuration set to default !</h1>\n";
-  server->send(200, "text/html", message);
+  request->send(200, "text/html", message);
 }
 
-void WebInterface::handleToggleHeater()
+void WebInterface::handleToggleHeater(AsyncWebServerRequest *request)
 {
   String message = "<head><meta http-equiv=\"refresh\" content=\"2;url=/\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><title>EspressIoT</title></head>";
   message += "<h1> Done ! </h1>";
   myMachine->powerOffMode = (!myMachine->powerOffMode);
-  server->send(200, "text/html", message);
+  request->send(200, "text/html", message);
 }
 
-void WebInterface::handleHeaterSwitch(boolean newMode)
+void WebInterface::handleHeaterSwitch(AsyncWebServerRequest *request,boolean newMode)
 {
   String message = "<head><meta http-equiv=\"refresh\" content=\"2;url=/\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><title>EspressIoT</title></head>";
   message += "<h1> Done ! </h1>";
   myMachine->powerOffMode = (newMode);
-  server->send(200, "text/html", message);
+  request->send(200, "text/html", message);
 }
 
-void WebInterface::handleHeaterOn()
+void WebInterface::handleHeaterOn(AsyncWebServerRequest *request)
 {
-  WebInterface::handleHeaterSwitch(false);
+  WebInterface::handleHeaterSwitch(request,false);
 }
 
-void WebInterface::handleHeaterOff()
+void WebInterface::handleHeaterOff(AsyncWebServerRequest *request)
 {
-  WebInterface::handleHeaterSwitch(true);
+  WebInterface::handleHeaterSwitch(request,true);
 }
 
-void WebInterface::handlePidOn()
+void WebInterface::handlePidOn(AsyncWebServerRequest *request)
 {
   String message = "<head><meta http-equiv=\"refresh\" content=\"2;url=/\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><title>EspressIoT</title></head>";
   message += "<h1> Done ! </h1>";
   myMachine->externalControlMode = false;
-  server->send(200, "text/html", message);
+  request->send(200, "text/html", message);
 }
 
-void WebInterface::handlePidOff()
+void WebInterface::handlePidOff(AsyncWebServerRequest *request)
 {
   String message = "<head><meta http-equiv=\"refresh\" content=\"2;url=/\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><title>EspressIoT</title></head>";
   message += "<h1> Done ! </h1>";
   myMachine->externalControlMode = true;
-  server->send(200, "text/html", message);
+  request->send(200, "text/html", message);
 }
 
-void WebInterface::handleESPressoCSS()
+void WebInterface::handleESPressoCSS(AsyncWebServerRequest *request)
 {
-
-  File dataFile = SPIFFS.open("/ESPresso.css", "r");
-  if (dataFile)
-  {
-    server->streamFile(dataFile, "text/css");
-  }
-  dataFile.close();
+  request->send(SPIFFS, "/ESPresso.css","text/css");
 }
 
-void WebInterface::handleButtonCSS()
+void WebInterface::handleButtonCSS(AsyncWebServerRequest *request)
 {
+  request->send(SPIFFS, "/button.css","text/css");
 
-  File dataFile = SPIFFS.open("/button.css", "r");
-  if (dataFile)
-  {
-    server->streamFile(dataFile, "text/css");
-  }
-  dataFile.close();
 }
 
 
 
-void WebInterface::handleGaugeJS()
+void WebInterface::handleGaugeJS(AsyncWebServerRequest *request)
 {
-
-  File dataFile = SPIFFS.open("/gauge.min.js", "r");
-  if (dataFile)
-  {
-    server->streamFile(dataFile, "text/javascript");
-  }
-  dataFile.close();
+  request->send(SPIFFS, "/gauge.min.js","text/javascript");
 }
 
-void WebInterface::handleTuningMode()
+void WebInterface::handleTuningMode(AsyncWebServerRequest *request)
 {
   String message = "<head><meta http-equiv=\"refresh\" content=\"2;url=/config\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><title>EspressIoT</title></head>";
   if (!myMachine->tuning)
@@ -385,19 +365,19 @@ void WebInterface::handleTuningMode()
     message += "<a href=\"/config\"><button>Back</button></a><br/>\n";
   }
 
-  server->send(200, "text/html", message);
+  request->send(200, "text/html", message);
 }
 
-void WebInterface::handleApiStatus()
+void WebInterface::handleApiStatus(AsyncWebServerRequest *request)
 {
   String message = myMachine->statusAsJson();
-  server->send(200, "application/json", message);
+  request->send(200, "application/json", message);
 }
 
-void WebInterface::handleApiFirmware()
+void WebInterface::handleApiFirmware(AsyncWebServerRequest *request)
 {
   String message = "{\"version\": \"" + String(CURRENTFIRMWARE) + "-" + String(F(__DATE__)) + ":" + String(F(__TIME__)) + "\"}";
-  server->send(200, "application/json", message);
+  request->send(200, "application/json", message);
 }
 
 String addjson(bool &firstarg, String argument, String value)
@@ -411,69 +391,69 @@ String addjson(bool &firstarg, String argument, String value)
   return msg;
 }
 
-void WebInterface::handleApiSet()
+void WebInterface::handleApiSet(AsyncWebServerRequest *request)
 {
   bool reconf = false;
   bool firstarg = true;
 
   String message = "{";
 
-  for (uint8_t i = 0; i < server->args(); i++)
+  for (uint8_t i = 0; i < request->args(); i++)
   {
-    if (server->argName(i) == "tset")
+    if (request->argName(i) == "tset")
     {
-      message += addjson(firstarg, "tset", server->arg(i));
-      myMachine->myConfig->targetTemp = ((server->arg(i)).toDouble());
+      message += addjson(firstarg, "tset", request->arg(i));
+      myMachine->myConfig->targetTemp = ((request->arg(i)).toDouble());
     }
-    else if (server->argName(i) == "tband")
+    else if (request->argName(i) == "tband")
     {
-      message += addjson(firstarg, "tband", server->arg(i));
-      myMachine->myConfig->temperatureBand = ((server->arg(i)).toDouble());
+      message += addjson(firstarg, "tband", request->arg(i));
+      myMachine->myConfig->temperatureBand = ((request->arg(i)).toDouble());
     }
-    else if (server->argName(i) == "epwr")
+    else if (request->argName(i) == "epwr")
     {
-      message += addjson(firstarg, "EqPwr", server->arg(i));
-      myMachine->myConfig->eqPwr = ((server->arg(i)).toDouble());
+      message += addjson(firstarg, "EqPwr", request->arg(i));
+      myMachine->myConfig->eqPwr = ((request->arg(i)).toDouble());
     }
-    else if (server->argName(i) == "pgain")
+    else if (request->argName(i) == "pgain")
     {
-      message += addjson(firstarg, "pgain", server->arg(i));
-      myMachine->myConfig->nearTarget.P = ((server->arg(i)).toDouble());
+      message += addjson(firstarg, "pgain", request->arg(i));
+      myMachine->myConfig->nearTarget.P = ((request->arg(i)).toDouble());
       reconf = true;
     }
-    else if (server->argName(i) == "igain")
+    else if (request->argName(i) == "igain")
     {
-      message += addjson(firstarg, "igain", server->arg(i));
-      myMachine->myConfig->nearTarget.I = ((server->arg(i)).toDouble());
+      message += addjson(firstarg, "igain", request->arg(i));
+      myMachine->myConfig->nearTarget.I = ((request->arg(i)).toDouble());
       reconf = true;
     }
-    else if (server->argName(i) == "dgain")
+    else if (request->argName(i) == "dgain")
     {
-      message += addjson(firstarg, "pgain", server->arg(i));
-      myMachine->myConfig->nearTarget.D = ((server->arg(i)).toDouble());
+      message += addjson(firstarg, "pgain", request->arg(i));
+      myMachine->myConfig->nearTarget.D = ((request->arg(i)).toDouble());
       reconf = true;
     }
-    else if (server->argName(i) == "apgain")
+    else if (request->argName(i) == "apgain")
     {
-      message += addjson(firstarg, "pgain", server->arg(i));
-      myMachine->myConfig->awayTarget.P = ((server->arg(i)).toDouble());
+      message += addjson(firstarg, "pgain", request->arg(i));
+      myMachine->myConfig->awayTarget.P = ((request->arg(i)).toDouble());
       reconf = true;
     }
-    else if (server->argName(i) == "aigain")
+    else if (request->argName(i) == "aigain")
     {
-      message += addjson(firstarg, "igain", server->arg(i));
-      myMachine->myConfig->awayTarget.I = ((server->arg(i)).toDouble());
+      message += addjson(firstarg, "igain", request->arg(i));
+      myMachine->myConfig->awayTarget.I = ((request->arg(i)).toDouble());
       reconf = true;
     }
-    else if (server->argName(i) == "adgain")
+    else if (request->argName(i) == "adgain")
     {
-      message += addjson(firstarg, "pgain", server->arg(i));
-      myMachine->myConfig->awayTarget.D = ((server->arg(i)).toDouble());
+      message += addjson(firstarg, "pgain", request->arg(i));
+      myMachine->myConfig->awayTarget.D = ((request->arg(i)).toDouble());
       reconf = true;
     }
-    else if (server->argName(i) == "powerOffMode")
+    else if (request->argName(i) == "powerOffMode")
     {
-      if (String("true").equalsIgnoreCase(server->arg(i)))
+      if (String("true").equalsIgnoreCase(request->arg(i)))
       {
         myMachine->powerOffMode = true;
         message += addjson(firstarg, "powerOffMode", "true");
@@ -485,9 +465,9 @@ void WebInterface::handleApiSet()
       }
     }
 
-else if (server->argName(i) == "externalControlMode")
+else if (request->argName(i) == "externalControlMode")
     {
-      if (String("true").equalsIgnoreCase(server->arg(i)))
+      if (String("true").equalsIgnoreCase(request->arg(i)))
       {
         myMachine->externalControlMode = true;
         message += addjson(firstarg, "externalControlMode", "true");
@@ -502,28 +482,28 @@ else if (server->argName(i) == "externalControlMode")
 
 
 #ifdef DEBUG
-    else if (server->argName(i) == "PidInterval")
+    else if (request->argName(i) == "PidInterval")
     {
-      message += addjson(firstarg, "PidInterval", server->arg(i));
-      myMachine->myConfig->pidInt = ((server->arg(i)).toInt());
+      message += addjson(firstarg, "PidInterval", request->arg(i));
+      myMachine->myConfig->pidInt = ((request->arg(i)).toInt());
       reconf = true;
     }
-    else if (server->argName(i) == "HeaterInterval")
+    else if (request->argName(i) == "HeaterInterval")
     {
-      message += addjson(firstarg, "HeaterInterval", server->arg(i));
-      myMachine->myConfig->heaterInterval = (abs((server->arg(i)).toInt()));
+      message += addjson(firstarg, "HeaterInterval", request->arg(i));
+      myMachine->myConfig->heaterInterval = (abs((request->arg(i)).toInt()));
       reconf = true;
     }
-    else if (server->argName(i) == "SensorSampleInterval")
+    else if (request->argName(i) == "SensorSampleInterval")
     {
-      message += addjson(firstarg, "Sensor Sample Interval", server->arg(i));
-      myMachine->myConfig->sensorSampleInterval = ((server->arg(i)).toInt());
+      message += addjson(firstarg, "Sensor Sample Interval", request->arg(i));
+      myMachine->myConfig->sensorSampleInterval = ((request->arg(i)).toInt());
       // reconfig not needed
     }
-    else if (server->argName(i) == "maxCool")
+    else if (request->argName(i) == "maxCool")
     {
-      message += addjson(firstarg, "Max Cool", server->arg(i));
-      myMachine->myConfig->maxCool = ((server->arg(i)).toDouble());
+      message += addjson(firstarg, "Max Cool", request->arg(i));
+      myMachine->myConfig->maxCool = ((request->arg(i)).toDouble());
     }
 
 #endif
@@ -533,14 +513,14 @@ else if (server->argName(i) == "externalControlMode")
     myMachine->reConfig(); // apply all settings
   }
   message += "}";
-  server->send(200, "application/json", message);
+  request->send(200, "application/json", message);
 }
 
-void WebInterface::handleReset()
+void WebInterface::handleReset(AsyncWebServerRequest *request)
 {
   String message = "<head><meta http-equiv=\"refresh\" content=\"2;url=/\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><title>EspressIoT</title></head>";
   message += "<h1> Reseting Device ! </h1>";
-  server->send(200, "text/html", message);
+  request->send(200, "text/html", message);
   delay(1000);
   ESP.restart();
 }
@@ -548,42 +528,40 @@ void WebInterface::handleReset()
 void WebInterface::setupWebSrv(ESPressoMachine *machine)
 {
   Serial.println("Setting up  Webserver");
-  server = new WebServer(80);
+  server = new AsyncWebServer(80);
   myMachine = machine;
   if (server == nullptr)
     Serial.println("SERIAL NULLPTR");
 
-  Serial.println("HIEROO");
-  httpUpdater->setup(server);
-  Serial.print("Updater running !");
-  server->on("/", std::bind(&WebInterface::handleRoot, this));
-  server->on("/config", std::bind(&WebInterface::handleConfig, this));
-  server->on("/loadconf", std::bind(&WebInterface::handleLoadConfig, this));
-  server->on("/saveconf", std::bind(&WebInterface::handleSaveConfig, this));
-  server->on("/resetconf", std::bind(&WebInterface::handleResetConfig, this));
-  server->on("/set_config", std::bind(&WebInterface::handleSetConfig, this));
-  server->on("/tuningmode", std::bind(&WebInterface::handleTuningMode, this));
-  server->on("/tuningstats", std::bind(&WebInterface::handleTuningStats, this));
-  server->on("/set_tuning", std::bind(&WebInterface::handleSetTuning, this));
-  server->on("/heater_on", std::bind(&WebInterface::handleHeaterOn, this));
-  server->on("/heater_off", std::bind(&WebInterface::handleHeaterOff, this));
-  server->on("/pid_on", std::bind(&WebInterface::handlePidOn, this));
-  server->on("/pid_off", std::bind(&WebInterface::handlePidOff, this));
-  server->onNotFound(std::bind(&WebInterface::handleNotFound, this));
-  server->on("/reset", std::bind(&WebInterface::handleReset, this));
-  server->on("/api/v1/status", std::bind(&WebInterface::handleApiStatus, this));
-  server->on("/api/v1/firmware", std::bind(&WebInterface::handleApiFirmware, this));
-  server->on("/api/v1/set", std::bind(&WebInterface::handleApiSet, this));
-  server->on("/ESPresso.css", std::bind(&WebInterface::handleESPressoCSS, this));
-  server->on("/button.css", std::bind(&WebInterface::handleButtonCSS, this));
-  server->on("/gauge.min.js", std::bind(&WebInterface::handleGaugeJS, this));
+
+  //httpUpdater->setup(server);
+  //Serial.print("Updater running !");
+ 
+  server->on("/", HTTP_GET , std::bind(&WebInterface::handleRoot, this, std::placeholders::_1));
+  server->on("/config", HTTP_GET , std::bind(&WebInterface::handleConfig,this, std::placeholders::_1));
+  server->on("/loadconf", HTTP_GET , std::bind(&WebInterface::handleLoadConfig,this, std::placeholders::_1));
+  server->on("/saveconf", HTTP_GET , std::bind(&WebInterface::handleSaveConfig,this, std::placeholders::_1));
+  server->on("/resetconf", HTTP_GET , std::bind(&WebInterface::handleResetConfig,this, std::placeholders::_1));
+  server->on("/set_config", HTTP_GET , std::bind(&WebInterface::handleSetConfig,this, std::placeholders::_1));
+  server->on("/tuningmode", HTTP_GET , std::bind(&WebInterface::handleTuningMode,this, std::placeholders::_1));
+  server->on("/tuningstats", HTTP_GET , std::bind(&WebInterface::handleTuningStats,this, std::placeholders::_1));
+  server->on("/set_tuning", HTTP_GET , std::bind(&WebInterface::handleSetTuning,this, std::placeholders::_1));
+  server->on("/heater_on", HTTP_GET , std::bind(&WebInterface::handleHeaterOn,this, std::placeholders::_1));
+  server->on("/heater_off", HTTP_GET , std::bind(&WebInterface::handleHeaterOff,this, std::placeholders::_1));
+  server->on("/pid_on", HTTP_GET , std::bind(&WebInterface::handlePidOn,this, std::placeholders::_1));
+  server->on("/pid_off", HTTP_GET , std::bind(&WebInterface::handlePidOff,this, std::placeholders::_1));
+  server->onNotFound(std::bind(&WebInterface::handleNotFound,this, std::placeholders::_1));
+  server->on("/reset", HTTP_GET , std::bind(&WebInterface::handleReset,this, std::placeholders::_1));
+  server->on("/api/v1/status", HTTP_GET , std::bind(&WebInterface::handleApiStatus,this, std::placeholders::_1));
+  server->on("/api/v1/firmware", HTTP_GET , std::bind(&WebInterface::handleApiFirmware,this, std::placeholders::_1));
+  server->on("/api/v1/set", HTTP_GET , std::bind(&WebInterface::handleApiSet,this, std::placeholders::_1));
+  server->on("/ESPresso.css", HTTP_GET , std::bind(&WebInterface::handleESPressoCSS,this, std::placeholders::_1));
+  server->on("/button.css", HTTP_GET , std::bind(&WebInterface::handleButtonCSS,this, std::placeholders::_1));
+  server->on("/gauge.min.js", HTTP_GET , std::bind(&WebInterface::handleGaugeJS,this, std::placeholders::_1));
+  AsyncElegantOTA.begin(server);    // Start ElegantOTA update server
   server->begin();
   Serial.println("HTTP server started");
 }
 
-void WebInterface::loopWebSrv()
-{
-  server->handleClient();
-}
 
-#endif
+
