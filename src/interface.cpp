@@ -21,7 +21,7 @@ void ESPressoInterface::serialStatus()
 void ESPressoInterface::loop()
 {
 #ifdef ENABLE_SERIAL
-  serialStatus();
+  // serialStatus(); //bit noisy
 #endif
 
 #ifdef ENABLE_TELNET
@@ -31,19 +31,17 @@ void ESPressoInterface::loop()
   loopMQTT(myMachine->statusAsJson());
 #endif
 
+  eventLoop(myMachine->statusAsJson());
 }
 
 void ESPressoInterface::setup()
 {
 
-setupWebSrv(this->myMachine);
-
+  setupWebSrv(this->myMachine);
 
 #ifdef ENABLE_TELNET
   setupTelnet();
 #endif
-
-
 
 #ifdef ENABLE_MQTT
   setupMQTT(this->myMachine);
