@@ -12,12 +12,13 @@ public:
     WebInterface();
     ~WebInterface();
     void setupWebSrv(ESPressoMachine *);
-
+    void eventLoop(String);
 
 private:
     ESPressoMachine *myMachine;
     AsyncWebServer *server;
-   // HTTPUpdateServer *httpUpdater;
+    AsyncEventSource *events;
+    // HTTPUpdateServer *httpUpdater;
 
     void handleNotFound(AsyncWebServerRequest *);
     void handleRoot(AsyncWebServerRequest *);
@@ -42,6 +43,9 @@ private:
     void handleESPressoCSS(AsyncWebServerRequest *);
     void handleGaugeJS(AsyncWebServerRequest *);
     void handleButtonCSS(AsyncWebServerRequest *);
+    void handleTestPage(AsyncWebServerRequest *);
+
+    void handleEventClient(AsyncEventSourceClient *);
 };
 
 #endif

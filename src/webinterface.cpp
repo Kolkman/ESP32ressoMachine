@@ -12,7 +12,7 @@
 #include "config.h"
 #include <Arduino.h>
 #include <AsyncElegantOTA.h>
-
+#include "webpages.h"
 
 #define ONCOLOR "CD212A"
 #define OFFCOLOR "DCDCDC"
@@ -20,9 +20,11 @@
 WebInterface::WebInterface()
 {
   Serial.println("Webinterfce Constructor");
+
   server = nullptr;
   myMachine = nullptr;
-//  httpUpdater = new HTTPUpdateServer;
+  events = nullptr;
+  //  httpUpdater = new HTTPUpdateServer;
 }
 
 WebInterface::~WebInterface()
@@ -30,7 +32,7 @@ WebInterface::~WebInterface()
   Serial.println("Webinterfce Destructor");
 }
 
-void WebInterface::handleNotFound(AsyncWebServerRequest * request)
+void WebInterface::handleNotFound(AsyncWebServerRequest *request)
 {
 
   String message = "File Not Found\n\n";
@@ -52,10 +54,24 @@ void WebInterface::handleNotFound(AsyncWebServerRequest * request)
 
 void WebInterface::handleRoot(AsyncWebServerRequest *request)
 {
-
-  request->send(SPIFFS, "/index.html","text/html");  
-
+  const char *dataType = "text/html";
+  Serial.println("Stream the array!");
+  AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", WEBsources_index_html_gz, WEBsources_index_html_gz_len);
+  response->addHeader("Server", "ESP Async Web Server");
+  response->addHeader("Content-Encoding", "gzip");
+  request->send(response);
 }
+
+void WebInterface::handleTestPage(AsyncWebServerRequest *request)
+{
+  const char *dataType = "text/html";
+  Serial.println("Stream the array!");
+  AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", WEBsources_test_html_gz, WEBsources_test_html_gz_len);
+  response->addHeader("Server", "ESP Async Web Server");
+  response->addHeader("Content-Encoding", "gzip");
+  request->send(response);
+}
+
 
 void WebInterface::handleConfig(AsyncWebServerRequest *request)
 {
@@ -293,7 +309,7 @@ void WebInterface::handleToggleHeater(AsyncWebServerRequest *request)
   request->send(200, "text/html", message);
 }
 
-void WebInterface::handleHeaterSwitch(AsyncWebServerRequest *request,boolean newMode)
+void WebInterface::handleHeaterSwitch(AsyncWebServerRequest *request, boolean newMode)
 {
   String message = "<head><meta http-equiv=\"refresh\" content=\"2;url=/\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><title>EspressIoT</title></head>";
   message += "<h1> Done ! </h1>";
@@ -303,12 +319,12 @@ void WebInterface::handleHeaterSwitch(AsyncWebServerRequest *request,boolean new
 
 void WebInterface::handleHeaterOn(AsyncWebServerRequest *request)
 {
-  WebInterface::handleHeaterSwitch(request,false);
+  WebInterface::handleHeaterSwitch(request, false);
 }
 
 void WebInterface::handleHeaterOff(AsyncWebServerRequest *request)
 {
-  WebInterface::handleHeaterSwitch(request,true);
+  WebInterface::handleHeaterSwitch(request, true);
 }
 
 void WebInterface::handlePidOn(AsyncWebServerRequest *request)
@@ -329,20 +345,31 @@ void WebInterface::handlePidOff(AsyncWebServerRequest *request)
 
 void WebInterface::handleESPressoCSS(AsyncWebServerRequest *request)
 {
-  request->send(SPIFFS, "/ESPresso.css","text/css");
+
+  AsyncWebServerResponse *response = request->beginResponse_P(200, "text/css", WEBsources_ESPresso_css_gz, WEBsources_ESPresso_css_gz_len);
+  response->addHeader("Server", "ESP Async Web Server");
+  response->addHeader("Content-Encoding", "gzip");
+  request->send(response);
 }
 
 void WebInterface::handleButtonCSS(AsyncWebServerRequest *request)
 {
-  request->send(SPIFFS, "/button.css","text/css");
 
+  AsyncWebServerResponse *response = request->beginResponse_P(200, "text/css", WEBsources_button_css_gz, WEBsources_button_css_gz_len);
+  response->addHeader("Server", "ESP Async Web Server");
+  response->addHeader("Content-Encoding", "gzip");
+  request->send(response);
+
+  // request->send(SPIFFS, "/button.css", "text/css");
 }
-
-
 
 void WebInterface::handleGaugeJS(AsyncWebServerRequest *request)
 {
-  request->send(SPIFFS, "/gauge.min.js","text/javascript");
+
+  AsyncWebServerResponse *response = request->beginResponse_P(200, "text/javascript", WEBsources_gauge_min_js_gz, WEBsources_gauge_min_js_gz_len);
+  response->addHeader("Server", "ESP Async Web Server");
+  response->addHeader("Content-Encoding", "gzip");
+  request->send(response);
 }
 
 void WebInterface::handleTuningMode(AsyncWebServerRequest *request)
@@ -465,7 +492,7 @@ void WebInterface::handleApiSet(AsyncWebServerRequest *request)
       }
     }
 
-else if (request->argName(i) == "externalControlMode")
+    else if (request->argName(i) == "externalControlMode")
     {
       if (String("true").equalsIgnoreCase(request->arg(i)))
       {
@@ -478,8 +505,6 @@ else if (request->argName(i) == "externalControlMode")
         message += addjson(firstarg, "externalControlMode", "false");
       }
     }
-
-
 
 #ifdef DEBUG
     else if (request->argName(i) == "PidInterval")
@@ -527,41 +552,70 @@ void WebInterface::handleReset(AsyncWebServerRequest *request)
 
 void WebInterface::setupWebSrv(ESPressoMachine *machine)
 {
+  myMachine = machine;
   Serial.println("Setting up  Webserver");
   server = new AsyncWebServer(80);
-  myMachine = machine;
   if (server == nullptr)
     Serial.println("SERIAL NULLPTR");
 
+  events = new AsyncEventSource("/events");
+  if (events == nullptr)
+    Serial.println("Events NULLPTR");
 
-  //httpUpdater->setup(server);
-  //Serial.print("Updater running !");
- 
-  server->on("/", HTTP_GET , std::bind(&WebInterface::handleRoot, this, std::placeholders::_1));
-  server->on("/config", HTTP_GET , std::bind(&WebInterface::handleConfig,this, std::placeholders::_1));
-  server->on("/loadconf", HTTP_GET , std::bind(&WebInterface::handleLoadConfig,this, std::placeholders::_1));
-  server->on("/saveconf", HTTP_GET , std::bind(&WebInterface::handleSaveConfig,this, std::placeholders::_1));
-  server->on("/resetconf", HTTP_GET , std::bind(&WebInterface::handleResetConfig,this, std::placeholders::_1));
-  server->on("/set_config", HTTP_GET , std::bind(&WebInterface::handleSetConfig,this, std::placeholders::_1));
-  server->on("/tuningmode", HTTP_GET , std::bind(&WebInterface::handleTuningMode,this, std::placeholders::_1));
-  server->on("/tuningstats", HTTP_GET , std::bind(&WebInterface::handleTuningStats,this, std::placeholders::_1));
-  server->on("/set_tuning", HTTP_GET , std::bind(&WebInterface::handleSetTuning,this, std::placeholders::_1));
-  server->on("/heater_on", HTTP_GET , std::bind(&WebInterface::handleHeaterOn,this, std::placeholders::_1));
-  server->on("/heater_off", HTTP_GET , std::bind(&WebInterface::handleHeaterOff,this, std::placeholders::_1));
-  server->on("/pid_on", HTTP_GET , std::bind(&WebInterface::handlePidOn,this, std::placeholders::_1));
-  server->on("/pid_off", HTTP_GET , std::bind(&WebInterface::handlePidOff,this, std::placeholders::_1));
-  server->onNotFound(std::bind(&WebInterface::handleNotFound,this, std::placeholders::_1));
-  server->on("/reset", HTTP_GET , std::bind(&WebInterface::handleReset,this, std::placeholders::_1));
-  server->on("/api/v1/status", HTTP_GET , std::bind(&WebInterface::handleApiStatus,this, std::placeholders::_1));
-  server->on("/api/v1/firmware", HTTP_GET , std::bind(&WebInterface::handleApiFirmware,this, std::placeholders::_1));
-  server->on("/api/v1/set", HTTP_GET , std::bind(&WebInterface::handleApiSet,this, std::placeholders::_1));
-  server->on("/ESPresso.css", HTTP_GET , std::bind(&WebInterface::handleESPressoCSS,this, std::placeholders::_1));
-  server->on("/button.css", HTTP_GET , std::bind(&WebInterface::handleButtonCSS,this, std::placeholders::_1));
-  server->on("/gauge.min.js", HTTP_GET , std::bind(&WebInterface::handleGaugeJS,this, std::placeholders::_1));
-  AsyncElegantOTA.begin(server);    // Start ElegantOTA update server
+  // httpUpdater->setup(server);
+  // Serial.print("Updater running !");
+
+  
+  server->on("/", HTTP_GET, std::bind(&WebInterface::handleRoot, this, std::placeholders::_1));
+  server->on("/test.html", HTTP_GET, std::bind(&WebInterface::handleTestPage, this, std::placeholders::_1));
+  server->on("/config", HTTP_GET, std::bind(&WebInterface::handleConfig, this, std::placeholders::_1));
+  server->on("/loadconf", HTTP_GET, std::bind(&WebInterface::handleLoadConfig, this, std::placeholders::_1));
+  server->on("/saveconf", HTTP_GET, std::bind(&WebInterface::handleSaveConfig, this, std::placeholders::_1));
+  server->on("/resetconf", HTTP_GET, std::bind(&WebInterface::handleResetConfig, this, std::placeholders::_1));
+  server->on("/set_config", HTTP_GET, std::bind(&WebInterface::handleSetConfig, this, std::placeholders::_1));
+  server->on("/tuningmode", HTTP_GET, std::bind(&WebInterface::handleTuningMode, this, std::placeholders::_1));
+  server->on("/tuningstats", HTTP_GET, std::bind(&WebInterface::handleTuningStats, this, std::placeholders::_1));
+  server->on("/set_tuning", HTTP_GET, std::bind(&WebInterface::handleSetTuning, this, std::placeholders::_1));
+  server->on("/heater_on", HTTP_GET, std::bind(&WebInterface::handleHeaterOn, this, std::placeholders::_1));
+  server->on("/heater_off", HTTP_GET, std::bind(&WebInterface::handleHeaterOff, this, std::placeholders::_1));
+  server->on("/pid_on", HTTP_GET, std::bind(&WebInterface::handlePidOn, this, std::placeholders::_1));
+  server->on("/pid_off", HTTP_GET, std::bind(&WebInterface::handlePidOff, this, std::placeholders::_1));
+  server->onNotFound(std::bind(&WebInterface::handleNotFound, this, std::placeholders::_1));
+  server->on("/reset", HTTP_GET, std::bind(&WebInterface::handleReset, this, std::placeholders::_1));
+  server->on("/api/v1/status", HTTP_GET, std::bind(&WebInterface::handleApiStatus, this, std::placeholders::_1));
+  server->on("/api/v1/firmware", HTTP_GET, std::bind(&WebInterface::handleApiFirmware, this, std::placeholders::_1));
+  server->on("/api/v1/set", HTTP_GET, std::bind(&WebInterface::handleApiSet, this, std::placeholders::_1));
+  server->on("/ESPresso.css", HTTP_GET, std::bind(&WebInterface::handleESPressoCSS, this, std::placeholders::_1));
+  server->on("/button.css", HTTP_GET, std::bind(&WebInterface::handleButtonCSS, this, std::placeholders::_1));
+  server->on("/gauge.min.js", HTTP_GET, std::bind(&WebInterface::handleGaugeJS, this, std::placeholders::_1));
+  AsyncElegantOTA.begin(server); // Start ElegantOTA update server
+
+
+  // Handle Web Server Events
+  events->onConnect(std::bind(&WebInterface::handleEventClient, this,std::placeholders::_1));
+  server->addHandler(events);
+
+
   server->begin();
   Serial.println("HTTP server started");
 }
 
+void WebInterface::handleEventClient(AsyncEventSourceClient *client){
+
+    if(client->lastId()){
+      Serial.printf("Client reconnected! Last message ID that it got is: %u\n", client->lastId());
+    }
+    // send event with message "hello!", id current millis
+    // and set reconnect delay to 1 second
+    client->send("hello!", NULL, millis(), myMachine->myConfig->pidInt );
+
+}
 
 
+void WebInterface::eventLoop(String statusJson){
+
+
+  Serial.println("Sending data");
+  events->send( statusJson.c_str(),"status",millis());
+  
+}

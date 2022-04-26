@@ -6,3 +6,8 @@
 .DS_Store
 .vscode/extensions.json
 .vscode/settings.json
+include/pages/button_css.h
+include/pages/ESPresso_css.h
+include/pages/gauge_min_js.h
+include/pages/index_html.h
+include/pages/test_html.h

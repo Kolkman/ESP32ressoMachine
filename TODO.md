@@ -5,3 +5,5 @@
 * More and better error/bounds checking. At this point **DO NOT RUN ON NETWORKS WITH UNTRUSTED ENTITIES**
 * Configuration page rewrite.
 * Cleanup, removing commented out code and stale pieces.
+* WIFI managment: password management and act as basestation when WIFI fails so reconfiguration can happen.
+* Redo the updater (AsyncElegantOTA is nice, but I want better visual integration) (see e.g. https://github.com/lbernstone/asyncUpdate/blob/master/AsyncUpdate.ino)

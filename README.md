@@ -3,8 +3,7 @@
 
 This project refactored from the original ESPressIoT project by Roman Schmit originally written for an ESP3866 board with a TSIC sensor. 
 
-This 'fork' ports that code to an ESP32 with a MAX31855 amplified K thermocouple, refactored it to be more object oriented[*][0], made the webinterface more
-graphically apealing, and added what could be considered and API.
+This 'fork' ports that code to an ESP32 with a MAX31855 amplified K thermocouple, refactored it to be more object oriented[*][0], made the webinterface more graphically apealing and faster (using the aSyncWebServer and websockets for feeding data) and added what could be considered and API.
 
 
 The project covers somewhat advances features for an espresso machine controller. The basic idea was to have reproducible "espresso results" due to temperature regulation and being able to fine-tune. Especially small machines have a low heat capacity and quality suffers a lot from different heat-up-times and high hysteresis in standard temperature switches.
