@@ -1,0 +1,258 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="button.css" media="all" />
+    <link rel="stylesheet" type="text/css" href="ESPresso.css" media="all" />
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+
+
+    <style>
+        .progress-wrapper {
+            width: 100%;
+        }
+
+        .progress-wrapper .progress {
+            background-color: green;
+            width: 0%;
+            padding: 5px 0px 5px 0px;
+        }
+
+        #updateForm {
+            margin: auto;
+            width: 500px;
+        
+            padding: 10px;
+        }
+
+        #ProgressSVG {
+            margin: auto;
+            width: 500px;
+
+            padding: 10px;
+
+        }
+        #updateForm
+
+        #EspressoSVG {
+            margin: auto;
+        }
+    </style>
+    <script>
+        var svg;
+        var theMachine;
+
+        // code inspired on https://codepen.io/timaikens/pen 
+        // Assumes specific elements to be present in EspressoMachine.svg
+
+        // Espresso Machine Constructor
+        function EspressoMachine(ele) {
+            this.ele = ele;
+            if (this.progress = ele.getAttribute("data-rel-percent")) {
+                console.log(this.progress)
+            } else {
+                console.log("Seeting Progress")
+                ele.setAttribute("data-rel-percent", 0);
+                this.progress = 0;
+            }
+            // final percent
+            this.fraction = 0;
+            this.fillable = false;
+            // If the EspressoMachine Object has no data attribute - it can't be 
+            // filled
+            if (this.progress) {
+                this.fraction = this.progress / 100;
+                this.fillable = true;
+            }
+            // current perscentage
+            this.cp = 0;
+            this.animationtime = 5000;
+            this.fillrate = 60 / this.animationtime;
+            this.foam = ele.getElementsByClassName("foam")[0];
+            this.coffee = ele.getElementsByClassName('coffee')[0];
+            this.coffeeFlowRight = ele.getElementsByClassName('CoffeeFlowRight')[0];
+            this.coffeeFlowLeft = ele.getElementsByClassName('CoffeeFlowLeft')[0];
+            this.blinklight = ele.getElementsByClassName('BlinkLight')[0];
+            this.numbertext = ele.getElementsByClassName('NumberText')[0];
+            this.originalValues = [
+                {
+                    element: this.ele,
+                    property: 'transform',
+                    value: this.ele.getAttribute('transform') || ""
+                }, {
+                    element: this.foam,
+                    property: 'yCoordinate',
+                    value: this.foam.getAttribute('y') || ""
+                }, {
+                    element: this.coffee,
+                    property: 'yCoordinate',
+                    value: this.coffee.getAttribute('y') || ""
+                }, {
+                    element: this.coffeeFlowLeft,
+                    property: 'transform',
+                    value: this.coffeeFlowLeft.getAttribute('transform') || ""
+                }, {
+                    element: this.coffeeFlowRight,
+                    property: 'transform',
+                    value: this.coffeeFlowRight.getAttribute('transform') || ""
+                }, {
+                    element: this.blinklight,
+                    property: 'stylecolor',
+                    value: this.blinklight.getAttribute('stylecolor') || ""
+                }, {
+                    element: this.numbertext,
+                    property: "textcontent",
+                    value: this.numbertext.textContent || "0"
+                }
+            ];
+
+        }
+
+        // EspressoMachine prototype
+        EspressoMachine.prototype = {
+            reset: function (empty) {
+                console.log(empty);
+                var obj = this,
+                    ovs = obj.originalValues;
+                for (var i = 0, j = ovs.length; i < j; i++) {
+                    var ov = ovs[i];
+                    ov.element.setAttribute(ov.property, ov.value);
+                }
+                obj.progress = obj.ele.getAttribute("data-rel-percent");
+                if (obj.progress) {
+                    obj.fraction = obj.progress / 100;
+                    obj.fillable = true;
+                }
+                if (obj.fraction < obj.cp) obj.cp = 0;
+                if (empty) {
+                    obj.ele.style.display = "none";
+                }
+            },
+            fillErUp: function () {
+                var obj = this;
+                obj.cp += obj.fraction * obj.fillrate;
+                console.log(obj);
+                var rp = obj.cp;
+                if (obj.fraction < obj.cp) {
+                    rp = obj.fraction;
+                    obj.fillable = false;
+                }
+                // this.rp = this.cp < this.fraction ? this.cp : this.frp;
+                if (rp == 0) { return; } else {
+                    obj.ele.style.display = "";
+                    coffeeY = 830 - rp * 150;
+                    obj.coffee.setAttribute("y", coffeeY);
+                    foamY = 840 - rp * 180;
+                    obj.foam.setAttribute("y", foamY);
+                    obj.numbertext.textContent = Math.round(rp * 100);
+                    if (obj.fillable) {
+                        window.requestAnimationFrame(function () { obj.fillErUp(); });
+                    }
+                    RightFlowY = -300 + rp * 950;
+                    //matrix(1,0,0,1,340.894,42.9308)
+                    this.coffeeFlowRight.setAttribute('transform', "matrix(1,0,0,1,340," + RightFlowY + ")");
+                    LeftFlowY = -240 + rp * 900;
+                    //matrix(1,0,0,1,449.172,48.2491)
+                    this.coffeeFlowLeft.setAttribute('transform', "matrix(1,0,0,1,450," + LeftFlowY + ")");
+                    if (Math.floor(rp * 7) == Math.round(rp * 7)) {
+                        this.blinklight.setAttribute('style', "fill:#ff7900");
+                    } else {
+                        this.blinklight.setAttribute('style', "fill:#fefefe");
+                    }
+
+                }
+            }
+
+        };
+
+
+        function fillMachine() {
+            if (theMachine.fillable) {
+                theMachine.fillErUp();
+            }
+        }
+
+    </script>
+
+    <script>
+        function postFile() {
+            var formdata = new FormData();
+
+            formdata.append('file1', document.getElementById('file1').files[0]);
+
+            var request = new XMLHttpRequest();
+
+            request.upload.addEventListener('progress', function (e) {
+                var file1Size = document.getElementById('file1').files[0].size;
+                console.log(file1Size);
+
+
+                if (e.loaded <= file1Size) {
+                    var percent = Math.round(e.loaded / file1Size * 100);
+                    theMachine.ele.setAttribute('data-rel-percent', percent);
+                    var empty = percent == 0 ? true : false;
+                    theMachine.reset(empty);
+                    theMachine.fillErUp()
+                }
+
+                if (e.loaded == e.total) {
+                    document.getElementById('done').innerHTML = "DONE! - Rebooting";
+                    setTimeout(() => { window.location = "/"; }, 4000);
+
+
+                }
+            });
+
+            request.open('post', '/doUpdate');
+            request.timeout = 45000;
+            request.send(formdata);
+        }
+
+
+
+
+
+    </script>
+
+
+</head>
+
+<body>
+
+    <h1>ESPresso Machine</h1>
+
+    <script>
+        window.addEventListener('load', function () {
+            svg = document.getElementById('EspressoSVG').contentDocument
+
+            theMachine = new EspressoMachine(svg.getElementById('CombinedImage'),);
+            theMachine.ele.setAttribute('data-rel-percent', 0);
+            theMachine.fillable = false;
+            //  theMachine.reset(true);
+            theMachine.fillErUp()
+        });
+    </script>
+
+
+    <div id="updateForm">
+     
+            <form id="form1">
+                <input id="file1" type="file" />
+
+
+
+                <button type="button" onclick="postFile()">Upload File</button>
+            </form>
+    </div>
+    <div id="ProgressSVG">
+        <object id="EspressoSVG" height="60%" type="image/svg+xml" data="EspressoMachine.svg"></object>
+    </div>
+
+
+    <div id="done"></div>
+
+
+</body>
+
+</html>
