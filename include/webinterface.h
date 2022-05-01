@@ -43,8 +43,7 @@ private:
     void handleESPressoCSS(AsyncWebServerRequest *);
     void handleGaugeJS(AsyncWebServerRequest *);
     void handleButtonCSS(AsyncWebServerRequest *);
-    void handleTestPage(AsyncWebServerRequest *);
-
+    void handleEspressoSVG(AsyncWebServerRequest *);
     void handleEventClient(AsyncEventSourceClient *);
 };
 

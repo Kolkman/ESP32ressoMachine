@@ -11,8 +11,8 @@
 #include "webinterface.h"
 #include "config.h"
 #include <Arduino.h>
-#include <AsyncElegantOTA.h>
 #include "webpages.h"
+#include "webInterfaceOTAUpdate.h"
 
 #define ONCOLOR "CD212A"
 #define OFFCOLOR "DCDCDC"
@@ -52,25 +52,27 @@ void WebInterface::handleNotFound(AsyncWebServerRequest *request)
   request->send(404, "text/plain", message);
 }
 
+void WebInterface::handleEspressoSVG(AsyncWebServerRequest *request){
+  const char *dataType = "image/svg+xml";
+  Serial.println("Stream the array!");
+  AsyncWebServerResponse *response = request->beginResponse_P(200, dataType,  WEBsources_EspressoMachine_svg_gz,  WEBsources_EspressoMachine_svg_gz_len);
+  response->addHeader("Server", "ESP Async Web Server");
+  response->addHeader("Content-Encoding", "gzip");
+  request->send(response);
+
+}
+
+
 void WebInterface::handleRoot(AsyncWebServerRequest *request)
 {
   const char *dataType = "text/html";
   Serial.println("Stream the array!");
-  AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", WEBsources_index_html_gz, WEBsources_index_html_gz_len);
+  AsyncWebServerResponse *response = request->beginResponse_P(200, dataType, WEBsources_index_html_gz, WEBsources_index_html_gz_len);
   response->addHeader("Server", "ESP Async Web Server");
   response->addHeader("Content-Encoding", "gzip");
   request->send(response);
 }
 
-void WebInterface::handleTestPage(AsyncWebServerRequest *request)
-{
-  const char *dataType = "text/html";
-  Serial.println("Stream the array!");
-  AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", WEBsources_test_html_gz, WEBsources_test_html_gz_len);
-  response->addHeader("Server", "ESP Async Web Server");
-  response->addHeader("Content-Encoding", "gzip");
-  request->send(response);
-}
 
 
 void WebInterface::handleConfig(AsyncWebServerRequest *request)
@@ -567,7 +569,6 @@ void WebInterface::setupWebSrv(ESPressoMachine *machine)
 
   
   server->on("/", HTTP_GET, std::bind(&WebInterface::handleRoot, this, std::placeholders::_1));
-  server->on("/test.html", HTTP_GET, std::bind(&WebInterface::handleTestPage, this, std::placeholders::_1));
   server->on("/config", HTTP_GET, std::bind(&WebInterface::handleConfig, this, std::placeholders::_1));
   server->on("/loadconf", HTTP_GET, std::bind(&WebInterface::handleLoadConfig, this, std::placeholders::_1));
   server->on("/saveconf", HTTP_GET, std::bind(&WebInterface::handleSaveConfig, this, std::placeholders::_1));
@@ -588,8 +589,8 @@ void WebInterface::setupWebSrv(ESPressoMachine *machine)
   server->on("/ESPresso.css", HTTP_GET, std::bind(&WebInterface::handleESPressoCSS, this, std::placeholders::_1));
   server->on("/button.css", HTTP_GET, std::bind(&WebInterface::handleButtonCSS, this, std::placeholders::_1));
   server->on("/gauge.min.js", HTTP_GET, std::bind(&WebInterface::handleGaugeJS, this, std::placeholders::_1));
-  AsyncElegantOTA.begin(server); // Start ElegantOTA update server
-
+   server->on("/EspressoMachine.svg", HTTP_GET, std::bind(&WebInterface::handleEspressoSVG, this, std::placeholders::_1));
+ webOTAUpdate.begin(server,"admin","silvia");
 
   // Handle Web Server Events
   events->onConnect(std::bind(&WebInterface::handleEventClient, this,std::placeholders::_1));

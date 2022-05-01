@@ -241,7 +241,7 @@
 
             powerGauge.value = Math.log10(data.heaterPower);
 
-            var rgbcolor = HSVtoRGB(.75 - .75 / 3 * Math.log10(Math.max(data.heaterPower,0.01)), 1, 1);
+            var rgbcolor = HSVtoRGB(.75 - .75 / 3 * Math.log10(Math.max(data.heaterPower,1)), 1, 1);
             var jsoncolor = {};
             jsoncolor.colorBarProgress = "rgba(" + rgbcolor.r + "," + rgbcolor.g + "," + rgbcolor.b + ",1)";
             powerGauge.update(jsoncolor);
