@@ -22,7 +22,7 @@
         #updateForm {
             margin: auto;
             width: 500px;
-        
+
             padding: 10px;
         }
 
@@ -33,9 +33,8 @@
             padding: 10px;
 
         }
-        #updateForm
 
-        #EspressoSVG {
+        #updateForm #EspressoSVG {
             margin: auto;
         }
     </style>
@@ -139,13 +138,18 @@
                     obj.fillable = false;
                 }
                 // this.rp = this.cp < this.fraction ? this.cp : this.frp;
-               if (rp == 0) { return; } else {
-                    obj.ele.style.display = "";
+                if (rp == 0) { return; } else {
+                    //obj.ele.style.display = "";
                     coffeeY = 830 - rp * 150;
                     obj.coffee.setAttribute("y", coffeeY);
                     foamY = 840 - rp * 180;
                     obj.foam.setAttribute("y", foamY);
-                    obj.numbertext.textContent = Math.round(rp * 100);
+                    if (this.progress == -1) {   // set after load
+                        obj.numbertext.textContent = 32;
+                    } else {
+                        obj.numbertext.textContent = Math.round(rp * 100);
+
+                    }
                     if (obj.fillable) {
                         window.requestAnimationFrame(function () { obj.fillErUp(); });
                     }
@@ -161,7 +165,7 @@
                         this.blinklight.setAttribute('style', "fill:#fefefe");
                     }
 
-               }
+                }
             }
 
         };
@@ -227,7 +231,7 @@
             svg = document.getElementById('EspressoSVG').contentDocument
 
             theMachine = new EspressoMachine(svg.getElementById('CombinedImage'),);
-            theMachine.ele.setAttribute('data-rel-percent', 0);
+            theMachine.ele.setAttribute('data-rel-percent', -1);
             theMachine.fillable = false;
             theMachine.reset(false);
             theMachine.fillErUp()
@@ -236,14 +240,14 @@
 
 
     <div id="updateForm">
-     
-            <form id="form1">
-                <input id="file1" type="file" />
+
+        <form id="form1">
+            <input id="file1" type="file" />
 
 
 
-                <button type="button" onclick="postFile()">Upload File</button>
-            </form>
+            <button type="button" onclick="postFile()">Upload File</button>
+        </form>
     </div>
     <div id="ProgressSVG">
         <object id="EspressoSVG" height="60%" type="image/svg+xml" data="EspressoMachine.svg"></object>
