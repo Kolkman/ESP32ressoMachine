@@ -1,56 +1,39 @@
 
-all: include/webpages.h include/pages/test_html.h include/pages/update_html.h 
+all:include/pages/index.html.h include/pages/update.html.h  \
+	include/pages/button.css.h include/pages/ESPresso.css.h \
+	include/pages/gauge.min.js.h include/pages/EspressoMachine.svg.h\
+	include/pages/test.html.h include/pages/test2.html.h
 	@exec true 
 
 
 
-include/webpages.h: include/pages/button_css.h include/pages/index_html.h  include/pages/gauge_min_js.h include/pages/ESPresso_css.h include/pages/EspressoMachine_svg.h
-	@echo "#ifndef PAGES_HEADER" > $@
-	@echo "#define PAGES_HEADER" >> $@
-	@cat $^ >> $@
-	@echo "#endif" >> $@
-	
+include/pages/test.html.h: WEBSources/test.html 
+	@./ProduceDefine.py $< text/html  > $@
+
+include/pages/test2.html.h: WEBSources/test2.html 
+	@./ProduceDefine.py $< text/html  > $@
+
+include/pages/index.html.h: WEBSources/index.html 
+	@./ProduceDefine.py $< text/html  > $@
 
 
+include/pages/button.css.h: WEBsources/button.css
+	@./ProduceDefine.py $< text/css  > $@
 
-include/pages/button_css.h: WEBsources/button.css
-	@cat $< | gzip -c > $<.gz &&  xxd -i $<.gz > $@   && rm $<.gz
+include/pages/ESPresso.css.h: WEBsources/ESPresso.css
+	@./ProduceDefine.py $< text/css  > $@
 
-include/pages/index_html.h: WEBsources/index.html
-	@cat $< | gzip -c > $<.gz &&  xxd -i $<.gz > $@   && rm $<.gz
+include/pages/gauge.min.js.h: WEBSources/gauge.min.js
+	@./ProduceDefine.py $< text/javascript  > $@
 
-include/pages/gauge_min_js.h: WEBsources/gauge.min.js
-	@cat $< | gzip -c > $<.gz &&  xxd -i $<.gz > $@   && rm $<.gz
-
-include/pages/ESPresso_css.h: WEBsources/ESPresso.css
-	@cat $< | gzip -c > $<.gz &&  xxd -i $<.gz > $@   && rm $<.gz
-
-include/pages/test_html.h: WEBsources/test.html
-	@echo "#ifndef PAGES_TEST_HEADER" > $@
-	@echo "#define PAGES_TEST_HEADER" >> $@
-	@cat $< | gzip -c > $<.gz &&  xxd -i $<.gz >> $@  
-	@echo "#endif" >> $@
-	@rm $<.gz
+include/pages/EspressoMachine.svg.h: WEBSources/EspressoMachine.svg
+	@./ProduceDefine.py $< image/svg+xml  > $@
 
 
-include/pages/update_html.h: WEBsources/update.html 
-	@echo "#ifndef PAGES_UPDATE_HEADER" > $@
-	@echo "#define PAGES_UPDATE_HEADER" >> $@
-	@cat $< | gzip -c > $<.gz &&  xxd -i $<.gz >> $@  
-	@echo "#endif" >> $@
-	@rm $<.gz
-
-
-
-include/pages/EspressoMachine_svg.h: WEBsources/EspressoMachine.svg 
-	@echo "#ifndef PAGES_ESPSVG_HEADER" > $@
-	@echo "#define PAGES_ESPSVG_HEADER" >> $@
-	@cat $< | gzip -c > $<.gz &&  xxd -i $<.gz >> $@  
-	@echo "#endif" >> $@
-	@rm $<.gz
-
+include/pages/update.html.h: WEBsources/update.html
+	@./ProduceDefine.py $< text/html  > $@
 
 
 clean:
 	rm include/pages/*
-	rm include/webpages.h
+
