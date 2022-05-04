@@ -193,106 +193,106 @@
 
 
       test.innerHTML = "Temperature " + data.measuredTemperature;
-    <  temperatureGauge.value = data.measuredTemperature;>
+      <  temperatureGauge.value = data.measuredTemperature; >
 
 
-      var jsonHighlights = {};
-      var highlightRange = {};
-      jsonHighlights.highlights = [];
-      highlightRange.from = 80;
-      highlightRange.to = data.targetTemperature - 5.0;
-      highlightRange.color = "rgba(0,0,255,1)";
-      jsonHighlights.highlights.push(highlightRange);
+        var jsonHighlights = { };
+        var highlightRange = { };
+        jsonHighlights.highlights = [];
+        highlightRange.from = 80;
+        highlightRange.to = data.targetTemperature - 5.0;
+        highlightRange.color = "rgba(0,0,255,1)";
+        jsonHighlights.highlights.push(highlightRange);
 
-      highlightRange = {};
-      highlightRange.from = data.targetTemperature - 5.0;
-      highlightRange.to = data.targetTemperature - 2.0;
-      highlightRange.color = "rgba(0, 0 , 255, .5)";
-      jsonHighlights.highlights.push(highlightRange);
+        highlightRange = { };
+        highlightRange.from = data.targetTemperature - 5.0;
+        highlightRange.to = data.targetTemperature - 2.0;
+        highlightRange.color = "rgba(0, 0 , 255, .5)";
+        jsonHighlights.highlights.push(highlightRange);
 
-      highlightRange = {};
-      highlightRange.from = data.targetTemperature - 2.0;
-      highlightRange.to = data.targetTemperature - 1.0;
-      highlightRange.color = "rgba(0, 0 , 255, .25)";
-      jsonHighlights.highlights.push(highlightRange);
+        highlightRange = { };
+        highlightRange.from = data.targetTemperature - 2.0;
+        highlightRange.to = data.targetTemperature - 1.0;
+        highlightRange.color = "rgba(0, 0 , 255, .25)";
+        jsonHighlights.highlights.push(highlightRange);
 
-      highlightRange = {};
-      highlightRange.from = data.targetTemperature - 1.0;
-      highlightRange.to = data.targetTemperature + 1.0;
-      highlightRange.color = "rgba(0, 255 , 0, 1)";
-      jsonHighlights.highlights.push(highlightRange);
+        highlightRange = { };
+        highlightRange.from = data.targetTemperature - 1.0;
+        highlightRange.to = data.targetTemperature + 1.0;
+        highlightRange.color = "rgba(0, 255 , 0, 1)";
+        jsonHighlights.highlights.push(highlightRange);
 
-      highlightRange = {};
-      highlightRange.from = data.targetTemperature + 1.0;
-      highlightRange.to = data.targetTemperature + 2.0;
-      highlightRange.color = "rgba(255, 0 , 0, .25)";
-      jsonHighlights.highlights.push(highlightRange);
+        highlightRange = { };
+        highlightRange.from = data.targetTemperature + 1.0;
+        highlightRange.to = data.targetTemperature + 2.0;
+        highlightRange.color = "rgba(255, 0 , 0, .25)";
+        jsonHighlights.highlights.push(highlightRange);
 
-      highlightRange = {};
-      highlightRange.from = data.targetTemperature + 2.0;
-      highlightRange.to = data.targetTemperature + 5.0;
-      highlightRange.color = "rgba(255, 0, 0, 0.5)";
-      jsonHighlights.highlights.push(highlightRange);
+        highlightRange = { };
+        highlightRange.from = data.targetTemperature + 2.0;
+        highlightRange.to = data.targetTemperature + 5.0;
+        highlightRange.color = "rgba(255, 0, 0, 0.5)";
+        jsonHighlights.highlights.push(highlightRange);
 
-      highlightRange = {};
-      highlightRange.from = data.targetTemperature + 5.0;
-      highlightRange.to = 120;
-      highlightRange.color = "rgba(255, 0, 0, 1)";
-      jsonHighlights.highlights.push(highlightRange);
-
-
-      temperatureGauge.update(jsonHighlights);
-      temperatureGauge.draw();
-
-      powerGauge.value = Math.log10(data.heaterPower);
-
-      var rgbcolor = HSVtoRGB(.75 -.75/3 * Math.log10(data.heaterPower) , 1, 1);
-      var jsoncolor={};
-      jsoncolor.colorBarProgress="rgba("+rgbcolor.r+","+rgbcolor.g+","+rgbcolor.b+",1)";
-      powerGauge.update (jsoncolor);
-      console.log(JSON.stringify(jsoncolor));
-      powerGauge.draw();
+        highlightRange = { };
+        highlightRange.from = data.targetTemperature + 5.0;
+        highlightRange.to = 120;
+        highlightRange.color = "rgba(255, 0, 0, 1)";
+        jsonHighlights.highlights.push(highlightRange);
 
 
-      var pidModeSwitch = document.getElementById("toggle--pwr");
-      var extCtrlSwitch = document.getElementById("toggle--pidext")
-      if (data.powerOffMode) {
-        pidModeSwitch.checked = false;
+        temperatureGauge.update(jsonHighlights);
+        temperatureGauge.draw();
+
+        powerGauge.value = Math.log10(data.heaterPower);
+
+        var rgbcolor = HSVtoRGB(.75 -.75/3 * Math.log10(data.heaterPower) , 1, 1);
+        var jsoncolor={ };
+        jsoncolor.colorBarProgress="rgba("+rgbcolor.r+","+rgbcolor.g+","+rgbcolor.b+",1)";
+        powerGauge.update (jsoncolor);
+        console.log(JSON.stringify(jsoncolor));
+        powerGauge.draw();
+
+
+        var pidModeSwitch = document.getElementById("toggle--pwr");
+        var extCtrlSwitch = document.getElementById("toggle--pidext")
+        if (data.powerOffMode) {
+          pidModeSwitch.checked = false;
       } else {
-        pidModeSwitch.checked = true;
+          pidModeSwitch.checked = true;
       }
 
-      if (data.externalControlMode) {
+        if (data.externalControlMode) {
 
-        extCtrlSwitch.checked = false;
+          extCtrlSwitch.checked = false;
       } else {
 
-        extCtrlSwitch.checked = true;
+          extCtrlSwitch.checked = true;
       }
     }
-    function parseFirmware(data) {
+        function parseFirmware(data) {
       var divFirmware = document.getElementById("firmware")
-      divFirmware.innerHTML = "Firmware:" + data.version;
+        divFirmware.innerHTML = "Firmware:" + data.version;
     }
 
 
-    function pwrSwitch() {
+        function pwrSwitch() {
       if (document.getElementById("toggle--pwr").checked) {
-        // (Heater is OFF)
-        fetch('/api/v1/set?powerOffMode=false');
+          // (Heater is OFF)
+          fetch('/api/v1/set?powerOffMode=false');
       } else {
-        // .(HEATER is ON)
-        fetch('/api/v1/set?powerOffMode=true');
+          // .(HEATER is ON)
+          fetch('/api/v1/set?powerOffMode=true');
       }
     }
 
-    function pidextSwitch() {
+        function pidextSwitch() {
       if (document.getElementById("toggle--pidext").checked) {
-        // (Heater is OFF)
-        fetch('/api/v1/set?externalControlMode=false');
+          // (Heater is OFF)
+          fetch('/api/v1/set?externalControlMode=false');
       } else {
-        // .(External is ON)
-        fetch('/api/v1/set?externalControlMode=true');
+          // .(External is ON)
+          fetch('/api/v1/set?externalControlMode=true');
 
       }
     }
@@ -310,11 +310,11 @@
   <div class="gauges">
 
     <script>
-      document.body.appendChild(temperatureGauge.options.renderTo);
-      document.body.appendChild(powerGauge.options.renderTo);
+        document.body.appendChild(temperatureGauge.options.renderTo);
+        document.body.appendChild(powerGauge.options.renderTo);
 
-      temperatureGauge.draw();
-      powerGauge.draw();
+        temperatureGauge.draw();
+        powerGauge.draw();
     </script>
   </div>
   <div class="hardwareswitches">

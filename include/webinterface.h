@@ -40,11 +40,8 @@ private:
     void handleApiStatus(AsyncWebServerRequest *);
     void handleApiFirmware(AsyncWebServerRequest *);
     void handleApiSet(AsyncWebServerRequest *);
-    void handleESPressoCSS(AsyncWebServerRequest *);
-    void handleGaugeJS(AsyncWebServerRequest *);
-    void handleButtonCSS(AsyncWebServerRequest *);
-    void handleEspressoSVG(AsyncWebServerRequest *);
     void handleEventClient(AsyncEventSourceClient *);
+    void handleFile(AsyncWebServerRequest *, const char *, const unsigned char *, const size_t);
 };
 
 #endif
