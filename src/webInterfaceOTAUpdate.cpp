@@ -4,7 +4,7 @@
 #include "webInterfaceOTAUpdate.h"
 #include <Update.h>
 #include <ESPAsyncWebServer.h>
-#include "pages/update_html.h"
+#include "pages/update.html.h"
 
 webInterfaceOTAUpdate webOTAUpdate;
 
@@ -32,7 +32,8 @@ void webInterfaceOTAUpdate::begin(AsyncWebServer *server, const char *username, 
                 return request->requestAuthentication();
             }
         }
-        AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", WEBsources_update_html_gz, WEBsources_update_html_gz_len);
+        // see update.html.h
+        AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", update_html, update_html_len);
         response->addHeader("Content-Encoding", "gzip");
         request->send(response); });
 

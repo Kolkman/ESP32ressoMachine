@@ -108,7 +108,7 @@ div.buttonPressed {
     padding-bottom: 15px;
 }
 
-a#settingbutton {
+a#settingbutton, input, button {
     color:cornsilk;
     text-align: center;
     border-color: black;

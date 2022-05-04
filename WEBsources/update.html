@@ -139,7 +139,7 @@
                     obj.fillable = false;
                 }
                 // this.rp = this.cp < this.fraction ? this.cp : this.frp;
-                if (rp == 0) { return; } else {
+               if (rp == 0) { return; } else {
                     obj.ele.style.display = "";
                     coffeeY = 830 - rp * 150;
                     obj.coffee.setAttribute("y", coffeeY);
@@ -161,7 +161,7 @@
                         this.blinklight.setAttribute('style', "fill:#fefefe");
                     }
 
-                }
+               }
             }
 
         };
@@ -229,7 +229,7 @@
             theMachine = new EspressoMachine(svg.getElementById('CombinedImage'),);
             theMachine.ele.setAttribute('data-rel-percent', 0);
             theMachine.fillable = false;
-            //  theMachine.reset(true);
+            theMachine.reset(false);
             theMachine.fillErUp()
         });
     </script>
