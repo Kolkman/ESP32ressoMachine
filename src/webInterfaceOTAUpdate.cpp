@@ -32,8 +32,7 @@ void webInterfaceOTAUpdate::begin(AsyncWebServer *server, const char *username, 
                 return request->requestAuthentication();
             }
         }
-        // see update.html.h
-        AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", update_html, update_html_len);
+        AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", update_html, update_html);
         response->addHeader("Content-Encoding", "gzip");
         request->send(response); });
 
