@@ -86,19 +86,15 @@ div.buttonwrapper  a {
 div.buttonwrapper a:visited {
     color: cornsilk;
 }
-
 div.buttonOn{
     background-color: #8e2d18;
 }
 div.buttonOff {
     background-color: #555259;
 }
-
 div.buttonPressed {
     background-color: #4e312b;
 }
-
-
 
 .Settings {
     border-top:1px solid;
@@ -107,7 +103,6 @@ div.buttonPressed {
     padding-top:15px;
     padding-bottom: 15px;
 }
-
 a#settingbutton, input, button {
     color:cornsilk;
     text-align: center;
@@ -121,9 +116,26 @@ a#settingbutton, input, button {
     padding-right: 30px;
     box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
     background-color: #6d18045d;
-
 }
 
-
-
+div#notFoundInfo {
+    width: 80%;
+    margin: auto;
+}
+div#notFoundURI {
+    font-size: large;
+}
+span#notFoundURL {
+    font-family:'Courier New', Courier, monospace;
+}
+div.notFoundArgument {
+    padding-left: 5ex;
+}
+span.notFoundarg {
+    font-family: 'Courier New', Courier, monospace;
+}
+span.notFoundargName {
+    display: inline-block;
+    min-width: 12ex;
+}
 
