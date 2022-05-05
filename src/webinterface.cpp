@@ -44,7 +44,7 @@ WebInterface::~WebInterface()
 void WebInterface::handleNotFound(AsyncWebServerRequest *request)
 {
   String message = htmlHeader;
-  message += "<H1>File Not Found</H1>\n\n";
+  message += "<H1>Error 400 <br/> File Not Found</H1>\n\n";
   message += "<div id=\"notFoundInfo\"><div id=\"notFoundURI\">URI: <span id=\"notFoundURL\">";
   message += request->url();
   message += "</span></div>\n<div id=\"notFoundMethod\">Method: ";
