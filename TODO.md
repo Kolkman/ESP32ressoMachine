@@ -6,4 +6,5 @@
 * Configuration page rewrite.
 * Cleanup, removing commented out code and stale pieces.
 * WIFI managment: password management and act as basestation when WIFI fails so reconfiguration can happen.
-* Redo the updater (AsyncElegantOTA is nice, but I want better visual integration) (see e.g. https://github.com/lbernstone/asyncUpdate/blob/master/AsyncUpdate.ino)
+* Carefully go over the use of the String object - can char * be used?
+

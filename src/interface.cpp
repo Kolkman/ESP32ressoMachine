@@ -37,7 +37,7 @@ void ESPressoInterface::loop()
 void ESPressoInterface::setup()
 {
 
-  setupWebSrv(this->myMachine);
+  setupWebSrv(this->myMachine,WEB_USER,WEB_PASS);
 
 #ifdef ENABLE_TELNET
   setupTelnet();
