@@ -3,21 +3,27 @@
 
 #include <WiFi.h>
 #include <AsyncTCP.h>
-#include <ESPAsyncWebServer.h>
+#include "EspressoWebServer.h"
 #include "ESPressoMachine.h"
+
+
+
 
 class WebInterface
 {
 public:
     WebInterface();
     ~WebInterface();
-    void setupWebSrv(ESPressoMachine *);
+    void setupWebSrv(ESPressoMachine *,const char *username = "", const char *password = "" );
     void eventLoop(String);
 
 private:
     ESPressoMachine *myMachine;
-    AsyncWebServer *server;
+    EspressoWebServer *server;
     AsyncEventSource *events;
+    String _username;
+    String _password;
+    bool _authRequired = false;
     // HTTPUpdateServer *httpUpdater;
 
     void handleNotFound(AsyncWebServerRequest *);
@@ -37,9 +43,6 @@ private:
     void handlePidOff(AsyncWebServerRequest *);
     void handleTuningMode(AsyncWebServerRequest *);
     void handleReset(AsyncWebServerRequest *);
-    void handleApiStatus(AsyncWebServerRequest *);
-    void handleApiFirmware(AsyncWebServerRequest *);
-    void handleApiSet(AsyncWebServerRequest *);
     void handleEventClient(AsyncEventSourceClient *);
     void handleFile(AsyncWebServerRequest *, const char *, const unsigned char *, const size_t);
 };

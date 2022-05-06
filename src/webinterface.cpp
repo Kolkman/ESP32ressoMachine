@@ -12,6 +12,8 @@
 #include "config.h"
 #include <Arduino.h>
 #include "webInterfaceOTAUpdate.h"
+#include "webInterfaceAPI.h"
+
 
 // Various WebSources:
 #include "pages/test.html.h"
@@ -29,7 +31,9 @@
 WebInterface::WebInterface()
 {
   Serial.println("Webinterfce Constructor");
-
+  
+  _username="";
+  _password="";
   server = nullptr;
   myMachine = nullptr;
   events = nullptr;
@@ -39,6 +43,7 @@ WebInterface::WebInterface()
 WebInterface::~WebInterface()
 {
   Serial.println("Webinterfce Destructor");
+
 }
 
 void WebInterface::handleNotFound(AsyncWebServerRequest *request)
@@ -375,151 +380,8 @@ void WebInterface::handleTuningMode(AsyncWebServerRequest *request)
   request->send(200, "text/html", message);
 }
 
-void WebInterface::handleApiStatus(AsyncWebServerRequest *request)
-{
-  String message = myMachine->statusAsJson();
-  request->send(200, "application/json", message);
-}
 
-void WebInterface::handleApiFirmware(AsyncWebServerRequest *request)
-{
-  String message = "{\"version\": \"" + String(CURRENTFIRMWARE) + "-" + String(F(__DATE__)) + ":" + String(F(__TIME__)) + "\"}";
-  request->send(200, "application/json", message);
-}
 
-String addjson(bool &firstarg, String argument, String value)
-{
-  String msg = "";
-  if (!firstarg)
-    msg += ",";
-  else
-    firstarg = false;
-  msg += "\"" + argument + "\":" + value;
-  return msg;
-}
-
-void WebInterface::handleApiSet(AsyncWebServerRequest *request)
-{
-  bool reconf = false;
-  bool firstarg = true;
-
-  String message = "{";
-
-  for (uint8_t i = 0; i < request->args(); i++)
-  {
-    if (request->argName(i) == "tset")
-    {
-      message += addjson(firstarg, "tset", request->arg(i));
-      myMachine->myConfig->targetTemp = ((request->arg(i)).toDouble());
-    }
-    else if (request->argName(i) == "tband")
-    {
-      message += addjson(firstarg, "tband", request->arg(i));
-      myMachine->myConfig->temperatureBand = ((request->arg(i)).toDouble());
-    }
-    else if (request->argName(i) == "epwr")
-    {
-      message += addjson(firstarg, "EqPwr", request->arg(i));
-      myMachine->myConfig->eqPwr = ((request->arg(i)).toDouble());
-    }
-    else if (request->argName(i) == "pgain")
-    {
-      message += addjson(firstarg, "pgain", request->arg(i));
-      myMachine->myConfig->nearTarget.P = ((request->arg(i)).toDouble());
-      reconf = true;
-    }
-    else if (request->argName(i) == "igain")
-    {
-      message += addjson(firstarg, "igain", request->arg(i));
-      myMachine->myConfig->nearTarget.I = ((request->arg(i)).toDouble());
-      reconf = true;
-    }
-    else if (request->argName(i) == "dgain")
-    {
-      message += addjson(firstarg, "pgain", request->arg(i));
-      myMachine->myConfig->nearTarget.D = ((request->arg(i)).toDouble());
-      reconf = true;
-    }
-    else if (request->argName(i) == "apgain")
-    {
-      message += addjson(firstarg, "pgain", request->arg(i));
-      myMachine->myConfig->awayTarget.P = ((request->arg(i)).toDouble());
-      reconf = true;
-    }
-    else if (request->argName(i) == "aigain")
-    {
-      message += addjson(firstarg, "igain", request->arg(i));
-      myMachine->myConfig->awayTarget.I = ((request->arg(i)).toDouble());
-      reconf = true;
-    }
-    else if (request->argName(i) == "adgain")
-    {
-      message += addjson(firstarg, "pgain", request->arg(i));
-      myMachine->myConfig->awayTarget.D = ((request->arg(i)).toDouble());
-      reconf = true;
-    }
-    else if (request->argName(i) == "powerOffMode")
-    {
-      if (String("true").equalsIgnoreCase(request->arg(i)))
-      {
-        myMachine->powerOffMode = true;
-        message += addjson(firstarg, "powerOffMode", "true");
-      }
-      else
-      {
-        myMachine->powerOffMode = false;
-        message += addjson(firstarg, "powerOffMode", "false");
-      }
-    }
-
-    else if (request->argName(i) == "externalControlMode")
-    {
-      if (String("true").equalsIgnoreCase(request->arg(i)))
-      {
-        myMachine->externalControlMode = true;
-        message += addjson(firstarg, "externalControlMode", "true");
-      }
-      else
-      {
-        myMachine->externalControlMode = false;
-        message += addjson(firstarg, "externalControlMode", "false");
-      }
-    }
-
-#ifdef DEBUG
-    else if (request->argName(i) == "PidInterval")
-    {
-      message += addjson(firstarg, "PidInterval", request->arg(i));
-      myMachine->myConfig->pidInt = ((request->arg(i)).toInt());
-      reconf = true;
-    }
-    else if (request->argName(i) == "HeaterInterval")
-    {
-      message += addjson(firstarg, "HeaterInterval", request->arg(i));
-      myMachine->myConfig->heaterInterval = (abs((request->arg(i)).toInt()));
-      reconf = true;
-    }
-    else if (request->argName(i) == "SensorSampleInterval")
-    {
-      message += addjson(firstarg, "Sensor Sample Interval", request->arg(i));
-      myMachine->myConfig->sensorSampleInterval = ((request->arg(i)).toInt());
-      // reconfig not needed
-    }
-    else if (request->argName(i) == "maxCool")
-    {
-      message += addjson(firstarg, "Max Cool", request->arg(i));
-      myMachine->myConfig->maxCool = ((request->arg(i)).toDouble());
-    }
-
-#endif
-  }
-  if (reconf)
-  {
-    myMachine->reConfig(); // apply all settings
-  }
-  message += "}";
-  request->send(200, "application/json", message);
-}
 
 void WebInterface::handleReset(AsyncWebServerRequest *request)
 {
@@ -530,11 +392,12 @@ void WebInterface::handleReset(AsyncWebServerRequest *request)
   ESP.restart();
 }
 
-void WebInterface::setupWebSrv(ESPressoMachine *machine)
+void WebInterface::setupWebSrv(ESPressoMachine *machine, const char *username, const char *password )
 {
   myMachine = machine;
+
   Serial.println("Setting up  Webserver");
-  server = new AsyncWebServer(80);
+  server = new EspressoWebServer(80,username,password);
   if (server == nullptr)
     Serial.println("SERIAL NULLPTR");
 
@@ -560,13 +423,10 @@ void WebInterface::setupWebSrv(ESPressoMachine *machine)
   server->on("/pid_off", HTTP_GET, std::bind(&WebInterface::handlePidOff, this, std::placeholders::_1));
   server->onNotFound(std::bind(&WebInterface::handleNotFound, this, std::placeholders::_1));
   server->on("/reset", HTTP_GET, std::bind(&WebInterface::handleReset, this, std::placeholders::_1));
-  server->on("/api/v1/status", HTTP_GET, std::bind(&WebInterface::handleApiStatus, this, std::placeholders::_1));
-  server->on("/api/v1/firmware", HTTP_GET, std::bind(&WebInterface::handleApiFirmware, this, std::placeholders::_1));
-  server->on("/api/v1/set", HTTP_GET, std::bind(&WebInterface::handleApiSet, this, std::placeholders::_1));
+  
 
-
-
-  webOTAUpdate.begin(server, "admin", "silvia");
+  webAPI.begin(server, myMachine);
+  webOTAUpdate.begin(server);
   //definitions generated by MAKE
 DEF_HANDLE_test_html
 DEF_HANDLE_index_html
@@ -598,7 +458,6 @@ void WebInterface::handleEventClient(AsyncEventSourceClient *client)
 
 void WebInterface::eventLoop(String statusJson)
 {
-
-  Serial.println("Sending data");
+  //Serial.println("Sending data");
   events->send(statusJson.c_str(), "status", millis());
 }

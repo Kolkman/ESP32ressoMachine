@@ -8,31 +8,23 @@
 
 webInterfaceOTAUpdate webOTAUpdate;
 
-void webInterfaceOTAUpdate::begin(AsyncWebServer *server, const char *username, const char *password)
+void webInterfaceOTAUpdate::begin(EspressoWebServer *server)
 {
     _server = server;
 
-    if (strlen(username) > 0)
-    {
-        _authRequired = true;
-        _username = username;
-        _password = password;
-    }
-    else
-    {
-        _authRequired = false;
-        _username = "";
-        _password = "";
-    }
+   
+    _server->on("/update/", HTTP_GET, [&](AsyncWebServerRequest *request){
+          request->redirect("/update.html");
+    });
 
-    _server->on("/update", HTTP_GET, [&](AsyncWebServerRequest *request)
+    _server->on("/update", HTTP_GET, [&](AsyncWebServerRequest *request){
+          request->redirect("/update.html");
+    });
+
+    _server->on("/update.html", HTTP_GET, [&](AsyncWebServerRequest *request)
                 {
-        if(_authRequired){
-            if(!request->authenticate(_username.c_str(), _password.c_str())){
-                return request->requestAuthentication();
-            }
-        }
-        AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", update_html, update_html);
+        _server->authenticate(request);
+        AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", update_html, update_html_len);
         response->addHeader("Content-Encoding", "gzip");
         request->send(response); });
 
@@ -46,14 +38,7 @@ void webInterfaceOTAUpdate::begin(AsyncWebServer *server, const char *username, 
 
 void webInterfaceOTAUpdate::handleDoUpdate(AsyncWebServerRequest *request, const String &filename, size_t index, uint8_t *data, size_t len, bool final)
 {
-
-    if (_authRequired)
-    {
-        if (!request->authenticate(_username.c_str(), _password.c_str()))
-        {
-            return request->requestAuthentication();
-        }
-    }
+    _server->authenticate(request);
 
     if (!index)
     {
