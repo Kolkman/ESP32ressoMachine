@@ -96,7 +96,6 @@ void setup()
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
   delay(2);
-  Serial.println("something");
 
   // setup the Machine
 
@@ -108,5 +107,7 @@ void setup()
 
 void loop()
 {
-  if (myRancilio.heatLoop())  myRancilio.myInterface->loop();
+  if (myRancilio.heatLoop()) {
+      myRancilio.myInterface->loop();
+  }
 }
