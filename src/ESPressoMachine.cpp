@@ -42,9 +42,10 @@ void ESPressoMachine::startMachine()
     }
     catch (char *errstr)
     {
-        if (strcmp(errstr, "ThermoCoupleFail")){
+        if (strcmp(errstr, "ThermoCoupleFail"))
+        {
             Serial.println("Couldnot Setup sensor (Thermo Couple Fail");
-            oldTemp=19; // Some random but descent value
+            oldTemp = 19; // Some random but descent value
         }
         else
             throw;
@@ -62,7 +63,7 @@ void ESPressoMachine::startMachine()
 
 void ESPressoMachine::manageTemp()
 {
-   
+
     inputTemp = mySensor->getTemp(oldTemp);
 
     if (!(abs(myConfig->targetTemp - inputTemp) >= myConfig->temperatureBand) &&
@@ -102,16 +103,16 @@ String ESPressoMachine::statusAsJson()
 bool ESPressoMachine::heatLoop()
 {
     time_now = millis();
-    bool returnval=false; // returns true when PID cycle was executed.
+    bool returnval = false; // returns true when PID cycle was executed.
 #ifdef ENABLE_SWITCH_DETECTION
     loopSwitch();
 #endif
 
-    mySensor->updateTempSensor(myConfig->sensorSampleInterval);    
- 
+    mySensor->updateTempSensor(myConfig->sensorSampleInterval);
+
     if ((max(time_now, time_last) - min(time_now, time_last)) >= myConfig->pidInt or time_last > time_now)
     {
-        manageTemp();   
+        manageTemp();
 
         updatePIDSettings();
         if (powerOffMode == true)
@@ -126,7 +127,7 @@ bool ESPressoMachine::heatLoop()
         }
         else if (tuning == true)
         {
-            myTuner->tuning_loop();  //<<< ==== TODO
+            myTuner->tuning_loop();
         }
         else if (myPID->Compute() == true)
         {
@@ -138,10 +139,12 @@ bool ESPressoMachine::heatLoop()
             myHeater->setHeatPowerPercentage(outputPwr);
         }
         time_last = time_now;
-        returnval=true;
+        stats entry = {time_now, inputTemp, outputPwr};
+        addStatistic(entry);
+        returnval = true;
     }
     myHeater->updateHeater();
-    return(returnval);
+    return (returnval);
 }
 
 void ESPressoMachine::updatePIDSettings()
@@ -225,5 +228,63 @@ void ESPressoMachine::reConfig()
         // force reinitialize PID at equibrilibrium-power (manually determined)
 
         myPID->SetTunings(myConfig->nearTarget.P, myConfig->nearTarget.I, myConfig->nearTarget.D, P_ON_M);
+    }
+}
+
+StatsStore::StatsStore()
+{
+    skip = 0;
+    storage[0] = '[';
+    for (int i = 1; i < (STATS_SIZE - 1); i++)
+    {
+        storage[i] = ' ';
+    }
+    storage[STATS_SIZE - 1] = ']';
+    storage[STATS_SIZE] = '\0';
+   
+}
+
+char *StatsStore::getStatistics()
+{
+    return storage;
+}
+
+void StatsStore::addStatistic(stats s)
+{
+
+    char statline[STAT_LINELENGTH + 1];
+
+    // This Stringformat is 45 char's long. Modify it and things break.
+    sprintf(statline, "{\"t\":%.10u,\"T\":%.3e,\"p\":%.3e}", s.time, s.temp, s.power);
+
+    // Move all statlines one entry to the left. start with moving the last but one entry
+    // also take the preceding comma
+    if (skip<2) // skip a few times, during startup the first string is not written
+    {
+        skip++;
+        char *r = strncpy((storage+1), statline, STAT_LINELENGTH);
+    }
+    else
+    {
+
+        for (int i = (STAT_ENTRIES - 2); i > 0; i--)
+        {
+            char *s = storage + i * (STAT_LINELENGTH + 1);
+            char *d = s + STAT_LINELENGTH + 1;
+            strncpy(d, s, STAT_LINELENGTH + 1);
+        }
+        // Now copy the first item to the second and inject a comma
+        {
+
+            storage[STAT_LINELENGTH + 1] = ',';
+
+            char *s = storage + 1;
+            char *d = s + STAT_LINELENGTH + 1;
+            strncpy(d, s, STAT_LINELENGTH);
+
+            // Now copy the new data in place
+            d = s;
+            char *r = strncpy(d, statline, STAT_LINELENGTH);
+        }
     }
 }
