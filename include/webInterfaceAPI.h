@@ -16,7 +16,7 @@ private:
     void handleStatus(AsyncWebServerRequest *);
     void handleFirmware(AsyncWebServerRequest *);
     void handleSet(AsyncWebServerRequest *);
-
+   void handleStats(AsyncWebServerRequest *);
 };
 
 extern webInterfaceAPI webAPI;

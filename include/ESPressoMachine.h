@@ -36,9 +36,48 @@ extern uint8_t mac[6];
 
 extern boolean externalControlMode;
 
+
+
+struct stats
+{
+  unsigned long time;
+  double temp;
+  double power;
+};
+
+
+
+
+
+// This is the length of the statline
+// in StatsStore::addStatistics "{\"t\":%.10u,\"T\":%.3e,\"p\":%.3e}"
+// its exact size is critical - without trailing 0.
+#define STAT_LINELENGTH 44
+#define STAT_ENTRIES 400 // must be larger than 1
+// Amount of statlines to keep around. 
+#define STATS_SIZE STAT_ENTRIES*(STAT_LINELENGTH+1) + 1  //   
+
+class StatsStore {
+  // class to store stats - all static assigned
+  public:
+    StatsStore();
+    void addStatistic(stats);
+    char * getStatistics();
+
+  private:
+   char storage[STATS_SIZE];
+   int skip;
+};
+
+
+
+
 class ESPressoInterface; // forward declaratin
 
-class ESPressoMachine
+
+// The EspressoMachine Class is the storage of all components and
+// data, hence it is alsoo a StatsStore
+class ESPressoMachine: public StatsStore
 {
 public:
   ESPressoMachine();
@@ -49,6 +88,8 @@ public:
 
   void reConfig(); // Apply all config in the Config object to the machine
 
+  // An esspresso machine has a PID, a boiler/heater, a config, a sensor
+  // a tuner, and an interface.
   PID *myPID;
   Heater *myHeater;
   EspressoConfig *myConfig; // contains all configurable variables

@@ -1,6 +1,6 @@
 
 // Code fragments from
-// https://github.com/lbernstone/asyncUpdate/blob/master/AsyncUpdate.ino
+// https://github.com/lbernstone/asyncUpdate/bb/master/AsyncUpdate.ino
 
 #include "webInterfaceAPI.h"
 #include <ESPAsyncWebServer.h>
@@ -22,10 +22,10 @@ void webInterfaceAPI::begin(EspressoWebServer *server, ESPressoMachine *machine)
     Serial.println("_Machine is a null pointer");
     throw("webInterfaceAPI::begin ESPresspMachine * is a NULL PTR");
   }
-
   _server->on("/api/v1/status", HTTP_GET, std::bind(&webInterfaceAPI::handleStatus, this, std::placeholders::_1));
   _server->on("/api/v1/firmware", HTTP_GET, std::bind(&webInterfaceAPI::handleFirmware, this, std::placeholders::_1));
   _server->on("/api/v1/set", HTTP_GET, std::bind(&webInterfaceAPI::handleSet, this, std::placeholders::_1));
+  _server->on("/api/v1/statistics", HTTP_GET, std::bind(&webInterfaceAPI::handleStats, this, std::placeholders::_1));
 }
 
 void webInterfaceAPI::handleStatus(AsyncWebServerRequest *request)
@@ -51,17 +51,11 @@ String addjson(bool &firstarg, String argument, String value)
   return msg;
 }
 
-/*
-void webInterfaceAPI::authenticate(AsyncWebServerRequest *request)
+
+void webInterfaceAPI::handleStats(AsyncWebServerRequest *request)
 {
-
-  if (!request->authenticate(_server->getUsername(), _server->getPassword()))
-  {
-
-    return request->requestAuthentication();
-  }
+request->send(200, "application/json", _machine->getStatistics());
 };
-*/
 
 void webInterfaceAPI::handleSet(AsyncWebServerRequest *request)
 {
