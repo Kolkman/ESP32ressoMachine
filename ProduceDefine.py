@@ -26,7 +26,7 @@ print()
 #
 _compr = gzip.compress(bytes(_data, 'utf-8'))
 
-print("unsigned char "+_name+"[] = {{{}}};".format(", ".join(bytes_to_c_arr(_compr))))
+print("unsigned char "+_name+"[] = {{{}}};".format(",".join(bytes_to_c_arr(_compr))))
 print("unsigned int "+_name+"_len = ", len(_compr),";")
 
 
