@@ -24,6 +24,7 @@ void webInterfaceAPI::begin(EspressoWebServer *server, ESPressoMachine *machine)
   }
   _server->on("/api/v1/status", HTTP_GET, std::bind(&webInterfaceAPI::handleStatus, this, std::placeholders::_1));
   _server->on("/api/v1/firmware", HTTP_GET, std::bind(&webInterfaceAPI::handleFirmware, this, std::placeholders::_1));
+  _server->on("/api/v1/get", HTTP_GET, std::bind(&webInterfaceAPI::handleGet, this, std::placeholders::_1));
   _server->on("/api/v1/set", HTTP_GET, std::bind(&webInterfaceAPI::handleSet, this, std::placeholders::_1));
   _server->on("/api/v1/statistics", HTTP_GET, std::bind(&webInterfaceAPI::handleStats, this, std::placeholders::_1));
 }
@@ -51,12 +52,100 @@ String addjson(bool &firstarg, String argument, String value)
   return msg;
 }
 
-
 void webInterfaceAPI::handleStats(AsyncWebServerRequest *request)
 {
-request->send(200, "application/json", _machine->getStatistics());
+  request->send(200, "application/json", _machine->getStatistics());
 };
 
+void webInterfaceAPI::handleGet(AsyncWebServerRequest *request)
+{
+  bool firstarg = true;
+  String message = "{";
+  for (uint8_t i = 0; i < request->args(); i++)
+  {
+    if (request->argName(i) == "tset")
+    {
+      message += addjson(firstarg, "tset",
+                         String(_machine->myConfig->targetTemp));
+    }
+    else if (request->argName(i) == "tband")
+    {
+      message += addjson(firstarg, "tband",
+                         String(_machine->myConfig->temperatureBand));
+    }
+
+    else if (request->argName(i) == "epwr")
+    {
+      message += addjson(firstarg, "EqPwr",
+                         String(_machine->myConfig->eqPwr));
+    }
+    else if (request->argName(i) == "pgain")
+    {
+      message += addjson(firstarg, "pgain",
+                         String(_machine->myConfig->nearTarget.P));
+    }
+    else if (request->argName(i) == "igain")
+    {
+      message += addjson(firstarg, "igain",
+                         String(_machine->myConfig->nearTarget.I));
+    }
+    else if (request->argName(i) == "dgain")
+    {
+      message += addjson(firstarg, "pgain",
+                         String(_machine->myConfig->nearTarget.D));
+    }
+    else if (request->argName(i) == "apgain")
+    {
+      message += addjson(firstarg, "pgain",
+                         String(_machine->myConfig->awayTarget.P));
+    }
+    else if (request->argName(i) == "aigain")
+    {
+      message += addjson(firstarg, "igain",
+                         String(_machine->myConfig->awayTarget.I));
+    }
+    else if (request->argName(i) == "adgain")
+    {
+      message += addjson(firstarg, "pgain",
+                         String(_machine->myConfig->awayTarget.D));
+    }
+    else if (request->argName(i) == "powerOffMode")
+    {
+      char msg[6];
+      if (_machine->powerOffMode) strcpy(msg,"true"); else strcpy(msg,"false");
+      message += addjson(firstarg, "powerOffMode", msg);
+    }
+    else if (request->argName(i) == "externalControlMode")
+    {
+      char msg[6];
+      if (_machine->externalControlMode) strcpy(msg,"true"); else strcpy(msg,"false");
+
+      message += addjson(firstarg, "externalControlMode", msg );
+    }
+    else if (request->argName(i) == "PidInterval")
+    {
+      message += addjson(firstarg, "PidInterval",
+                         String(_machine->myConfig->pidInt));
+    }
+    else if (request->argName(i) == "HeaterInterval")
+    {
+      message += addjson(firstarg, "HeaterInterval",
+                         String(_machine->myConfig->heaterInterval));
+    }
+    else if (request->argName(i) == "SensorSampleInterval")
+    {
+      message += addjson(firstarg, "Sensor Sample Interval",
+                         String(_machine->myConfig->sensorSampleInterval));
+    }
+    else if (request->argName(i) == "maxCool")
+    {
+      message += addjson(firstarg, "maxCool",
+                         String(_machine->myConfig->maxCool));
+    }
+  }
+  message += "}";
+  request->send(200, "application/json", message);
+}
 void webInterfaceAPI::handleSet(AsyncWebServerRequest *request)
 {
   bool reconf = false;
@@ -147,7 +236,6 @@ void webInterfaceAPI::handleSet(AsyncWebServerRequest *request)
       }
     }
 
-#ifdef DEBUG
     else if (request->argName(i) == "PidInterval")
     {
       message += addjson(firstarg, "PidInterval", request->arg(i));
@@ -171,8 +259,6 @@ void webInterfaceAPI::handleSet(AsyncWebServerRequest *request)
       message += addjson(firstarg, "Max Cool", request->arg(i));
       _machine->myConfig->maxCool = ((request->arg(i)).toDouble());
     }
-
-#endif
   }
   if (reconf)
   {

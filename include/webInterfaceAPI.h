@@ -16,6 +16,7 @@ private:
     void handleStatus(AsyncWebServerRequest *);
     void handleFirmware(AsyncWebServerRequest *);
     void handleSet(AsyncWebServerRequest *);
+    void handleGet(AsyncWebServerRequest *);
    void handleStats(AsyncWebServerRequest *);
 };
 
