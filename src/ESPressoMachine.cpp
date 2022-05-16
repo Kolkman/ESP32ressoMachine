@@ -241,7 +241,6 @@ StatsStore::StatsStore()
     }
     storage[STATS_SIZE - 1] = ']';
     storage[STATS_SIZE] = '\0';
-   
 }
 
 char *StatsStore::getStatistics()
@@ -255,36 +254,35 @@ void StatsStore::addStatistic(stats s)
     char statline[STAT_LINELENGTH + 1];
 
     // This Stringformat is 45 char's long. Modify it and things break.
-    sprintf(statline, "{\"t\":%.10u,\"T\":%.3e,\"p\":%.3e}", s.time, s.temp, s.power);
+    sprintf(statline, "{\"t\":%10.u,\"T\":%.3e,\"p\":%.3e}", s.time, s.temp, s.power);
 
-    // Move all statlines one entry to the left. start with moving the last but one entry
-    // also take the preceding comma
-    if (skip<2) // skip a few times, during startup the first string is not written
+    // Move all statlines one entry to the right. start with moving the last but one entry
+    // also take the succeeding comma
+    if (skip < 2) // skip a few times, during startup the first string is not written
     {
         skip++;
-        char *r = strncpy((storage+1), statline, STAT_LINELENGTH);
+        char *r = strncpy((storage + 1 + (STAT_ENTRIES - 1) * (STAT_LINELENGTH + 1)), statline, STAT_LINELENGTH);
     }
     else
     {
-
-        for (int i = (STAT_ENTRIES - 2); i > 0; i--)
+        char *s;
+        char *d;
+        for (int i = 0; i < (STAT_ENTRIES - 2); i++)
         {
-            char *s = storage + i * (STAT_LINELENGTH + 1);
-            char *d = s + STAT_LINELENGTH + 1;
+            s = storage + 1 + (i+1) * (STAT_LINELENGTH + 1);  
+            d = storage + 1 + i*(STAT_LINELENGTH + 1);
             strncpy(d, s, STAT_LINELENGTH + 1);
         }
-        // Now copy the first item to the second and inject a comma
-        {
+        // Now copy the last but item to the second but last one and inject a comma
 
-            storage[STAT_LINELENGTH + 1] = ',';
+        storage[STATS_SIZE - STAT_LINELENGTH - 2] = ',';
 
-            char *s = storage + 1;
-            char *d = s + STAT_LINELENGTH + 1;
-            strncpy(d, s, STAT_LINELENGTH);
+        s = storage + (STATS_SIZE - STAT_LINELENGTH - 1);
+        d = s - STAT_LINELENGTH - 1;
+        strncpy(d, s, STAT_LINELENGTH);
 
-            // Now copy the new data in place
-            d = s;
-            char *r = strncpy(d, statline, STAT_LINELENGTH);
-        }
+        // Now copy the new data in place
+        d = (storage + 1 + (STAT_ENTRIES - 1) * (STAT_LINELENGTH + 1));
+        char *r = strncpy(d, statline, STAT_LINELENGTH);
     }
 }
