@@ -14,6 +14,7 @@ public:
 private:
     EspressoWebServer *_server;
     size_t content_len;
+    bool UpdateError;
 
 };
 

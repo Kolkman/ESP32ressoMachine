@@ -51,7 +51,7 @@
             if (this.progress = ele.getAttribute("data-rel-percent")) {
                 console.log(this.progress)
             } else {
-                console.log("Seeting Progress")
+                console.log("Setting Progress")
                 ele.setAttribute("data-rel-percent", 0);
                 this.progress = 0;
             }
@@ -159,6 +159,7 @@
                     LeftFlowY = -240 + rp * 900;
                     //matrix(1,0,0,1,449.172,48.2491)
                     this.coffeeFlowLeft.setAttribute('transform', "matrix(1,0,0,1,450," + LeftFlowY + ")");
+                    this.coffeeFlowLeft.setAttribute("transition","transform 10s");
                     if (Math.floor(rp * 7) == Math.round(rp * 7)) {
                         this.blinklight.setAttribute('style', "fill:#ff7900");
                     } else {
@@ -182,16 +183,23 @@
     <script>
         function postFile() {
             var formdata = new FormData();
-
             formdata.append('file1', document.getElementById('file1').files[0]);
 
             var request = new XMLHttpRequest();
 
+            request.onreadystatechange = function () {
+                
+                if (this.readyState == 4 /* && this.status != 200 */) {
+                    document.getElementById("done").innerHTML =
+                        this.responseText;
+                    request.abort();
+                }
+            };
+
             request.upload.addEventListener('progress', function (e) {
                 var file1Size = document.getElementById('file1').files[0].size;
                 console.log(file1Size);
-
-
+            
                 if (e.loaded <= file1Size) {
                     var percent = Math.round(e.loaded / file1Size * 100);
                     theMachine.ele.setAttribute('data-rel-percent', percent);
@@ -199,20 +207,32 @@
                     theMachine.reset(empty);
                     theMachine.fillErUp()
                 }
-
                 if (e.loaded == e.total) {
-                    document.getElementById('done').innerHTML = "DONE! - Rebooting";
-                    setTimeout(() => { window.location = "/"; }, 4000);
-
-
+                    console.log("File Uploaded");
+                 
+                    theMachine.ele.setAttribute('data-rel-percent', 100);
+                    theMachine.reset(empty);
+                    theMachine.fillErUp();
+                    setTimeout(() => { slowreboot(); }, 4000);
                 }
+
             });
+        
+
 
             request.open('post', '/doUpdate');
             request.timeout = 45000;
             request.send(formdata);
         }
 
+        function slowreboot {
+            setTimeout(() => { document.getElementById('done').innerHTML = "DONE! - Rebooting in 5"; }, 1000);
+            setTimeout(() => { document.getElementById('done').innerHTML = "DONE! - Rebooting in 4"; }, 2000);
+            setTimeout(() => { document.getElementById('done').innerHTML = "DONE! - Rebooting in 3"; }, 3000);
+            setTimeout(() => { document.getElementById('done').innerHTML = "DONE! - Rebooting in 2"; }, 4000);
+            setTimeout(() => { document.getElementById('done').innerHTML = "DONE! - Rebooting in 2"; }, 5000);
+            setTimeout(() => { window.location = "/"; }, 6000);
+        }
 
 
 
@@ -243,9 +263,6 @@
 
         <form id="form1">
             <input id="file1" type="file" />
-
-
-
             <button type="button" onclick="postFile()">Upload File</button>
         </form>
     </div>
@@ -255,6 +272,9 @@
 
 
     <div id="done"></div>
+
+
+
 
 
 </body>
