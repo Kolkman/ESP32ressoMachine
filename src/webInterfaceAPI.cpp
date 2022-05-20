@@ -177,7 +177,7 @@ void webInterfaceAPI::handleSet(AsyncWebServerRequest *request)
     if (request->argName(i) == "tset")
     {
       server->authenticate(request);
-      int t = (request->arg(i)).toDouble();
+      double t = (request->arg(i)).toDouble();
       if (t > MAXTEMP)
         t = MAXTEMP; // bit of a safety thing
       myMachine->myConfig->targetTemp = (t);

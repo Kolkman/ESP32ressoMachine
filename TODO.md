@@ -1,4 +1,4 @@
-# TODO
+# TODO and known bugs
 
 * Most of the code has be refactored to be object orriented. The OO design could do with a review.
 * The simmulation code has not been integratd or tested. Behavior is unpredicted.
@@ -9,6 +9,7 @@
 * Carefully go over the use of the String object - can/should char * be used?
 * WebAPI crashes server - needs fixing.
 * TuningMode is now broken.
-* Mace MQTT topic configurable 
+* Make MQTT topic configurable 
+* timeseries management after PidInterval changed (graph flows over to the left or doesn't occupy whole with.)
 
 

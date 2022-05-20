@@ -30,7 +30,7 @@
 
   const configNames = ["tset", "tband", "eqPwr", "pgain", "igain", "dgain",
     "apgain", "aigain", "adgain", "PidInterval", "HeaterInterval",
-    "sensorSampleInterval", "maxCool"];
+    "sensorSampleInterval", "maxCool", "powerOffMode"];
 
   const tuningNames = ["tunethres", "tunestep"]
 
@@ -99,9 +99,30 @@
     }, false);
 
     tuningForm.addEventListener('submit', (event) => {
+      configerror = false;
       event.preventDefault(); //stop form submission
       var argObj = { form: tuningForm, errordiv: 'tuneform-errormessage' };
       tuningNames.forEach(GetFormValues, argObj);
+      if (!configerror) {
+        param = new URLSearchParams(configuration);
+        var setapi = url + "/api/v1/set?" + param.toString();
+        console.log(setapi);
+        fetch(setapi)
+          .then(function (response) {
+            return response.json()
+          })
+          .then(function (data) {
+            console.log(data);
+            setFormDefaults(data, tuningForm, tuningNames);
+
+          })
+          .catch(function (err) {
+            console.log('error' + err);
+          });
+        Errordiv = document.getElementById("tuneform-errormessage");
+        Errordiv.textContent = "New Values Set"
+        console.log(setapi);
+      }
     }, false);
 
 
@@ -111,21 +132,36 @@
   function setFormDefaults(data, form, fieldnames) {
     fieldnames.forEach(setFormValues);
     function setFormValues(value) {
-      if (typeof data[value] !== 'undefined') {
-        form.elements[value].value = data[value];
-        //reset the colors
-        form.elements[value].style.backgroundColor = "cornsilk";
+
+      if (value == "powerOffMode") {
+        var pidModeSwitch = document.getElementById("toggle--pwr");
+        if (data.powerOffMode) {
+          pidModeSwitch.checked = false;
+        } else {
+          pidModeSwitch.checked = true;
+        }
       } else {
-        console.log("value not found: " + value)
+        if (typeof data[value] !== 'undefined') {
+
+          form.elements[value].value = data[value];
+          //reset the colors
+          form.elements[value].style.backgroundColor = "cornsilk";
+          form.elements[value].addEventListener('click', function onClick(event) {
+            form.elements[value].style.backgroundColor = "#E0BFB8";
+          });
+
+        } else {
+          console.log("value not found: " + value)
+        }
+
+
       }
-      form.elements[value].addEventListener('click', function onClick(event) {
-        form.elements[value].style.backgroundColor = "#E0BFB8";
-      });
     }
   };
 
   function GetFormValues(value) { // NB thisArg sets this with the forEach() function
     Errordiv = document.getElementById(this['errordiv']);
+    if (value == "powerOffMode") return;
     const e = this['form'].elements[value];
     var n = parseFloat(e.value);
     if (isNaN(n)) {
