@@ -1,20 +1,21 @@
-body{
+body {
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-    background: linear-gradient(0deg, #8e2d18 0%, #626262 10% );
-    color:antiquewhite;
-   }
-   
-html, body {
+    background: #626262;
+    color: antiquewhite;
+}
+
+html,
+body {
     margin: 0;
     height: 100%;
 }
 
 div.gauges {
-    width:100%;
-    margin:auto;
+    width: 100%;
+    margin: auto;
 }
 
-canvas{
+canvas {
     display: block;
     width: 300px;
     margin: auto;
@@ -23,12 +24,12 @@ canvas{
 
 h1 {
     text-align: center;
-   color: cornsilk;
-   background-color: #8e2d18;
-   font-size: xx-large ;
-   padding: 10px;
-   letter-spacing: .4em;
-   margin-bottom: 1em;
+    color: cornsilk;
+    background-color: #8e2d18;
+    font-size: xx-large;
+    padding: 10px;
+    letter-spacing: .4em;
+    margin-bottom: 1em;
 
 }
 
@@ -36,38 +37,39 @@ h1 {
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
     font-weight: normal;
     font-size: xx-small;
-    color:#caa299;
+    color: #caa299;
     margin-bottom: 1em;
-    text-transform: lowercase;  
-    padding-top:2ex;
-    border-top:1px solid;
-    border-top-color:#8e2d18;    /* Red */
+    text-transform: lowercase;
+    padding-top: 2ex;
+    border-top: 1px solid;
+    border-top-color: #8e2d18;
+    /* Red */
 }
 
 
 
-div.hardwareswitches{
+div.hardwareswitches {
 
     display: block;
     padding: 1em;
     min-width: 295px;
-    width:50%;
-    margin-left:auto;
-    margin-right:auto;
+    width: 50%;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 
 
 div.switchlabel {
-    text-align: center;   
+    text-align: center;
     margin-top: 3ex;
     margin-bottom: 1ex;
 }
 
 
-div.buttonwrapper div  {
+div.buttonwrapper div {
     display: inline-block;
-    color:cornsilk;
+    color: cornsilk;
     text-align: center;
     border-color: black;
     border: solid #000;
@@ -76,35 +78,42 @@ div.buttonwrapper div  {
     border-width: 1 1px;
     border-radius: 12px;
     width: 40%;
-    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
-div.buttonwrapper  a {
+div.buttonwrapper a {
     color: cornsilk;
     text-decoration: none;
 }
+
 div.buttonwrapper a:visited {
     color: cornsilk;
 }
-div.buttonOn{
+
+div.buttonOn {
     background-color: #8e2d18;
 }
+
 div.buttonOff {
     background-color: #555259;
 }
+
 div.buttonPressed {
     background-color: #4e312b;
 }
 
 .Settings {
-    border-top:1px solid;
-    margin-top:5px;
-  
-    padding-top:15px;
+    border-top: 1px solid;
+    margin-top: 5px;
+
+    padding-top: 15px;
     padding-bottom: 15px;
 }
-a#settingbutton, input, button {
-    color:cornsilk;
+
+a#settingbutton,
+input,
+button {
+    color: cornsilk;
     text-align: center;
     border-color: black;
     border: solid #000;
@@ -114,7 +123,7 @@ a#settingbutton, input, button {
     border-radius: 12px;
     padding-left: 30px;
     padding-right: 30px;
-    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
     background-color: #6d18045d;
 }
 
@@ -122,20 +131,98 @@ div#notFoundInfo {
     width: 80%;
     margin: auto;
 }
+
 div#notFoundURI {
     font-size: large;
 }
+
 span#notFoundURL {
-    font-family:'Courier New', Courier, monospace;
+    font-family: 'Courier New', Courier, monospace;
 }
+
 div.notFoundArgument {
     padding-left: 5ex;
 }
+
 span.notFoundarg {
     font-family: 'Courier New', Courier, monospace;
 }
+
 span.notFoundargName {
     display: inline-block;
     min-width: 12ex;
 }
 
+div#graph {
+    background-color: lightgray;
+}
+
+#configform {
+    margin-left: 3%;
+    margin-right: 3%;
+}
+
+.formParameterValuePair {
+    border-top: .5px dotted black;
+    display: grid;
+    grid-template-columns: minmax(180px, 0.6fr) 1fr ;
+    margin-top:1ex;
+
+}
+
+.formValue input {
+    background-color: #e0e0e0;
+    border-radius: 0px;
+    padding-left: 0;
+    padding-right: 0;
+    width: 15ex;
+    color: black;
+    font-family:'Courier New', Courier, monospace;
+    font-weight:bolder;
+}
+
+.PIDParameterValuePair {
+    display: grid;
+    grid-template-columns: minmax(22px,.1fr) 1fr ;
+ 
+
+}
+
+.formParameterValuePair.PID{
+    margin-top: 3ex;
+}
+
+.ManagementAndPower{
+    margin: 5ex;
+    grid-template-columns: 1fr 1fr;
+
+}
+.Management{
+
+    display: grid;
+     
+    margin-left: 3%;
+
+    grid-template-columns: minmax(150px, 0.2fr) 1fr;
+}
+
+
+.configblock{
+    display: inline-block;
+    min-width: 300px;
+    width: 48%;
+}
+
+form {
+    border-top: 1px solid cornsilk;
+    padding-top:1ex;
+    border-bottom: 1px solid cornsilk;
+    padding-bottom:1ex;
+  /*  display:grid;
+    grid-template-columns: 1fr 1fr;*/
+    margin: 5ex;
+}
+
+.footermaterial{
+    margin: 5ex;
+}

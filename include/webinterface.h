@@ -15,7 +15,7 @@ public:
     WebInterface();
     ~WebInterface();
     void setupWebSrv(ESPressoMachine *,const char *username = "", const char *password = "" );
-    void eventLoop(String);
+    void eventLoop();
 
 private:
     ESPressoMachine *myMachine;
@@ -25,7 +25,6 @@ private:
     String _password;
     bool _authRequired = false;
     // HTTPUpdateServer *httpUpdater;
-
     void handleNotFound(AsyncWebServerRequest *);
     void handleRoot(AsyncWebServerRequest *);
     void handleConfig(AsyncWebServerRequest *);

@@ -9,30 +9,30 @@ webInterfaceAPI webAPI;
 
 webInterfaceAPI::webInterfaceAPI()
 {
-  _server = nullptr;
-  _machine = nullptr;
+  server = nullptr;
+  myMachine = nullptr;
 }
 
-void webInterfaceAPI::begin(EspressoWebServer *server, ESPressoMachine *machine)
+void webInterfaceAPI::begin(EspressoWebServer *s, ESPressoMachine *m)
 {
-  _server = server;
-  _machine = machine;
-  if (_machine == nullptr)
+  server = s;
+  myMachine = m;
+  if (myMachine == nullptr)
   {
     Serial.println("_Machine is a null pointer");
     throw("webInterfaceAPI::begin ESPresspMachine * is a NULL PTR");
   }
-  _server->on("/api/v1/status", HTTP_GET, std::bind(&webInterfaceAPI::handleStatus, this, std::placeholders::_1));
-  _server->on("/api/v1/firmware", HTTP_GET, std::bind(&webInterfaceAPI::handleFirmware, this, std::placeholders::_1));
-  _server->on("/api/v1/get", HTTP_GET, std::bind(&webInterfaceAPI::handleGet, this, std::placeholders::_1));
-  _server->on("/api/v1/set", HTTP_GET, std::bind(&webInterfaceAPI::handleSet, this, std::placeholders::_1));
-  _server->on("/api/v1/statistics", HTTP_GET, std::bind(&webInterfaceAPI::handleStats, this, std::placeholders::_1));
+  server->on("/api/v1/status", HTTP_GET, std::bind(&webInterfaceAPI::handleStatus, this, std::placeholders::_1));
+  server->on("/api/v1/firmware", HTTP_GET, std::bind(&webInterfaceAPI::handleFirmware, this, std::placeholders::_1));
+  server->on("/api/v1/get", HTTP_GET, std::bind(&webInterfaceAPI::handleGet, this, std::placeholders::_1));
+  server->on("/api/v1/set", HTTP_GET, std::bind(&webInterfaceAPI::handleSet, this, std::placeholders::_1));
+  server->on("/api/v1/statistics", HTTP_GET, std::bind(&webInterfaceAPI::handleStats, this, std::placeholders::_1));
 }
 
 void webInterfaceAPI::handleStatus(AsyncWebServerRequest *request)
 {
-  String message = _machine->statusAsJson();
-  request->send(200, "application/json", message);
+  myMachine->setMachineStatus();
+  request->send(200, "application/json", myMachine->machineStatus);
 }
 
 void webInterfaceAPI::handleFirmware(AsyncWebServerRequest *request)
@@ -41,109 +41,128 @@ void webInterfaceAPI::handleFirmware(AsyncWebServerRequest *request)
   request->send(200, "application/json", message);
 }
 
-String addjson(bool &firstarg, String argument, String value)
+void addjson(char *msg, bool &firstarg, String argument, String value)
 {
-  String msg = "";
   if (!firstarg)
-    msg += ",";
+    strcat(msg, ",");
   else
     firstarg = false;
-  msg += "\"" + argument + "\":" + value;
-  return msg;
+  char addition[50];
+  ("\"" + argument + "\":" + value).toCharArray(addition, 50);
+  strcat(msg, addition);
+  return;
 }
 
 void webInterfaceAPI::handleStats(AsyncWebServerRequest *request)
 {
-  request->send(200, "application/json", _machine->getStatistics());
+  request->send(200, "application/json", myMachine->getStatistics());
 };
 
 void webInterfaceAPI::handleGet(AsyncWebServerRequest *request)
 {
   bool firstarg = true;
-  String message = "{";
+  char message[2048]; // This is sufficiently big.
+  strcpy(message, "{");
+
   for (uint8_t i = 0; i < request->args(); i++)
   {
     if (request->argName(i) == "tset")
     {
-      message += addjson(firstarg, "tset",
-                         String(_machine->myConfig->targetTemp));
+      addjson(message, firstarg, "tset",
+              String(myMachine->myConfig->targetTemp));
     }
     else if (request->argName(i) == "tband")
     {
-      message += addjson(firstarg, "tband",
-                         String(_machine->myConfig->temperatureBand));
+      addjson(message, firstarg, "tband",
+              String(myMachine->myConfig->temperatureBand));
     }
 
-    else if (request->argName(i) == "epwr")
+    else if (request->argName(i) == "eqPwr")
     {
-      message += addjson(firstarg, "EqPwr",
-                         String(_machine->myConfig->eqPwr));
+      addjson(message, firstarg, "eqPwr",
+              String(myMachine->myConfig->eqPwr));
     }
     else if (request->argName(i) == "pgain")
     {
-      message += addjson(firstarg, "pgain",
-                         String(_machine->myConfig->nearTarget.P));
+      addjson(message, firstarg, "pgain",
+              String(myMachine->myConfig->nearTarget.P));
     }
     else if (request->argName(i) == "igain")
     {
-      message += addjson(firstarg, "igain",
-                         String(_machine->myConfig->nearTarget.I));
+      addjson(message, firstarg, "igain",
+              String(myMachine->myConfig->nearTarget.I));
     }
     else if (request->argName(i) == "dgain")
     {
-      message += addjson(firstarg, "pgain",
-                         String(_machine->myConfig->nearTarget.D));
+      addjson(message, firstarg, "dgain",
+              String(myMachine->myConfig->nearTarget.D));
     }
     else if (request->argName(i) == "apgain")
     {
-      message += addjson(firstarg, "pgain",
-                         String(_machine->myConfig->awayTarget.P));
+      addjson(message, firstarg, "apgain",
+              String(myMachine->myConfig->awayTarget.P));
     }
     else if (request->argName(i) == "aigain")
     {
-      message += addjson(firstarg, "igain",
-                         String(_machine->myConfig->awayTarget.I));
+      addjson(message, firstarg, "aigain",
+              String(myMachine->myConfig->awayTarget.I));
     }
     else if (request->argName(i) == "adgain")
     {
-      message += addjson(firstarg, "pgain",
-                         String(_machine->myConfig->awayTarget.D));
+      addjson(message, firstarg, "adgain",
+              String(myMachine->myConfig->awayTarget.D));
     }
     else if (request->argName(i) == "powerOffMode")
     {
       char msg[6];
-      if (_machine->powerOffMode) strcpy(msg,"true"); else strcpy(msg,"false");
-      message += addjson(firstarg, "powerOffMode", msg);
+      if (myMachine->powerOffMode)
+        strcpy(msg, "true");
+      else
+        strcpy(msg, "false");
+      addjson(message, firstarg, "powerOffMode", msg);
     }
     else if (request->argName(i) == "externalControlMode")
     {
       char msg[6];
-      if (_machine->externalControlMode) strcpy(msg,"true"); else strcpy(msg,"false");
+      if (myMachine->externalControlMode)
+        strcpy(msg, "true");
+      else
+        strcpy(msg, "false");
 
-      message += addjson(firstarg, "externalControlMode", msg );
+      addjson(message, firstarg, "externalControlMode", msg);
     }
     else if (request->argName(i) == "PidInterval")
     {
-      message += addjson(firstarg, "PidInterval",
-                         String(_machine->myConfig->pidInt));
+      addjson(message, firstarg, "PidInterval",
+              String(myMachine->myConfig->pidInt));
     }
     else if (request->argName(i) == "HeaterInterval")
     {
-      message += addjson(firstarg, "HeaterInterval",
-                         String(_machine->myConfig->heaterInterval));
+      addjson(message, firstarg, "HeaterInterval",
+              String(myMachine->myConfig->heaterInterval));
     }
-    else if (request->argName(i) == "SensorSampleInterval")
+    else if (request->argName(i) == "sensorSampleInterval")
     {
-      message += addjson(firstarg, "Sensor Sample Interval",
-                         String(_machine->myConfig->sensorSampleInterval));
+      addjson(message, firstarg, "sensorSampleInterval",
+              String(myMachine->myConfig->sensorSampleInterval));
     }
     else if (request->argName(i) == "maxCool")
     {
-      message += addjson(firstarg, "maxCool",
-                         String(_machine->myConfig->maxCool));
+      addjson(message, firstarg, "maxCool",
+              String(myMachine->myConfig->maxCool));
+    }
+    else if (request->argName(i) == "tunethres")
+    {
+      addjson(message, firstarg, "tunethres",
+              String(myMachine->myTuner->getTuneThres()));
+    }
+    else if (request->argName(i) == "tunestep")
+    {
+      addjson(message, firstarg, "tunestep",
+              String(myMachine->myTuner->getTuneStep()));
     }
   }
-  message += "}";
+  strcat(message, "}");
   request->send(200, "application/json", message);
 }
 void webInterfaceAPI::handleSet(AsyncWebServerRequest *request)
@@ -151,74 +170,76 @@ void webInterfaceAPI::handleSet(AsyncWebServerRequest *request)
   bool reconf = false;
   bool firstarg = true;
 
-  String message = "{";
-
+  char message[2048]; // This is sufficiently big to store all key:val combinations
+  strcpy(message, "{");
   for (uint8_t i = 0; i < request->args(); i++)
   {
-
     if (request->argName(i) == "tset")
     {
-      _server->authenticate(request);
-      message += addjson(firstarg, "tset", request->arg(i));
-      _machine->myConfig->targetTemp = ((request->arg(i)).toDouble());
+      server->authenticate(request);
+      int t = (request->arg(i)).toDouble();
+      if (t > MAXTEMP)
+        t = MAXTEMP; // bit of a safety thing
+      myMachine->myConfig->targetTemp = (t);
+      addjson(message, firstarg, "tset", String(t));
     }
     else if (request->argName(i) == "tband")
     {
-      message += addjson(firstarg, "tband", request->arg(i));
-      _machine->myConfig->temperatureBand = ((request->arg(i)).toDouble());
+      addjson(message, firstarg, "tband", request->arg(i));
+      myMachine->myConfig->temperatureBand = ((request->arg(i)).toDouble());
     }
-    else if (request->argName(i) == "epwr")
+    else if (request->argName(i) == "eqPwr")
     {
-      message += addjson(firstarg, "EqPwr", request->arg(i));
-      _machine->myConfig->eqPwr = ((request->arg(i)).toDouble());
+      addjson(message, firstarg, "eqPwr", request->arg(i));
+      myMachine->myConfig->eqPwr = ((request->arg(i)).toDouble());
     }
     else if (request->argName(i) == "pgain")
     {
-      message += addjson(firstarg, "pgain", request->arg(i));
-      _machine->myConfig->nearTarget.P = ((request->arg(i)).toDouble());
+      addjson(message, firstarg, "pgain", request->arg(i));
+      myMachine->myConfig->nearTarget.P = ((request->arg(i)).toDouble());
       reconf = true;
     }
     else if (request->argName(i) == "igain")
     {
-      message += addjson(firstarg, "igain", request->arg(i));
-      _machine->myConfig->nearTarget.I = ((request->arg(i)).toDouble());
+      addjson(message, firstarg, "igain", request->arg(i));
+      myMachine->myConfig->nearTarget.I = ((request->arg(i)).toDouble());
       reconf = true;
     }
     else if (request->argName(i) == "dgain")
     {
-      message += addjson(firstarg, "pgain", request->arg(i));
-      _machine->myConfig->nearTarget.D = ((request->arg(i)).toDouble());
+      addjson(message, firstarg, "dgain", request->arg(i));
+      myMachine->myConfig->nearTarget.D = ((request->arg(i)).toDouble());
       reconf = true;
     }
     else if (request->argName(i) == "apgain")
     {
-      message += addjson(firstarg, "pgain", request->arg(i));
-      _machine->myConfig->awayTarget.P = ((request->arg(i)).toDouble());
+      addjson(message, firstarg, "apgain", request->arg(i));
+      myMachine->myConfig->awayTarget.P = ((request->arg(i)).toDouble());
       reconf = true;
     }
     else if (request->argName(i) == "aigain")
     {
-      message += addjson(firstarg, "igain", request->arg(i));
-      _machine->myConfig->awayTarget.I = ((request->arg(i)).toDouble());
+      addjson(message, firstarg, "aigain", request->arg(i));
+      myMachine->myConfig->awayTarget.I = ((request->arg(i)).toDouble());
       reconf = true;
     }
     else if (request->argName(i) == "adgain")
     {
-      message += addjson(firstarg, "pgain", request->arg(i));
-      _machine->myConfig->awayTarget.D = ((request->arg(i)).toDouble());
+      addjson(message, firstarg, "adgain", request->arg(i));
+      myMachine->myConfig->awayTarget.D = ((request->arg(i)).toDouble());
       reconf = true;
     }
     else if (request->argName(i) == "powerOffMode")
     {
       if (String("true").equalsIgnoreCase(request->arg(i)))
       {
-        _machine->powerOffMode = true;
-        message += addjson(firstarg, "powerOffMode", "true");
+        myMachine->powerOffMode = true;
+        addjson(message, firstarg, "powerOffMode", "true");
       }
       else
       {
-        _machine->powerOffMode = false;
-        message += addjson(firstarg, "powerOffMode", "false");
+        myMachine->powerOffMode = false;
+        addjson(message, firstarg, "powerOffMode", "false");
       }
     }
 
@@ -226,44 +247,59 @@ void webInterfaceAPI::handleSet(AsyncWebServerRequest *request)
     {
       if (String("true").equalsIgnoreCase(request->arg(i)))
       {
-        _machine->externalControlMode = true;
-        message += addjson(firstarg, "externalControlMode", "true");
+        myMachine->externalControlMode = true;
+        addjson(message, firstarg, "externalControlMode", "true");
       }
       else
       {
-        _machine->externalControlMode = false;
-        message += addjson(firstarg, "externalControlMode", "false");
+        myMachine->externalControlMode = false;
+        addjson(message, firstarg, "externalControlMode", "false");
       }
     }
 
     else if (request->argName(i) == "PidInterval")
     {
-      message += addjson(firstarg, "PidInterval", request->arg(i));
-      _machine->myConfig->pidInt = ((request->arg(i)).toInt());
+      addjson(message, firstarg, "PidInterval", request->arg(i));
+      myMachine->myConfig->pidInt = ((request->arg(i)).toInt());
       reconf = true;
     }
     else if (request->argName(i) == "HeaterInterval")
     {
-      message += addjson(firstarg, "HeaterInterval", request->arg(i));
-      _machine->myConfig->heaterInterval = (abs((request->arg(i)).toInt()));
+      addjson(message, firstarg, "HeaterInterval", request->arg(i));
+      myMachine->myConfig->heaterInterval = (abs((request->arg(i)).toInt()));
       reconf = true;
     }
-    else if (request->argName(i) == "SensorSampleInterval")
+    else if (request->argName(i) == "sensorSampleInterval")
     {
-      message += addjson(firstarg, "Sensor Sample Interval", request->arg(i));
-      _machine->myConfig->sensorSampleInterval = ((request->arg(i)).toInt());
+      addjson(message, firstarg, "sensorSampleInterval", request->arg(i));
+      myMachine->myConfig->sensorSampleInterval = ((request->arg(i)).toInt());
       // reconfig not needed
     }
     else if (request->argName(i) == "maxCool")
     {
-      message += addjson(firstarg, "Max Cool", request->arg(i));
-      _machine->myConfig->maxCool = ((request->arg(i)).toDouble());
+      addjson(message, firstarg, "maxCool", request->arg(i));
+      myMachine->myConfig->maxCool = ((request->arg(i)).toDouble());
+    }
+    else if (request->argName(i) == "tunethres")
+    {
+      addjson(message, firstarg, "tunethres", request->arg(i));
+
+      myMachine->myTuner->setTuneThres((request->arg(i)).toDouble());
+    }
+    else if (request->argName(i) == "tunestep")
+    {
+      addjson(message, firstarg, "tunestep", request->arg(i));
+      myMachine->myTuner->setTuneThres((request->arg(i)).toDouble());
+      if ((request->arg(i)).toDouble() > 110)
+      { // failsafe
+        myMachine->myTuner->setTuneThres(110);
+      }
     }
   }
   if (reconf)
   {
-    _machine->reConfig(); // apply all settings
+    myMachine->reConfig(); // apply all settings
   }
-  message += "}";
+  strcat(message, "}");
   request->send(200, "application/json", message);
 }

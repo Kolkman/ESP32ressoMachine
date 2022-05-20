@@ -84,10 +84,10 @@ void ESPressoMachine::manageTemp()
 // This method reports the MAchine's innternal status to the world. It knows about attributes
 // from all parent classess too...
 
-String ESPressoMachine::statusAsJson()
-{
+void ESPressoMachine::setMachineStatus()
+{   
+    machineStatus="";
     StaticJsonDocument<1024> statusObject;
-    String outputString;
     statusObject["time"] = time_now;
     statusObject["measuredTemperature"] = inputTemp;
     statusObject["targetTemperature"] = myConfig->targetTemp;
@@ -96,8 +96,8 @@ String ESPressoMachine::statusAsJson()
     statusObject["externalButtonState"] = buttonState;
     statusObject["powerOffMode"] = powerOffMode;
     statusObject["tuning"] = tuning;
-    serializeJson(statusObject, outputString);
-    return outputString;
+    statusObject["heap"] = ESP.getFreeHeap();
+    serializeJson(statusObject, machineStatus);
 }
 
 bool ESPressoMachine::heatLoop()
@@ -255,7 +255,7 @@ void StatsStore::addStatistic(stats s)
 
     // This Stringformat is 45 char's long. Modify it and things break.
     sprintf(statline, "{\"t\":%10.u,\"T\":%.3e,\"p\":%.3e}", s.time, s.temp, s.power);
-
+ 
     // Move all statlines one entry to the right. start with moving the last but one entry
     // also take the succeeding comma
     if (skip < 2) // skip a few times, during startup the first string is not written
