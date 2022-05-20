@@ -10,8 +10,8 @@ public:
     void begin(EspressoWebServer *server, ESPressoMachine * );
     webInterfaceAPI();
 private:
-    EspressoWebServer *_server;
-    ESPressoMachine * _machine;
+    EspressoWebServer *server;
+    ESPressoMachine * myMachine;
     size_t content_len;
     void handleStatus(AsyncWebServerRequest *);
     void handleFirmware(AsyncWebServerRequest *);

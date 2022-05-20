@@ -14,24 +14,26 @@ ESPressoInterface::ESPressoInterface(ESPressoMachine *machine)
 void ESPressoInterface::serialStatus()
 {
 #ifdef ENABLE_SERIAL
-  Serial.println(myMachine->statusAsJson());
+  myMachine->setMachineStatus();
+  Serial.println(myMachine->machineStatus);
 #endif
 };
 
 void ESPressoInterface::loop()
 {
+  myMachine->setMachineStatus();
 #ifdef ENABLE_SERIAL
-  // serialStatus(); //bit noisy
+  // serialStatus(machineStatus); //bit noisy
 #endif
 
 #ifdef ENABLE_TELNET
-  loopTelnet(myMachine->statusAsJson());
+  loopTelnet(myMachine->machineStatus);
 #endif
 #ifdef ENABLE_MQTT
-  loopMQTT(myMachine->statusAsJson());
+  loopMQTT(myMachine->machineStatus);
 #endif
-
-  eventLoop(myMachine->statusAsJson());
+  // This Eventloop invokes
+  eventLoop();
 }
 
 void ESPressoInterface::setup()

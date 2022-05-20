@@ -1,0 +1,380 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" type="text/css" href="button.css" media="all" />
+  <link rel="stylesheet" type="text/css" href="ESPresso.css" media="all" />
+  <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+</head>
+
+<script src='https://d3js.org/d3.v4.min.js'> // D3 library needed for the graph </script>
+<script src="drawtimeseries.js"> //draws the graph </script>
+<script src="firmware.js"></script>
+
+<script> // Power Switch Script 
+  function pwrSwitch() {
+    if (document.getElementById("toggle--pwr").checked) {
+      // (Heater is OFF)
+      fetch('/api/v1/set?powerOffMode=false');
+    } else {
+      // .(HEATER is ON)
+      fetch('/api/v1/set?powerOffMode=true');
+    }
+  }
+</script>
+
+
+<script> // Hanles the forms.
+
+
+  const configNames = ["tset", "tband", "eqPwr", "pgain", "igain", "dgain",
+    "apgain", "aigain", "adgain", "PidInterval", "HeaterInterval",
+    "sensorSampleInterval", "maxCool"];
+
+  const tuningNames = ["tunethres", "tunestep"]
+
+  var configuration = {};
+  var configerror = false;
+
+  window.addEventListener("load", function () {
+    const configForm = document.getElementById('configForm');
+    const tuningForm = document.getElementById('tuningForm');
+
+
+    var getapi = url + "/api/v1/get?"
+    fieldnames = configNames.concat(tuningNames);
+    configNames.concat(tuningNames).forEach(ConstructGetAPI);
+    function ConstructGetAPI(value) {
+      getapi += value + "&";
+    }
+    getapi = getapi.slice(0, -1); //strim extraneous &
+    console.log("geturl: " + getapi);
+    fetch(getapi)
+      .then(function (response) {
+        return response.json()
+      })
+      .then(function (data) {
+
+        setFormDefaults(data, configForm, configNames);
+        setFormDefaults(data, tuningForm, tuningNames);
+      })
+      .catch(function (err) {
+        console.log('error' + err);
+      });
+
+
+
+    configForm.addEventListener('submit', (event) => {
+      event.preventDefault(); //stop form submission
+      // chec on all input
+      configerror = false;
+      var argObj = { form: configForm, errordiv: 'confform-errormessage' };
+      configNames.forEach(GetFormValues, argObj);
+
+      if (!configerror) {
+        param = new URLSearchParams(configuration);
+        var setapi = url + "/api/v1/set?" + param.toString();
+
+        console.log(setapi);
+        fetch(setapi)
+          .then(function (response) {
+            return response.json()
+          })
+          .then(function (data) {
+            console.log(data);
+            setFormDefaults(data, configForm, configNames);
+            /*            tsetvalspan = document.getElementById("tsetval");
+                        trangeminspan = document.getElementById("trangemin");
+                        trangemaxspan = document.getElementById("trangemax");
+                        tsetvalspan.textContent = data['tset']; */
+
+          })
+          .catch(function (err) {
+            console.log('error' + err);
+          });
+        Errordiv = document.getElementById("confform-errormessage");
+        Errordiv.textContent = "New Values Set"
+      }
+    }, false);
+
+    tuningForm.addEventListener('submit', (event) => {
+      event.preventDefault(); //stop form submission
+      var argObj = { form: tuningForm, errordiv: 'tuneform-errormessage' };
+      tuningNames.forEach(GetFormValues, argObj);
+    }, false);
+
+
+  }); // End of window.addEventListener
+
+
+  function setFormDefaults(data, form, fieldnames) {
+    fieldnames.forEach(setFormValues);
+    function setFormValues(value) {
+      if (typeof data[value] !== 'undefined') {
+        form.elements[value].value = data[value];
+        //reset the colors
+        form.elements[value].style.backgroundColor = "cornsilk";
+      } else {
+        console.log("value not found: " + value)
+      }
+      form.elements[value].addEventListener('click', function onClick(event) {
+        form.elements[value].style.backgroundColor = "#E0BFB8";
+      });
+    }
+  };
+
+  function GetFormValues(value) { // NB thisArg sets this with the forEach() function
+    Errordiv = document.getElementById(this['errordiv']);
+    const e = this['form'].elements[value];
+    var n = parseFloat(e.value);
+    if (isNaN(n)) {
+      Errordiv.textContent = "Error " + value + "should be a number (" + n + ")";
+      e.style.backgroundColor = "red";
+      configerror = true;
+      return
+    }
+    if (n < 0) {
+      Errordiv.textContent = "Error: " + value + " should be positive";
+      e.style.backgroundColor = "red";
+      configerror = true;
+      return
+    }
+
+    if (value === "tset" && n > 110) {
+      Errordiv.textContent = "Warning: tset set to maximum allowed of 110";
+      e.style.backgroundColor = "orange";
+      e.value = 110;
+      configuration["tset"] = 110;
+    }
+    configuration[value] = n;
+  };
+
+
+
+
+</script>
+
+
+
+
+<body>
+  <h1>Configuration</h1>
+  <div id="graph" style="margin-left:3%; margin-right:3%"></div>
+
+  <form id="configForm">
+
+    <div class="configblock">
+
+      <div class="formParameterValuePair">
+        <div class="formParameter">
+          Target Temperature
+        </div>
+        <div class="formValue">
+          <input type="text" name="tset" value="">
+        </div>
+      </div>
+
+      <div class="formParameterValuePair">
+        <div class="formParameter">
+          Threshold for PID control
+        </div>
+        <div class="formValue">
+          <input type="text" name="tband" value="">
+        </div>
+      </div>
+
+      <div class="formParameterValuePair">
+        <div class="formParameter">
+          Estimated power to maintain Equilibrium at <span id="tsetval"></span>
+        </div>
+        <div class="formValue">
+          <input type="text" name="eqPwr" value="">
+        </div>
+      </div>
+
+      <div class="formParameterValuePair">
+        <div class="formParameter">
+          Pid Interval
+        </div>
+        <div class="formValue">
+          <input type="text" name="PidInterval" value="">
+        </div>
+      </div>
+
+      <div class="formParameterValuePair">
+        <div class="formParameter">
+          Heater Interval
+        </div>
+        <div class="formValue">
+          <input type="text" name="HeaterInterval" value="">
+        </div>
+      </div>
+      <div class="formParameterValuePair">
+        <div class="formParameter">
+          Sensor Sample Interval Sample
+        </div>
+        <div class="formValue">
+          <input type="text" name="sensorSampleInterval" value="">
+        </div>
+      </div>
+      <div class="formParameterValuePair">
+        <div class="formParameter">
+          Max Cool (natural cooling rate &deg;/c)
+        </div>
+        <div class="formValue">
+          <input type="text" name="maxCool" value="">
+        </div>
+      </div>
+    </div>
+    <div class="configblock">
+      <div class="formParameterValuePair PID">
+        <div class="formParameter">
+          PID within <span id="trangemin"></span> to <span id="trangemax"></span> band
+        </div>
+        <div class="formValue">
+          <div class="PIDParameterValuePair">
+            <div class="formParameter">
+              P
+            </div>
+            <div class="formValue">
+              <input type="text" name="pgain" value="">
+            </div>
+          </div>
+          <div class="PIDParameterValuePair">
+            <div class="formParameter">
+              I
+            </div>
+            <div class="formValue">
+
+              <input type="text" name="igain" value="">
+            </div>
+          </div>
+          <div class="PIDParameterValuePair">
+            <div class="formParameter">
+              D
+            </div>
+            <div class="formValue">
+
+              <input type="text" name="dgain" value="">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="formParameterValuePair PID">
+        <div class="formParameter">
+          PID from oudside the band
+        </div>
+        <div class="formValue">
+          <div class="PIDParameterValuePair">
+            <div class="formParameter">
+              P
+            </div>
+            <div class="formValue">
+              <input type="text" name="apgain" value="">
+            </div>
+          </div>
+          <div class="PIDParameterValuePair">
+            <div class="formParameter">
+              I
+            </div>
+            <div class="formValue">
+              <input type="text" name="aigain" value="">
+            </div>
+          </div>
+
+          <div class="PIDParameterValuePair">
+            <div class="formParameter">
+              D
+            </div>
+            <div class="formValue">
+              <input type="text" name="adgain" value="">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="submit">
+        <input type="submit" value="Submit">
+        <span id="confform-errormessage"></span>
+      </div>
+    </div>
+  </form>
+
+
+
+
+  <div class="ManagementAndPower">
+    <div class="configblock">
+
+      <div class="Management">
+        <div><a href="./loadconf"><button>Load Config</button></a></div>
+        <div><a href="./update"><button>Update Firmware</button></a></div>
+        <div><a href="./saveconf"><button>Save Config</button></a></div>
+        <div><a href="./reset"><button>Reset Device</button></a></div>
+        <div><a href="./resetconf"><button>Reset Config to Default</button></a></div>
+      </div>
+    </div>
+    <div class="configblock">
+      <div class="hardwareswitches">
+        <div class="switchwrapper">
+          <div class="switchlabel">Heater Powerswitch</div>
+          <div class="toggle toggle--switch">
+            <input type="checkbox" id="toggle--pwr" class="toggle--checkbox" onclick="pwrSwitch()">
+            <label class="toggle--btn" for="toggle--pwr"><span class="toggle--feature" data-label-on="ON"
+                data-label-off="OFF"></span></label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+  <!-- <form action="set_tuning" id="tuningForm"> -->
+  <form id="tuningForm">
+    <div>
+      <div class="configblock">
+        <div class="formParameterValuePair">
+          <div class="formParameter">
+            Tuning Threshold (&deg;C)
+          </div>
+          <div class="formValue">
+            <input type="text" name="tunethres" value="">
+          </div>
+        </div>
+
+        <div class="formParameterValuePair">
+          <div class="formParameter">
+            Tuning Power (heater)
+          </div>
+          <div class="formValue">
+            <input type="text" name="tunestep" value="">
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+    <div> <input type="submit" value="Submit"> <span id="tuneform-errormessage"></span></div>
+    <div></div>
+    <div> <a href="./tuningmode"><button style="background-color:#98B4D4">Start PID Tuning
+          Mode</button></a></div>
+
+  </form>
+
+
+  <div class="footermaterial">
+    <a href="/"><button>Back</button></a>
+    <hr />
+    <div id='firmware'></div>
+    <hr />
+  </div>
+
+
+
+</body>

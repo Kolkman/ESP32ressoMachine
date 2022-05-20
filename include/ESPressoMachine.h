@@ -19,24 +19,14 @@
 // should not be needed
 #define MAX_ERROR 2
 
+#define MAXTEMP 110 // maximum temperature to take as target vallue
+                    // bit of a safety measure
 /////////////////////////////////////////////////
-// global variables
-
-// extern double gPIDint;
-
-// extern double gEqPwr;
-
-// extern double gMAXsample;
-
-// extern unsigned long time_now;
-// extern unsigned long time_last;
 
 extern int gButtonState;
 extern uint8_t mac[6];
 
 extern boolean externalControlMode;
-
-
 
 struct stats
 {
@@ -45,44 +35,41 @@ struct stats
   double power;
 };
 
-
-
-
-
 // This is the length of the statline
-// in StatsStore::addStatistics "{\"t\":%.10u,\"T\":%.3e,\"p\":%.3e}"
+// in StatsStore::addStatistics "{\"t\":%10.u,\"T\":%.3e,\"p\":%.3e}"
 // its exact size is critical - without trailing 0.
 #define STAT_LINELENGTH 44
-#define STAT_ENTRIES 400 // must be larger than 1
-// Amount of statlines to keep around. 
-#define STATS_SIZE STAT_ENTRIES*(STAT_LINELENGTH+1) + 1  //   
+    
+// Amount of statlines to keep around.
+// must be larger than 1 and will cause problems when to big, consistently causes
+// crashes when to big (in conversion to String somewher in the webserver code). 
+// 500 seems to be fine.
+#define STAT_ENTRIES 500 
+#define STATS_SIZE STAT_ENTRIES *(STAT_LINELENGTH + 1) + 1 //
 
-class StatsStore {
+class StatsStore
+{
   // class to store stats - all static assigned
-  public:
-    StatsStore();
-    void addStatistic(stats);
-    char * getStatistics();
+public:
+  StatsStore();
+  void addStatistic(stats);
+  char *getStatistics();
 
-  private:
-   char storage[STATS_SIZE];
-   int skip;
+private:
+  char storage[STATS_SIZE];
+  int skip;
 };
-
-
-
 
 class ESPressoInterface; // forward declaratin
 
-
 // The EspressoMachine Class is the storage of all components and
 // data, hence it is alsoo a StatsStore
-class ESPressoMachine: public StatsStore
+class ESPressoMachine : public StatsStore
 {
 public:
   ESPressoMachine();
   void manageTemp();
-  String statusAsJson();
+  void setMachineStatus();
   void startMachine();
   bool heatLoop(); // returnes true if the loop executed something
 
@@ -109,6 +96,7 @@ public:
   bool powerOffMode;
   bool externalControlMode;
   int buttonState;
+  String machineStatus;
 
 private:
   void updatePIDSettings();
