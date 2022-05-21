@@ -161,6 +161,40 @@ void webInterfaceAPI::handleGet(AsyncWebServerRequest *request)
       addjson(message, firstarg, "tunestep",
               String(myMachine->myTuner->getTuneStep()));
     }
+    else if (request->argName(i) == "tuningOn")
+    {
+      char msg[6];
+      if (myMachine->myTuner->tuningOn)
+        strcpy(msg, "true");
+      else
+        strcpy(msg, "false");
+      addjson(message, firstarg, "tuningOn", msg);
+    }
+    else if (request->argName(i) == "tuneCount")
+    {
+      addjson(message, firstarg, "tuneCount",
+              String(myMachine->myTuner->getTuneCount()));
+    }
+    else if (request->argName(i) == "timeElapsed")
+    {
+      addjson(message, firstarg, "timeElapsed",
+              String(myMachine->myTuner->timeElapsed()));
+    }
+    else if (request->argName(i) == "averagePeriod")
+    {
+      addjson(message, firstarg, "averagePeriod",
+              String(myMachine->myTuner->averagePeriod()));
+    }
+    else if (request->argName(i) == "lowerAverage")
+    {
+      addjson(message, firstarg, "lowerAverage",
+              String(myMachine->myTuner->lowerAverage()));
+    }
+    else if (request->argName(i) == "upperAverage")
+    {
+      addjson(message, firstarg, "upperAverage",
+              String(myMachine->myTuner->upperAverage()));
+    }
   }
   strcat(message, "}");
   request->send(200, "application/json", message);
@@ -283,7 +317,6 @@ void webInterfaceAPI::handleSet(AsyncWebServerRequest *request)
     else if (request->argName(i) == "tunethres")
     {
       addjson(message, firstarg, "tunethres", request->arg(i));
-
       myMachine->myTuner->setTuneThres((request->arg(i)).toDouble());
     }
     else if (request->argName(i) == "tunestep")
@@ -293,6 +326,20 @@ void webInterfaceAPI::handleSet(AsyncWebServerRequest *request)
       if ((request->arg(i)).toDouble() > 110)
       { // failsafe
         myMachine->myTuner->setTuneThres(110);
+      }
+    }
+    else if (request->argName(i) == "tuningOn")
+    {
+      if (String("true").equalsIgnoreCase(request->arg(i)))
+      {
+        myMachine->myTuner->tuning_on();
+        addjson(message, firstarg, "tuningOn", "true");
+      }
+      else
+      {
+        myMachine->myTuner->tuning_off();
+        ;
+        addjson(message, firstarg, "tuningOn", "false");
       }
     }
   }

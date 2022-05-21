@@ -22,6 +22,7 @@ public:
         float averagePeakToPeak();
         bool tuning_on();
         bool tuning_off();
+        bool tuningOn;
         void tuning_loop();
 
 private:

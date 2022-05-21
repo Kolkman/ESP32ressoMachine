@@ -1,5 +1,4 @@
-//const url = "http://192.168.179.78";  // This is for development purposes only
-const url = "";  // Setting in production.
+
 const displayInterval = 10 // in minutes
 
 var margin = { top: 10, right: 30, bottom: 30, left: 60 };
