@@ -250,6 +250,7 @@
   function GetFormValues(value) { // NB thisArg sets this with the forEach() function
     Errordiv = document.getElementById(this['errordiv']);
     if (value == "powerOffMode") return;
+    if (value == "tuningOn") return;
     const e = this['form'].elements[value];
     var n = parseFloat(e.value);
     if (isNaN(n)) {

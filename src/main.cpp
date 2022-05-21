@@ -108,6 +108,7 @@ void setup()
 void loop()
 {
   if (myRancilio.heatLoop()) {
+      // Only send out information when there is something new to report
       myRancilio.myInterface->loop();
   }
 }
