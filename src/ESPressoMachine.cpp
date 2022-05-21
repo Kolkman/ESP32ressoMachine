@@ -85,8 +85,8 @@ void ESPressoMachine::manageTemp()
 // from all parent classess too...
 
 void ESPressoMachine::setMachineStatus()
-{   
-    machineStatus="";
+{
+    machineStatus = "";
     StaticJsonDocument<1024> statusObject;
     statusObject["time"] = time_now;
     statusObject["measuredTemperature"] = inputTemp;
@@ -97,6 +97,7 @@ void ESPressoMachine::setMachineStatus()
     statusObject["powerOffMode"] = powerOffMode;
     statusObject["tuning"] = tuning;
     statusObject["heap"] = ESP.getFreeHeap();
+    statusObject["heapMaxAl"] = ESP.getMaxAllocHeap();
     serializeJson(statusObject, machineStatus);
 }
 
@@ -255,7 +256,7 @@ void StatsStore::addStatistic(stats s)
 
     // This Stringformat is 45 char's long. Modify it and things break.
     sprintf(statline, "{\"t\":%10.u,\"T\":%.3e,\"p\":%.3e}", s.time, s.temp, s.power);
- 
+
     // Move all statlines one entry to the right. start with moving the last but one entry
     // also take the succeeding comma
     if (skip < 2) // skip a few times, during startup the first string is not written
@@ -269,8 +270,8 @@ void StatsStore::addStatistic(stats s)
         char *d;
         for (int i = 0; i < (STAT_ENTRIES - 2); i++)
         {
-            s = storage + 1 + (i+1) * (STAT_LINELENGTH + 1);  
-            d = storage + 1 + i*(STAT_LINELENGTH + 1);
+            s = storage + 1 + (i + 1) * (STAT_LINELENGTH + 1);
+            d = storage + 1 + i * (STAT_LINELENGTH + 1);
             strncpy(d, s, STAT_LINELENGTH + 1);
         }
         // Now copy the last but item to the second but last one and inject a comma

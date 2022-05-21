@@ -322,7 +322,7 @@ void webInterfaceAPI::handleSet(AsyncWebServerRequest *request)
     else if (request->argName(i) == "tunestep")
     {
       addjson(message, firstarg, "tunestep", request->arg(i));
-      myMachine->myTuner->setTuneThres((request->arg(i)).toDouble());
+      myMachine->myTuner->setTuneStep((request->arg(i)).toDouble());
       if ((request->arg(i)).toDouble() > 110)
       { // failsafe
         myMachine->myTuner->setTuneThres(110);
