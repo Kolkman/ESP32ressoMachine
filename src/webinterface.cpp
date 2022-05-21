@@ -412,14 +412,15 @@ void WebInterface::setupWebSrv(ESPressoMachine *machine, const char *username, c
   server->on("/saveconf", HTTP_GET, std::bind(&WebInterface::handleSaveConfig, this, std::placeholders::_1));
   server->on("/resetconf", HTTP_GET, std::bind(&WebInterface::handleResetConfig, this, std::placeholders::_1));
   server->on("/set_config", HTTP_GET, std::bind(&WebInterface::handleSetConfig, this, std::placeholders::_1));
-  server->on("/tuningmode", HTTP_GET, std::bind(&WebInterface::handleTuningMode, this, std::placeholders::_1));
+ /* server->on("/tuningmode", HTTP_GET, std::bind(&WebInterface::handleTuningMode, this, std::placeholders::_1));
   server->on("/tuningstats", HTTP_GET, std::bind(&WebInterface::handleTuningStats, this, std::placeholders::_1));
   server->on("/set_tuning", HTTP_GET, std::bind(&WebInterface::handleSetTuning, this, std::placeholders::_1));
   server->on("/heater_on", HTTP_GET, std::bind(&WebInterface::handleHeaterOn, this, std::placeholders::_1));
   server->on("/heater_off", HTTP_GET, std::bind(&WebInterface::handleHeaterOff, this, std::placeholders::_1));
   server->on("/pid_on", HTTP_GET, std::bind(&WebInterface::handlePidOn, this, std::placeholders::_1));
   server->on("/pid_off", HTTP_GET, std::bind(&WebInterface::handlePidOff, this, std::placeholders::_1));
-  server->onNotFound(std::bind(&WebInterface::handleNotFound, this, std::placeholders::_1));
+ */
+ server->onNotFound(std::bind(&WebInterface::handleNotFound, this, std::placeholders::_1));
   server->on("/reset", HTTP_GET, std::bind(&WebInterface::handleReset, this, std::placeholders::_1));
 
   webAPI.begin(server, myMachine);

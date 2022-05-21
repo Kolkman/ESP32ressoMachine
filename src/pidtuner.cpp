@@ -26,6 +26,7 @@ PidTuner::PidTuner(ESPressoMachine *mach)
   tune_count = 0;
   tune_time = 0;
   tune_start = 0;
+  tuningOn = false;
 }
 
 bool PidTuner::tuning_on()
@@ -36,6 +37,7 @@ bool PidTuner::tuning_on()
   LowerCnt = 0;
   AvgUpperT = 0;
   AvgLowerT = 0;
+  tuningOn = true;
   myMachine->myPID->SetMode(MANUAL);
   return true;
 }
@@ -49,11 +51,13 @@ bool PidTuner::tuning_off()
 
   double Ku = 4 * (2 * TuneStep) / (dT * 3.14159);
   double Pu = dt / 1000; // units of seconds
-
-  myMachine->myConfig->nearTarget.P = 0.6 * Ku;
-  myMachine->myConfig->nearTarget.I = 1.2 * Ku / Pu;
-  myMachine->myConfig->nearTarget.D = 0.075 * Ku * Pu;
-
+  if (tune_count != 0 && UpperCnt != 0 && LowerCnt != 0) //agains NaN
+  {
+    myMachine->myConfig->nearTarget.P = 0.6 * Ku;
+    myMachine->myConfig->nearTarget.I = 1.2 * Ku / Pu;
+    myMachine->myConfig->nearTarget.D = 0.075 * Ku * Pu;
+  }
+  tuningOn = false;
   return false;
 }
 
@@ -97,16 +101,19 @@ unsigned long PidTuner::timeElapsed()
 
 float PidTuner::averagePeriod()
 {
+  if (!tune_count) return -1;
   return float(abs(tune_time - tune_start) / tune_count);
 }
 
 float PidTuner::upperAverage()
 {
+   if (!UpperCnt) return -1;
   return (AvgUpperT / UpperCnt);
 }
 
 float PidTuner::lowerAverage()
 {
+     if (!LowerCnt) return -1;
   return (AvgLowerT / LowerCnt);
 }
 
@@ -138,5 +145,6 @@ double PidTuner::getTuneThres()
 
 float PidTuner::averagePeakToPeak()
 {
+  if (!UpperCnt || ! LowerCnt) return MAXFLOAT;
   return ((AvgUpperT / UpperCnt) - (AvgLowerT / LowerCnt));
 }

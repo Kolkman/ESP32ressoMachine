@@ -226,3 +226,11 @@ form {
 .footermaterial{
     margin: 5ex;
 }
+
+#StatsReporting{
+    background-color: lightgray;
+    color: black;
+    height: 110px;
+    overflow: scroll;
+    font-family:'Courier New', Courier, monospace;
+}
