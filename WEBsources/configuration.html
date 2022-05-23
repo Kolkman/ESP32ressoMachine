@@ -8,8 +8,8 @@
   <link rel="icon" href="data:;base64,iVBORw0KGgo=">
 </head>
 <script>
- // const url = "http://192.168.179.78";  // This is for development purposes only
- const url = "";  // Setting in production.
+  const url = "http://192.168.179.78";  // This is for development purposes only
+ //const url = "";  // Setting in production.
 </script>
 <script src='https://d3js.org/d3.v4.min.js'> // D3 library needed for the graph </script>
 <script src="drawtimeseries.js"> //draws the graph </script>
@@ -72,7 +72,7 @@
       })
       .then(function (data) {
         console.log(data)
-        if(data.tuningOn){
+        if (data.tuningOn) {
           let statsdiv = document.getElementById("StatsReporting");
           statsdiv.innerHTML = "";
           let d1 = document.createElement("div");
@@ -90,7 +90,7 @@
           statsdiv.append(d2);
           d3.textContent = "upperAverage: " + data.upperAverage.toPrecision(3)
           statsdiv.append(d3);
-          setTimeout(function() { updateTuningStats(); }, 5000);
+          setTimeout(function () { updateTuningStats(); }, 5000);
         }
       })
       .catch(function (err) {
@@ -103,8 +103,62 @@
 
 </script>
 
+<script>// Save, load, and default config
 
-<script> // Hanles the forms.
+  function LoadConf(e) {
+    const configForm = document.getElementById('configForm');
+    let configdiv = document.getElementById("ConfigReporting");
+    console.log(e);
+    fetch(url + "/api/v1/config?load")
+      .then(function (response) {
+        return response.json()
+      })
+      .then(function (data) {
+        if (data.load){
+          configdiv.innerHTML = "Config loaded from file"
+          setFormValues();
+        }else{
+          configdiv.innerHTML = "Failed Loading config"
+        }
+      });
+   
+  }
+  function SaveConf(e) {
+    const configForm = document.getElementById('configForm');
+    let configdiv = document.getElementById("ConfigReporting");
+    console.log(e);
+    fetch(url + "/api/v1/config?save")
+      .then(function (response) {
+        return response.json()
+      })
+      .then(function (data) {
+        if (data.save){
+          configdiv.innerHTML = "Config saved to file"
+        }else{
+          configdiv.innerHTML = "Failed saving config"
+        }
+      });
+  }
+  function DefaultConf(e) {
+    const configForm = document.getElementById('configForm');
+    let configdiv = document.getElementById("ConfigReporting");
+    console.log(e);
+    fetch(url + "/api/v1/config?default")
+      .then(function (response) {
+        return response.json()
+      })
+      .then(function (data) {
+        if (data.default){
+          configdiv.innerHTML = "Config reset to defaults"
+        }else{
+          configdiv.innerHTML = "Failed setting defaults"
+          setFormValues();
+        }
+      });
+  }
+</script>
+
+<script> // Handles the forms.
 
 
   const configNames = ["tset", "tband", "eqPwr", "pgain", "igain", "dgain",
@@ -116,8 +170,9 @@
   var configuration = {};
   var configerror = false;
 
-  window.addEventListener("load", function () {
-    const configForm = document.getElementById('configForm');
+
+function setFormValues() {
+  const configForm = document.getElementById('configForm');
     const tuningForm = document.getElementById('tuningForm');
 
 
@@ -144,6 +199,11 @@
 
 
 
+}
+
+  window.addEventListener("load", function () {
+  
+    setFormValues();
     configForm.addEventListener('submit', (event) => {
       event.preventDefault(); //stop form submission
       // chec on all input
@@ -218,32 +278,32 @@
         } else {
           pidModeSwitch.checked = true;
         }
-      }       else if (value == "tuningOn") {
-          var tunerSwitch = document.getElementById("toggle--tuner");
-          if (data.tuningOn) {
-            tunerSwitch.checked = true;
-            updateTuningStats();
-          } else {
-            tunerSwitch.checked = false;
-          }
+      } else if (value == "tuningOn") {
+        var tunerSwitch = document.getElementById("toggle--tuner");
+        if (data.tuningOn) {
+          tunerSwitch.checked = true;
+          updateTuningStats();
+        } else {
+          tunerSwitch.checked = false;
+        }
+      }
+
+      else {
+        if (typeof data[value] !== 'undefined') {
+
+          form.elements[value].value = data[value];
+          //reset the colors
+          form.elements[value].style.backgroundColor = "cornsilk";
+          form.elements[value].addEventListener('click', function onClick(event) {
+            form.elements[value].style.backgroundColor = "#E0BFB8";
+          });
+
+        } else {
+          console.log("value not found: " + value)
         }
 
-        else {
-          if (typeof data[value] !== 'undefined') {
 
-            form.elements[value].value = data[value];
-            //reset the colors
-            form.elements[value].style.backgroundColor = "cornsilk";
-            form.elements[value].addEventListener('click', function onClick(event) {
-              form.elements[value].style.backgroundColor = "#E0BFB8";
-            });
-
-          } else {
-            console.log("value not found: " + value)
-          }
-
-
-        }
+      }
     }
   };
 
@@ -427,21 +487,22 @@
     </div>
   </form>
 
-
-
-
   <div class="ManagementAndPower">
-    <div class="configblock">
-
+    <div class="configblock" >
       <div class="Management">
-        <div><a href="./loadconf"><button>Load Config</button></a></div>
+        <div>
+          <div id='configAPI'>
+        <input type="button" value="Load Config" class="button-class" onclick="LoadConf(this)">
+        <input type="button" value="Save Config" class="button-class" onclick="SaveConf(this)">
+        <input type="button" value="Default Config" class="button-class" onclick="DefaultConf(this)">
+  </div>
         <div><a href="./update"><button>Update Firmware</button></a></div>
-        <div><a href="./saveconf"><button>Save Config</button></a></div>
-        <div><a href="./reset"><button>Reset Device</button></a></div>
-        <div><a href="./resetconf"><button>Reset Config to Default</button></a></div>
+        <div ><a href="./reset"><button id="resetdiv">Reset Device</button></a></div>
       </div>
-    </div>
+      </div>
+ </div>
     <div class="configblock">
+      <div id="ConfigReporting"></div>
       <div class="hardwareswitches">
         <div class="switchwrapper">
           <div class="switchlabel">Heater Powerswitch</div>
@@ -454,10 +515,6 @@
       </div>
     </div>
   </div>
-
-
-
-
 
   <!-- <form action="set_tuning" id="tuningForm"> -->
   <form id="tuningForm">
@@ -508,7 +565,6 @@
           Mode</button></a></div>
     -->
   </form>
-
 
   <div class="footermaterial">
     <a href="/"><button>Back</button></a>

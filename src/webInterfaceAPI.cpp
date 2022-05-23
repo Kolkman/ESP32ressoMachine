@@ -11,6 +11,7 @@ webInterfaceAPI::webInterfaceAPI()
 {
   server = nullptr;
   myMachine = nullptr;
+  content_len=0;
 }
 
 void webInterfaceAPI::begin(EspressoWebServer *s, ESPressoMachine *m)
@@ -27,6 +28,7 @@ void webInterfaceAPI::begin(EspressoWebServer *s, ESPressoMachine *m)
   server->on("/api/v1/get", HTTP_GET, std::bind(&webInterfaceAPI::handleGet, this, std::placeholders::_1));
   server->on("/api/v1/set", HTTP_GET, std::bind(&webInterfaceAPI::handleSet, this, std::placeholders::_1));
   server->on("/api/v1/statistics", HTTP_GET, std::bind(&webInterfaceAPI::handleStats, this, std::placeholders::_1));
+  server->on("/api/v1/config", HTTP_GET, std::bind(&webInterfaceAPI::handleConfigFile, this, std::placeholders::_1));
 }
 
 void webInterfaceAPI::handleStatus(AsyncWebServerRequest *request)
@@ -348,5 +350,49 @@ void webInterfaceAPI::handleSet(AsyncWebServerRequest *request)
     myMachine->reConfig(); // apply all settings
   }
   strcat(message, "}");
+  request->send(200, "application/json", message);
+}
+
+
+void webInterfaceAPI::handleConfigFile(AsyncWebServerRequest *request)
+{
+  Serial.println(request->argName(0));
+  char message[32]; // This is sufficiently for any of the messages below
+
+  if (request->argName(0) == "load")
+  {
+
+    if (myMachine->myConfig->loadConfig())
+    {
+      myMachine->reConfig();
+      strcpy(message, "{\"load\":true}");
+    }
+    else
+    {
+      strcpy(message, "{\"load\":false}");
+    }
+  }
+
+  if (request->argName(0) == "save")
+  {
+
+    if (myMachine->myConfig->saveConfig())
+    {
+      strcpy(message, "{\"save\":true}");
+    }
+    else
+    {
+      strcpy(message, "{\"save\":false}");
+    }
+  }
+
+  if (request->argName(0) == "default")
+  {
+
+    myMachine->myConfig->resetConfig();
+
+    myMachine->reConfig();
+     strcpy(message, "{\"default\":true}");
+  }
   request->send(200, "application/json", message);
 }

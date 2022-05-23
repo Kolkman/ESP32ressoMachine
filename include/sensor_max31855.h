@@ -26,7 +26,7 @@ public:
     void setupSensor();
     void updateTempSensor(double);
     float getTemp(float);
-    Adafruit_MAX31855 * thermoc;
+  //  Adafruit_MAX31855 * thermoc;
 
 private:
     double lastT;

@@ -6,6 +6,7 @@
 class webInterfaceOTAUpdate
 {
 public:
+    webInterfaceOTAUpdate();
     void begin(EspressoWebServer *server);
     void handleDoUpdate(AsyncWebServerRequest *, const String &, size_t, uint8_t *, size_t, bool);
     void printProgress(size_t, size_t);

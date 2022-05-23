@@ -8,7 +8,7 @@
 #include "ESPressoMachineDefaults.h"
 
 #define FORMAT_SPIFFS_IF_FAILED true
-#define CONFIG_BUF_SIZE 2048
+#define CONFIG_BUF_SIZE 1024
 
 #ifndef S_P
 #define S_P 50

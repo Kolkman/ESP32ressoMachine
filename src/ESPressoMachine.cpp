@@ -32,6 +32,9 @@ ESPressoMachine::ESPressoMachine()
     tuning = false;
     externalControlMode = false;
     buttonState = false;
+    powerOffMode=false;
+    externalControlMode=false;
+    coldstart=true;
 }
 
 void ESPressoMachine::startMachine()
@@ -255,7 +258,7 @@ void StatsStore::addStatistic(stats s)
     char statline[STAT_LINELENGTH + 1];
 
     // This Stringformat is 45 char's long. Modify it and things break.
-    sprintf(statline, "{\"t\":%10.u,\"T\":%.3e,\"p\":%.3e}", s.time, s.temp, s.power);
+    sprintf(statline, "{\"t\":%10.lu,\"T\":%.3e,\"p\":%.3e}", s.time, s.temp, s.power);
 
     // Move all statlines one entry to the right. start with moving the last but one entry
     // also take the succeeding comma

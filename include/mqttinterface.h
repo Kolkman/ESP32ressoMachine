@@ -17,13 +17,14 @@ public:
     MQTTInterface();
     void setupMQTT(ESPressoMachine *);
     void loopMQTT(String);
-    ESPressoMachine *myMachine;
+
 
 private:
+//    ESPressoMachine *myMachine;
     WiFiClient espClient;
     PubSubClient client;
     void MQTT_reconnect();
-    void MQTT_callback(char*, byte*, unsigned int);
+    void MQTT_callback(char*, byte*, unsigned int, ESPressoMachine *);
     
 //    void (MQTTInterface::* MQTT_callbackptr) (char*, byte*, unsigned int);
     const char * const mqttStatusTopic = stringconcat(MQTT_TOPIC, "/status");

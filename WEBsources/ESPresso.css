@@ -199,18 +199,36 @@ div#graph {
 }
 .Management{
 
-    display: grid;
+    /*display: grid;*/
      
     margin-left: 3%;
 
     grid-template-columns: minmax(150px, 0.2fr) 1fr;
 }
+.Management input {
+    width: 30%;
+    min-width: 170px;
+}
+.Management div button {
+    margin-top: 2ex;
+    width: 50%;
+    min-width: 160px;
+    max-width: 200px
+}
 
-
+#configAPI{
+    border-top: 1px dotted cornsilk;
+    border-bottom: 1px dotted cornsilk;
+}
 .configblock{
     display: inline-block;
+    vertical-align: top;
     min-width: 300px;
     width: 48%;
+}
+
+#resetdiv {
+    background-color: #8e2d18;
 }
 
 form {
@@ -232,5 +250,12 @@ form {
     color: black;
     height: 110px;
     overflow: scroll;
+    font-family:'Courier New', Courier, monospace;
+}
+
+#ConfigReporting{
+    background-color: lightgray;
+    color: black;
+    height: 5ex;
     font-family:'Courier New', Courier, monospace;
 }

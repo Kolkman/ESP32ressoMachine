@@ -8,6 +8,13 @@
 
 webInterfaceOTAUpdate webOTAUpdate;
 
+webInterfaceOTAUpdate::webInterfaceOTAUpdate()
+{
+    _server = nullptr;
+    content_len = 0;
+    UpdateError = true;
+}
+
 void webInterfaceOTAUpdate::begin(EspressoWebServer *server)
 {
     _server = server;

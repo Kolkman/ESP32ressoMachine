@@ -38,8 +38,8 @@ public:
     void loop();
     void setup();
 
-private:
-    ESPressoMachine *myMachine;
+//private:
+ //   ESPressoMachine *myMachine;
 };
 
 #endif

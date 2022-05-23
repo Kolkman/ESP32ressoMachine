@@ -22,7 +22,7 @@
 
 MQTTInterface::MQTTInterface() : espClient(), client()
 {
-  myMachine = nullptr;
+//  myMachine = nullptr; // inherited attribute
   client.setClient(espClient);
 }
 
@@ -48,7 +48,7 @@ void MQTTInterface::MQTT_reconnect()
   }
 }
 
-void MQTTInterface::MQTT_callback(char *topic, byte *payload, unsigned int length)
+void MQTTInterface::MQTT_callback(char *topic, byte *payload, unsigned int length, ESPressoMachine *myMachine)
 {
 #ifdef MQTT_DEBUG
   Serial.print("Message arrived [");
@@ -118,12 +118,11 @@ void MQTTInterface::MQTT_callback(char *topic, byte *payload, unsigned int lengt
     */
 }
 
-void MQTTInterface::setupMQTT(ESPressoMachine *machine)
+void MQTTInterface::setupMQTT(ESPressoMachine *myMachine)
 {
-  myMachine = machine;
   client.setServer(MQTT_HOST, MQTT_PORT);
   client.setCallback(std::bind(&MQTTInterface::MQTT_callback, this,
-                               std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+                               std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, myMachine));
 }
 
 void MQTTInterface::loopMQTT(String jsonstring)

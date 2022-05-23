@@ -6,9 +6,9 @@
 #include "interface.h"
 #include "ESPressoMachine.h"
 
-ESPressoInterface::ESPressoInterface(ESPressoMachine *machine)
+ESPressoInterface::ESPressoInterface(ESPressoMachine *machine) : WebInterface(machine)
 {
-  myMachine = machine;
+
 }
 
 void ESPressoInterface::serialStatus()

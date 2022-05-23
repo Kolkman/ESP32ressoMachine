@@ -19,6 +19,7 @@ TempSensor::TempSensor() : Adafruit_MAX31855(SENSOR_MAX_CLK, SENSOR_MAX_CS, SENS
   SumT = 0.0;
   lastI = 0.0;
   SumI = 0.0;
+  time_now=millis();
 
   lastErr = 0.0;
   CntT = 0;

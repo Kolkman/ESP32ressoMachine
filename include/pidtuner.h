@@ -32,7 +32,6 @@ private:
         int tune_count;
         long tune_time;
         long tune_start;
-        bool tunerIsOn;
         ESPressoMachine *myMachine;
 };
 
