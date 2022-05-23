@@ -39,12 +39,13 @@ struct stats
 // in StatsStore::addStatistics "{\"t\":%10.u,\"T\":%.3e,\"p\":%.3e}"
 // its exact size is critical - without trailing 0.
 #define STAT_LINELENGTH 44
-    
+
 // Amount of statlines to keep around.
 // must be larger than 1 and will cause problems when to big, consistently causes
-// crashes when to big (in conversion to String somewher in the webserver code). 
+// crashes when to big (in conversion to String somewher in the webserver code).
 // 500 seems to be fine.
-#define STAT_ENTRIES 500 
+#define STAT_ENTRIES 600
+// adds commas between entries, and a leading and a training {} - NO trailing \0
 #define STATS_SIZE STAT_ENTRIES *(STAT_LINELENGTH + 1) + 1 //
 
 class StatsStore
@@ -56,7 +57,7 @@ public:
   char *getStatistics();
 
 private:
-  char storage[STATS_SIZE];
+  char storage[STATS_SIZE + 1]; // add trailing \0
   int skip;
 };
 
@@ -102,6 +103,8 @@ private:
   void updatePIDSettings();
   bool coldstart;
   bool osmode;
+  ESPressoMachine(const ESPressoMachine &);            // non construction-copyable
+  ESPressoMachine &operator=(const ESPressoMachine &); // non copyable
 };
 
 #endif

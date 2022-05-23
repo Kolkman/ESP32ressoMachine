@@ -23,7 +23,7 @@
 #endif
 
 // Various WebSources:
-// include "pages/test.html.h"
+#include "pages/test.html.h"
 #include "pages/configuration.html.h"
 #include "pages/button.css.h"
 #include "pages/ESPresso.css.h"
@@ -44,6 +44,18 @@ WebInterface::WebInterface()
   _password = "";
   server = nullptr;
   myMachine = nullptr;
+  events = nullptr;
+  //  httpUpdater = new HTTPUpdateServer;
+}
+
+WebInterface::WebInterface(ESPressoMachine * machine)
+{
+  Serial.println("Webinterfce Constructor");
+
+  _username = "";
+  _password = "";
+  server = nullptr;
+  myMachine = machine;
   events = nullptr;
   //  httpUpdater = new HTTPUpdateServer;
 }
@@ -78,76 +90,6 @@ void WebInterface::handleRoot(AsyncWebServerRequest *request)
 {
 
   request->redirect("/index.html");
-}
-
-void WebInterface::handleConfig(AsyncWebServerRequest *request)
-{
-  String powerOnColor = String(ONCOLOR);
-  String powerOffColor = String(OFFCOLOR);
-  if (myMachine->powerOffMode)
-  {
-    powerOnColor = String(OFFCOLOR);
-    powerOffColor = String(ONCOLOR);
-  }
-
-  String message = "<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><title>EspressIoT Configuration</title></head><h1>EspressIoT</h1>\n";
-  if (myMachine->tuning)
-  {
-    message += "<h1> PID TUNING MODE RUNNING !</h1>";
-    message += "<a href=\"/tuningstats\"><button>Stats</button></a><br/>\n";
-    message += "<hr/>\n";
-  }
-  message += "<form action=\"set_config\">\nTarget Temperature:<br>\n";
-  message += "<input type=\"text\" name=\"tset\" value=\"" + String(myMachine->myConfig->targetTemp) + "\"><br/><br/>\n";
-  message += "<form action=\"set_config\">\nThreshold for PID control:<br>\n";
-  message += "<input type=\"text\" name=\"tband\" value=\"" + String(myMachine->myConfig->temperatureBand) + "\"><br/><br/>\n";
-  message += "<form action=\"set_config\">\nEstimated power to maintain Equilibrium at " + String(myMachine->myConfig->targetTemp) + ":<br>\n";
-  message += "<input type=\"text\" name=\"epwr\" value=\"" + String(myMachine->myConfig->eqPwr) + "\"><br/><br/>\n";
-  message += "PID within " + String(myMachine->myConfig->targetTemp - myMachine->myConfig->temperatureBand) + " to " +
-             String(myMachine->myConfig->targetTemp + myMachine->myConfig->temperatureBand) +
-             " band:<br>\n P <input type=\"text\" name=\"pgain\" value=\"" +
-             String(myMachine->myConfig->nearTarget.P) + "\"><br/>\n";
-  message += "I <input type=\"text\" name=\"igain\" value=\"" + String(myMachine->myConfig->nearTarget.I) + "\"><br/>\n";
-  message += "D <input type=\"text\" name=\"dgain\" value=\"" + String(myMachine->myConfig->nearTarget.D) + "\"><br><br>\n";
-  message += "PID from oudside the band:<br>\n P <input type=\"text\" name=\"apgain\" value=\"" + String(myMachine->myConfig->awayTarget.P) + "\"><br/>\n";
-  message += "I <input type=\"text\" name=\"aigain\" value=\"" + String(myMachine->myConfig->awayTarget.I) + "\"><br/>\n";
-  message += "D <input type=\"text\" name=\"adgain\" value=\"" + String(myMachine->myConfig->awayTarget.D) + "\"><br><br>\n";
-#ifdef DEBUG
-  message += "Pid Interval <input type=\"text\" name=\"PidInterval\" value=\"" + String(myMachine->myConfig->pidInt) + "\"><br><br>\n";
-  message += "Heater Interval <input type=\"text\" name=\"Heater Interval\" value=\"" + String(myMachine->myHeater->getHeaterInterval()) + "\"><br><br>\n";
-  message += "Sensor Sample Interval Sample <input type=\"text\" name=\"SensorSampleInterval\" value=\"" + String(myMachine->myConfig->sensorSampleInterval) + "\"><br><br>\n";
-  message += "Max Cool (natural cooling rate) <input type=\"text\" name=\"maxCool\" value=\"" + String(myMachine->myConfig->maxCool, 4) + "\"><br><br>\n";
-#endif
-  message += "<input type=\"submit\" value=\"Submit\">\n</form>";
-
-  message += "<hr/>";
-
-  message += "<a href=\"./heater_on\"><button style=\"background-color:#" + powerOnColor + "\">Turn Heater On</button></a>\n";
-  message += "<a href=\"./heater_off\"><button style=\"background-color:#" + powerOffColor + "\">Turn Heater Off</button></a><br/>\n";
-  message += "<hr/>";
-  message += "<a href=\"./loadconf\"><button>Load Config</button></a><br/>\n";
-  message += "<a href=\"./saveconf\"><button>Save Config</button></a><br/>\n";
-  message += "<a href=\"./resetconf\"><button>Reset Config to Default</button></a><br/>\n";
-  message += "<a href=\"./update\"><button>Update Firmware</button></a><br/>\n";
-  message += "<a href=\"./reset\"><button>Reset Device</button></a><br/>\n";
-  message += "<hr/>\n";
-  message += "<form action=\"set_tuning\">\nTuning Threshold (&deg;C):<br>\n";
-  message += "<input type=\"text\" name=\"tunethres\" value=\"" + String(myMachine->myTuner->getTuneThres()) + "\"><br>\n";
-  message += "Tuning Power (heater)<br>\n";
-  message += "<input type=\"text\" name=\"tunestep\" value=\"" + String(myMachine->myTuner->getTuneStep()) + "\"><br><br>\n";
-  message += "<input type=\"submit\" value=\"Submit\">\n</form><br/>";
-  if (!myMachine->tuning)
-    message += "<a href=\"./tuningmode\"><button style=\"background-color:#98B4D4\">Start PID Tuning Mode</button></a><br/>\n";
-  else
-    message += "<a href=\"./tuningmode\"><button style=\"background-color:#98B4D4\">Finish PID Tuning Mode</button></a><br/>\n";
-  message += "<hr/>\n";
-  message += "<a href=\"/\"><button>Back</button></a><br/>\n";
-  message += "<hr/>\n";
-  message += "<font size=\"-2\">Firmware: " + String(CURRENTFIRMWARE) + "-" + String(F(__DATE__)) + ":" + String(F(__TIME__)) + "</font><br/>\n";
-
-  message += "<hr/>\n";
-
-  request->send(200, "text/html", message);
 }
 
 void WebInterface::handleTuningStats(AsyncWebServerRequest *request)
@@ -308,31 +250,8 @@ void WebInterface::handleResetConfig(AsyncWebServerRequest *request)
   request->send(200, "text/html", message);
 }
 
-void WebInterface::handleToggleHeater(AsyncWebServerRequest *request)
-{
-  String message = "<head><meta http-equiv=\"refresh\" content=\"2;url=/\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><title>EspressIoT</title></head>";
-  message += "<h1> Done ! </h1>";
-  myMachine->powerOffMode = (!myMachine->powerOffMode);
-  request->send(200, "text/html", message);
-}
 
-void WebInterface::handleHeaterSwitch(AsyncWebServerRequest *request, boolean newMode)
-{
-  String message = "<head><meta http-equiv=\"refresh\" content=\"2;url=/\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><title>EspressIoT</title></head>";
-  message += "<h1> Done ! </h1>";
-  myMachine->powerOffMode = (newMode);
-  request->send(200, "text/html", message);
-}
 
-void WebInterface::handleHeaterOn(AsyncWebServerRequest *request)
-{
-  WebInterface::handleHeaterSwitch(request, false);
-}
-
-void WebInterface::handleHeaterOff(AsyncWebServerRequest *request)
-{
-  WebInterface::handleHeaterSwitch(request, true);
-}
 
 void WebInterface::handlePidOn(AsyncWebServerRequest *request)
 {
@@ -407,20 +326,10 @@ void WebInterface::setupWebSrv(ESPressoMachine *machine, const char *username, c
   // Serial.print("Updater running !");
 
   server->on("/", HTTP_GET, std::bind(&WebInterface::handleRoot, this, std::placeholders::_1));
-  server->on("/oldconfig", HTTP_GET, std::bind(&WebInterface::handleConfig, this, std::placeholders::_1));
   server->on("/loadconf", HTTP_GET, std::bind(&WebInterface::handleLoadConfig, this, std::placeholders::_1));
   server->on("/saveconf", HTTP_GET, std::bind(&WebInterface::handleSaveConfig, this, std::placeholders::_1));
   server->on("/resetconf", HTTP_GET, std::bind(&WebInterface::handleResetConfig, this, std::placeholders::_1));
-  server->on("/set_config", HTTP_GET, std::bind(&WebInterface::handleSetConfig, this, std::placeholders::_1));
- /* server->on("/tuningmode", HTTP_GET, std::bind(&WebInterface::handleTuningMode, this, std::placeholders::_1));
-  server->on("/tuningstats", HTTP_GET, std::bind(&WebInterface::handleTuningStats, this, std::placeholders::_1));
-  server->on("/set_tuning", HTTP_GET, std::bind(&WebInterface::handleSetTuning, this, std::placeholders::_1));
-  server->on("/heater_on", HTTP_GET, std::bind(&WebInterface::handleHeaterOn, this, std::placeholders::_1));
-  server->on("/heater_off", HTTP_GET, std::bind(&WebInterface::handleHeaterOff, this, std::placeholders::_1));
-  server->on("/pid_on", HTTP_GET, std::bind(&WebInterface::handlePidOn, this, std::placeholders::_1));
-  server->on("/pid_off", HTTP_GET, std::bind(&WebInterface::handlePidOff, this, std::placeholders::_1));
- */
- server->onNotFound(std::bind(&WebInterface::handleNotFound, this, std::placeholders::_1));
+  server->onNotFound(std::bind(&WebInterface::handleNotFound, this, std::placeholders::_1));
   server->on("/reset", HTTP_GET, std::bind(&WebInterface::handleReset, this, std::placeholders::_1));
 
   webAPI.begin(server, myMachine);
@@ -433,7 +342,7 @@ void WebInterface::setupWebSrv(ESPressoMachine *machine, const char *username, c
   // These are definitions generated by make - all to serve
   // static webpages
 
-  DEF_HANDLE_configuration_html;
+
   server->on("/configure", HTTP_GET, [&](AsyncWebServerRequest *request)
              { request->redirect("/configuration.html"); });
   server->on("/config", HTTP_GET, [&](AsyncWebServerRequest *request)
@@ -445,6 +354,8 @@ void WebInterface::setupWebSrv(ESPressoMachine *machine, const char *username, c
   DEF_HANDLE_EspressoMachine_svg;
   DEF_HANDLE_drawtimeseries_js;
   DEF_HANDLE_firmware_js;
+  DEF_HANDLE_configuration_html;
+  DEF_HANDLE_test_html;
 
   // Handle Web Server Events
   events->onConnect(std::bind(&WebInterface::handleEventClient, this, std::placeholders::_1));
