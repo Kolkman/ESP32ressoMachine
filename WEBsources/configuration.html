@@ -8,8 +8,8 @@
   <link rel="icon" href="data:;base64,iVBORw0KGgo=">
 </head>
 <script>
-  const url = "http://192.168.179.78";  // This is for development purposes only
- //const url = "";  // Setting in production.
+//const url = "http://192.168.179.78";  // This is for development purposes only
+const url = "";  // Setting in production.
 </script>
 <script src='https://d3js.org/d3.v4.min.js'> // D3 library needed for the graph </script>
 <script src="drawtimeseries.js"> //draws the graph </script>
@@ -55,6 +55,7 @@
           statsdiv.append(d2);
           d3.textContent = "New P: " + data.pgain
           statsdiv.append(d3);
+          setFormValues();
         })
         .catch(function (err) {
           console.log('error' + err);
@@ -105,10 +106,9 @@
 
 <script>// Save, load, and default config
 
-  function LoadConf(e) {
+  function LoadConf() {
     const configForm = document.getElementById('configForm');
     let configdiv = document.getElementById("ConfigReporting");
-    console.log(e);
     fetch(url + "/api/v1/config?load")
       .then(function (response) {
         return response.json()
@@ -123,10 +123,9 @@
       });
    
   }
-  function SaveConf(e) {
+  function SaveConf() {
     const configForm = document.getElementById('configForm');
     let configdiv = document.getElementById("ConfigReporting");
-    console.log(e);
     fetch(url + "/api/v1/config?save")
       .then(function (response) {
         return response.json()
@@ -139,10 +138,9 @@
         }
       });
   }
-  function DefaultConf(e) {
+  function DefaultConf() {
     const configForm = document.getElementById('configForm');
     let configdiv = document.getElementById("ConfigReporting");
-    console.log(e);
     fetch(url + "/api/v1/config?default")
       .then(function (response) {
         return response.json()
