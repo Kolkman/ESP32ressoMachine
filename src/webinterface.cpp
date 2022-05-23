@@ -23,7 +23,7 @@
 #endif
 
 // Various WebSources:
-#include "pages/test.html.h"
+//#include "pages/test.html.h"
 #include "pages/configuration.html.h"
 #include "pages/button.css.h"
 #include "pages/ESPresso.css.h"
@@ -157,7 +157,7 @@ void WebInterface::setupWebSrv(ESPressoMachine *machine, const char *username, c
   DEF_HANDLE_drawtimeseries_js;
   DEF_HANDLE_firmware_js;
   DEF_HANDLE_configuration_html;
-  DEF_HANDLE_test_html;
+//  DEF_HANDLE_test_html;
 
   // Handle Web Server Events
   events->onConnect(std::bind(&WebInterface::handleEventClient, this, std::placeholders::_1));

@@ -29,7 +29,6 @@ ESPressoMachine::ESPressoMachine()
     outputPwr = 0.0;
     oldTemp = 0.0;
     oldPwr = 0;
-    tuning = false;
     externalControlMode = false;
     buttonState = false;
     powerOffMode=false;
@@ -98,7 +97,7 @@ void ESPressoMachine::setMachineStatus()
     statusObject["externalControlMode"] = externalControlMode;
     statusObject["externalButtonState"] = buttonState;
     statusObject["powerOffMode"] = powerOffMode;
-    statusObject["tuning"] = tuning;
+    statusObject["tuning"] = myTuner->tuningOn;
     statusObject["heap"] = ESP.getFreeHeap();
     statusObject["heapMaxAl"] = ESP.getMaxAllocHeap();
     serializeJson(statusObject, machineStatus);
@@ -119,7 +118,7 @@ bool ESPressoMachine::heatLoop()
         manageTemp();
 
         updatePIDSettings();
-        if (powerOffMode == true)
+        if (powerOffMode)
         {
             outputPwr = 0;
             myHeater->setHeatPowerPercentage(0);
@@ -129,7 +128,7 @@ bool ESPressoMachine::heatLoop()
             outputPwr = 1000 * buttonState; // <======= TODO objectify
             myHeater->setHeatPowerPercentage(outputPwr);
         }
-        else if (tuning == true)
+        else if (myTuner->tuningOn)
         {
             myTuner->tuning_loop();
         }
@@ -187,7 +186,6 @@ void ESPressoMachine::updatePIDSettings()
 
     if (!coldstart && !osmode && abs(myConfig->targetTemp - inputTemp) >= myConfig->temperatureBand)
     {
-        Serial.println("Outside target area");
         // between coldstart and still more than overshoot away from the target
         // osmode  is therefore true, and we set values accordingly.
         myPID->SetTunings(myConfig->awayTarget.P, myConfig->awayTarget.I, myConfig->awayTarget.D, P_ON_E);
@@ -199,7 +197,6 @@ void ESPressoMachine::updatePIDSettings()
     }
     else if (osmode && abs(myConfig->targetTemp - inputTemp) < myConfig->temperatureBand)
     {
-        Serial.println("-------------------------------Inside target area");
         // Within the defined/configured offset from the target temperature
 
         // We are going to reinitialize the PID at the predetermined equilibrium temperature.  This

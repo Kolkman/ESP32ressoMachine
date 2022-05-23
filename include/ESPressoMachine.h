@@ -93,7 +93,6 @@ public:
   double oldPwr;
   double inputTemp;
   double outputTemp;
-  bool tuning;
   bool powerOffMode;
   bool externalControlMode;
   int buttonState;

@@ -132,19 +132,5 @@ float TempSensor::getTemp(float temp)
   return retVal;
 }
 
-/* - - -  Not Needed - - - - -
-float TempSensor::getItemp()
-{
-  float retVal = 0;
-  if (CntI >= 1)
-  {
-    retVal = (SumI / CntI);
-    SumI = 0.;
-    CntI = 0;
-  }
-
-  return retVal;
-}
-- - - - - - - - - - */
 
 #endif

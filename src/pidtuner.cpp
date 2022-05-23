@@ -17,8 +17,8 @@
 PidTuner::PidTuner(ESPressoMachine *mach)
 {
   myMachine = mach;
-  TuneStep = 100.0;
-  TuneThres = 0.2;
+  TuneStep = 100.0; //Power
+  TuneThres = 1;   //Temperature threshold
   AvgUpperT = 0;
   AvgLowerT = 0;
   UpperCnt = 0;
@@ -39,11 +39,13 @@ bool PidTuner::tuning_on()
   AvgLowerT = 0;
   tuningOn = true;
   myMachine->myPID->SetMode(MANUAL);
+    Serial.println("Tuner: On");
   return true;
 }
 
 bool PidTuner::tuning_off()
 {
+  Serial.println("Tuner: Off");
   myMachine->myPID->SetMode(AUTOMATIC);
 
   double dt = float(tune_time - tune_start) / tune_count;
@@ -68,12 +70,13 @@ void PidTuner::tuning_loop()
   //
   //
   unsigned long time_now = millis();
+  
   if (myMachine->inputTemp < (myMachine->myConfig->targetTemp - TuneThres))
   { // below lower threshold -> power on
     if (myMachine->outputPwr == 0)
     { // just fell below threshold
       if (tune_count == 0)
-        tune_start = time_now;
+      tune_start = time_now;
       tune_time = time_now;
       tune_count++;
       AvgLowerT += myMachine->inputTemp;
