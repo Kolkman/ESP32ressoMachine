@@ -8,19 +8,17 @@
   <link rel="icon" href="data:;base64,iVBORw0KGgo=">
 </head>
 <script>
-//const url = "http://192.168.179.78";  // This is for development purposes only
-const url = "";  // Setting in production.
+  //const url = "http://192.168.179.78";  // This is for development purposes only
+  const url = "";  // Setting in production.
 </script>
 <script src='https://d3js.org/d3.v4.min.js'> // D3 library needed for the graph </script>
 <script src="drawtimeseries.js"> //draws the graph </script>
 <script src="firmware.js"></script>
-
 <script> // Power Switch Script 
   function pwrSwitch() {
     if (document.getElementById("toggle--pwr").checked) {
       // (Heater is OFF)
       fetch(url + '/api/v1/set?powerOffMode=false');
-
     } else {
       // .(HEATER is ON)
       fetch(url + '/api/v1/set?powerOffMode=true');
@@ -43,7 +41,6 @@ const url = "";  // Setting in production.
           return response.json()
         })
         .then(function (data) {
-          console.log(data);
           let statsdiv = document.getElementById("StatsReporting");
           statsdiv.innerHTML = "";
           let d1 = document.createElement("div");
@@ -60,19 +57,14 @@ const url = "";  // Setting in production.
         .catch(function (err) {
           console.log('error' + err);
         });
-      ;
-
     }
   }
-
-
   function updateTuningStats() {
     fetch(url + "/api/v1/get?tuningOn&tunestep&tunethres&tuneCount&timeElapsed&averagePeriod&lowerAverage&upperAverage")
       .then(function (response) {
         return response.json()
       })
       .then(function (data) {
-        console.log(data)
         if (data.tuningOn) {
           let statsdiv = document.getElementById("StatsReporting");
           statsdiv.innerHTML = "";
@@ -98,12 +90,7 @@ const url = "";  // Setting in production.
         console.log(err);
       });
   }
-
-
-
-
 </script>
-
 <script>// Save, load, and default config
 
   function LoadConf() {
@@ -114,14 +101,14 @@ const url = "";  // Setting in production.
         return response.json()
       })
       .then(function (data) {
-        if (data.load){
+        if (data.load) {
           configdiv.innerHTML = "Config loaded from file"
           setFormValues();
-        }else{
+        } else {
           configdiv.innerHTML = "Failed Loading config"
         }
       });
-   
+
   }
   function SaveConf() {
     const configForm = document.getElementById('configForm');
@@ -131,9 +118,9 @@ const url = "";  // Setting in production.
         return response.json()
       })
       .then(function (data) {
-        if (data.save){
+        if (data.save) {
           configdiv.innerHTML = "Config saved to file"
-        }else{
+        } else {
           configdiv.innerHTML = "Failed saving config"
         }
       });
@@ -146,34 +133,27 @@ const url = "";  // Setting in production.
         return response.json()
       })
       .then(function (data) {
-        if (data.default){
+        if (data.default) {
           configdiv.innerHTML = "Config reset to defaults"
-        }else{
-          configdiv.innerHTML = "Failed setting defaults"
           setFormValues();
+        } else {
+          configdiv.innerHTML = "Failed setting defaults"
         }
+
       });
   }
 </script>
-
 <script> // Handles the forms.
-
-
   const configNames = ["tset", "tband", "eqPwr", "pgain", "igain", "dgain",
     "apgain", "aigain", "adgain", "PidInterval", "HeaterInterval",
     "sensorSampleInterval", "maxCool", "powerOffMode"];
 
   const tuningNames = ["tunethres", "tunestep", "tuningOn"]
-
   var configuration = {};
   var configerror = false;
-
-
-function setFormValues() {
-  const configForm = document.getElementById('configForm');
+  function setFormValues() {
+    const configForm = document.getElementById('configForm');
     const tuningForm = document.getElementById('tuningForm');
-
-
     var getapi = url + "/api/v1/get?"
     fieldnames = configNames.concat(tuningNames);
     configNames.concat(tuningNames).forEach(ConstructGetAPI);
@@ -181,7 +161,6 @@ function setFormValues() {
       getapi += value + "&";
     }
     getapi = getapi.slice(0, -1); //strim extraneous &
-    console.log("geturl: " + getapi);
     fetch(getapi)
       .then(function (response) {
         return response.json()
@@ -194,13 +173,9 @@ function setFormValues() {
       .catch(function (err) {
         console.log('error' + err);
       });
-
-
-
-}
-
+  }
   window.addEventListener("load", function () {
-  
+
     setFormValues();
     configForm.addEventListener('submit', (event) => {
       event.preventDefault(); //stop form submission
@@ -213,19 +188,12 @@ function setFormValues() {
         param = new URLSearchParams(configuration);
         var setapi = url + "/api/v1/set?" + param.toString();
 
-        console.log(setapi);
         fetch(setapi)
           .then(function (response) {
             return response.json()
           })
           .then(function (data) {
-            console.log(data);
             setFormDefaults(data, configForm, configNames);
-            /*            tsetvalspan = document.getElementById("tsetval");
-                        trangeminspan = document.getElementById("trangemin");
-                        trangemaxspan = document.getElementById("trangemax");
-                        tsetvalspan.textContent = data['tset']; */
-
           })
           .catch(function (err) {
             console.log('error' + err);
@@ -243,13 +211,11 @@ function setFormValues() {
       if (!configerror) {
         param = new URLSearchParams(configuration);
         var setapi = url + "/api/v1/set?" + param.toString();
-        console.log(setapi);
         fetch(setapi)
           .then(function (response) {
             return response.json()
           })
           .then(function (data) {
-            console.log(data);
             setFormDefaults(data, tuningForm, tuningNames);
           })
           .catch(function (err) {
@@ -257,11 +223,8 @@ function setFormValues() {
           });
         Errordiv = document.getElementById("tuneform-errormessage");
         Errordiv.textContent = "New Values Set"
-        console.log(setapi);
       }
     }, false);
-
-
   }); // End of window.addEventListener
 
 
@@ -285,7 +248,6 @@ function setFormValues() {
           tunerSwitch.checked = false;
         }
       }
-
       else {
         if (typeof data[value] !== 'undefined') {
 
@@ -304,7 +266,6 @@ function setFormValues() {
       }
     }
   };
-
   function GetFormValues(value) { // NB thisArg sets this with the forEach() function
     Errordiv = document.getElementById(this['errordiv']);
     if (value == "powerOffMode") return;
@@ -332,23 +293,12 @@ function setFormValues() {
     }
     configuration[value] = n;
   };
-
-
-
-
 </script>
-
-
-
-
 <body>
   <h1>Configuration</h1>
   <div id="graph" style="margin-left:3%; margin-right:3%"></div>
-
   <form id="configForm">
-
     <div class="configblock">
-
       <div class="formParameterValuePair">
         <div class="formParameter">
           Target Temperature
@@ -357,7 +307,6 @@ function setFormValues() {
           <input type="text" name="tset" value="">
         </div>
       </div>
-
       <div class="formParameterValuePair">
         <div class="formParameter">
           Threshold for PID control
@@ -366,7 +315,6 @@ function setFormValues() {
           <input type="text" name="tband" value="">
         </div>
       </div>
-
       <div class="formParameterValuePair">
         <div class="formParameter">
           Estimated power to maintain Equilibrium at <span id="tsetval"></span>
@@ -375,7 +323,6 @@ function setFormValues() {
           <input type="text" name="eqPwr" value="">
         </div>
       </div>
-
       <div class="formParameterValuePair">
         <div class="formParameter">
           Pid Interval
@@ -384,7 +331,6 @@ function setFormValues() {
           <input type="text" name="PidInterval" value="">
         </div>
       </div>
-
       <div class="formParameterValuePair">
         <div class="formParameter">
           Heater Interval
@@ -486,19 +432,19 @@ function setFormValues() {
   </form>
 
   <div class="ManagementAndPower">
-    <div class="configblock" >
+    <div class="configblock">
       <div class="Management">
         <div>
           <div id='configAPI'>
-        <input type="button" value="Load Config" class="button-class" onclick="LoadConf(this)">
-        <input type="button" value="Save Config" class="button-class" onclick="SaveConf(this)">
-        <input type="button" value="Default Config" class="button-class" onclick="DefaultConf(this)">
-  </div>
-        <div><a href="./update"><button>Update Firmware</button></a></div>
-        <div ><a href="./reset"><button id="resetdiv">Reset Device</button></a></div>
+            <input type="button" value="Load Config" class="button-class" onclick="LoadConf(this)">
+            <input type="button" value="Save Config" class="button-class" onclick="SaveConf(this)">
+            <input type="button" value="Default Config" class="button-class" onclick="DefaultConf(this)">
+          </div>
+          <div><a href="./update"><button>Update Firmware</button></a></div>
+          <div><a href="./reset"><button id="resetdiv">Reset Device</button></a></div>
+        </div>
       </div>
-      </div>
- </div>
+    </div>
     <div class="configblock">
       <div id="ConfigReporting"></div>
       <div class="hardwareswitches">
@@ -513,8 +459,6 @@ function setFormValues() {
       </div>
     </div>
   </div>
-
-  <!-- <form action="set_tuning" id="tuningForm"> -->
   <form id="tuningForm">
     <div>
       <div class="configblock">
@@ -526,7 +470,6 @@ function setFormValues() {
             <input type="text" name="tunethres" value="">
           </div>
         </div>
-
         <div class="formParameterValuePair">
           <div class="formParameter">
             Tuning Power (heater)
@@ -537,9 +480,6 @@ function setFormValues() {
         </div>
         <div> <input type="submit" value="Submit"> <span id="tuneform-errormessage"></span></div>
       </div>
-
-
-
       <div class="configblock" id="tunerSwitch">
         <div id="StatsReporting"></div>
         <div class="switchlabel">Tuning</div>
@@ -552,16 +492,6 @@ function setFormValues() {
 
 
     </div>
-
-
-
-
-
-    <!--
-
-    <div> <a href="./tuningmode"><button style="background-color:#98B4D4">Start PID Tuning
-          Mode</button></a></div>
-    -->
   </form>
 
   <div class="footermaterial">
