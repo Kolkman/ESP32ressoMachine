@@ -18,7 +18,6 @@ var dataStore = [];
 
 var para;
 var svg;
-var maxDataStoreLength;
 
 fetch(url + '/api/v1/get?PidInterval')
   .then(function (response) {
@@ -26,8 +25,6 @@ fetch(url + '/api/v1/get?PidInterval')
   })
   .then(function (data) {
     var p = data.PidInterval
-    maxDataStoreLength = (displayInterval * 1000 * 60 / p) - 1;
-
   })
   .catch(function (err) {
     console.log('error' + err);
@@ -136,10 +133,10 @@ source.addEventListener('status', function (e) {
   object.T = parseddata.measuredTemperature;
   object.p = parseddata.heaterPower;
   dataStore.push(object);
-  l = dataStore.length;
-  while (l > maxDataStoreLength) {
+
+
+  while ((object.t-dataStore[0].t)>displayInterval*60*1000) {  //This breaks at time roll.
     dataStore.shift();
-    l--;
   }
   visualize(dataStore);
 }, false);

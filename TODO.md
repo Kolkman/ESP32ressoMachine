@@ -1,6 +1,5 @@
 # TODO and known bugs
 ##Bugs
-* TuningMode is  broken.
 * The simmulation code has not been integratd or tested. Behavior is unpredicted
   
 ##TODO
@@ -10,6 +9,6 @@
 * WIFI managment: password management and act as basestation when WIFI fails so reconfiguration can happen.
 * Carefully go over the use of the String object - can/should char * be used?
 * Make MQTT topic configurable 
-* timeseries management after PidInterval changed (graph flows over to the left or doesn't occupy whole with.)
+
 
 
