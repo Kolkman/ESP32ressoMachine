@@ -26,7 +26,7 @@ fetch(url + '/api/v1/get?PidInterval')
   })
   .then(function (data) {
     var p = data.PidInterval
-    maxDataStoreLength = (displayInterval * 1000 * 60 / p);
+    maxDataStoreLength = (displayInterval * 1000 * 60 / p) - 1;
 
   })
   .catch(function (err) {
@@ -160,14 +160,28 @@ function visualize(data_in) {
 
   xScale.domain([-displayInterval, 0]);
 
-  yScale.domain(d3.extent(data_in, function (d) {
+  yScaleMin = d3.min(data_in, function (d) {
     return parseFloat(d.T);
-  }
-  ));
-
-  y2Scale.domain(d3.extent(data_in, function (d) {
+  });
+  yScaleMax = d3.max(data_in, function (d) {
+    return parseFloat(d.T);
+  });
+  y2ScaleMin = d3.min(data_in, function (d) {
     return parseFloat(d.p);
-  }));
+  });
+  y2ScaleMax = d3.max(data_in, function (d) {
+    return parseFloat(d.p);
+  });
+  yScaleMin -= .1;
+  yScaleMax += .1;
+  y2ScaleMin -= 50;
+  y2ScaleMax += 40;
+  if (y2ScaleMin < 0) y2ScaleMin = 0;
+
+  yScale.domain([yScaleMin, yScaleMax]);
+  y2Scale.domain([y2ScaleMin, y2ScaleMax]);
+
+
 
 
   //create x axis
@@ -222,7 +236,7 @@ function visualize(data_in) {
     .attr("class", "line_p")
     .attr("fill", "none")
     .attr("stroke", "red")
-    .attr("opacity",0.5)
+    .attr("opacity", 0.5)
     .attr("stroke-width", 2.5)
     .attr("d", d3.line()
       .x(function (d) {
