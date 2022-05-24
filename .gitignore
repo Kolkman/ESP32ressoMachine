@@ -20,3 +20,12 @@ include/pages/update.html.h
 .vscode/extensions.json
 .vscode/targets.log
 .DS_Store
+WEBsources/button-min.css
+WEBsources/configuration-min.html
+WEBsources/drawtimeseries-min.js
+WEBsources/ESPresso-min.css
+WEBsources/firmware-min.js
+WEBsources/index-min.html
+WEBsources/test-min.html
+WEBsources/update copy.min.html
+WEBsources/update-min.html
