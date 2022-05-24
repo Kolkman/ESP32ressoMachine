@@ -50,7 +50,7 @@
           statsdiv.append(d1);
           d2.textContent = "New I: " + data.igain
           statsdiv.append(d2);
-          d3.textContent = "New P: " + data.pgain
+          d3.textContent = "New D: " + data.dgain
           statsdiv.append(d3);
           setFormValues();
         })
@@ -166,7 +166,6 @@
         return response.json()
       })
       .then(function (data) {
-
         setFormDefaults(data, configForm, configNames);
         setFormDefaults(data, tuningForm, tuningNames);
       })
@@ -175,7 +174,6 @@
       });
   }
   window.addEventListener("load", function () {
-
     setFormValues();
     configForm.addEventListener('submit', (event) => {
       event.preventDefault(); //stop form submission
@@ -202,7 +200,6 @@
         Errordiv.textContent = "New Values Set"
       }
     }, false);
-
     tuningForm.addEventListener('submit', (event) => {
       configerror = false;
       event.preventDefault(); //stop form submission
@@ -226,8 +223,6 @@
       }
     }, false);
   }); // End of window.addEventListener
-
-
   function setFormDefaults(data, form, fieldnames) {
     fieldnames.forEach(setFormValues);
     function setFormValues(value) {
@@ -261,10 +256,17 @@
         } else {
           console.log("value not found: " + value)
         }
-
-
       }
     }
+    // some final touch ups.
+    if (form == configForm) {
+      trangemax = document.getElementById("trangemax");
+      trangemin = document.getElementById("trangemin");
+      trangemin.innerHTML = data.tset - data.tband
+      trangemax.innerHTML = data.tset + data.tband
+    }
+
+
   };
   function GetFormValues(value) { // NB thisArg sets this with the forEach() function
     Errordiv = document.getElementById(this['errordiv']);
@@ -294,6 +296,7 @@
     configuration[value] = n;
   };
 </script>
+
 <body>
   <h1>Configuration</h1>
   <div id="graph" style="margin-left:3%; margin-right:3%"></div>
@@ -349,7 +352,7 @@
       </div>
       <div class="formParameterValuePair">
         <div class="formParameter">
-          Max Cool (natural cooling rate &deg;/c)
+          Max Cool (natural cooling rate &deg;C/s)
         </div>
         <div class="formValue">
           <input type="text" name="maxCool" value="">

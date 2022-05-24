@@ -8,7 +8,7 @@
 // Default PID settings
 //above target temp
 #define S_P 50
-#define S_I 0.5
+#define S_I 1.5
 #define S_D 500
 
 // below target temp
