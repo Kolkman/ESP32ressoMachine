@@ -19,3 +19,4 @@ include/pages/update.html.h
 .vscode/dryrun.log
 .vscode/extensions.json
 .vscode/targets.log
+.DS_Store
