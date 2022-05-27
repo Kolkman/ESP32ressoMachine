@@ -93,7 +93,7 @@ window.addEventListener("load", function () {
       .style("text-anchor", "middle")
       .attr("dy", "1em")
       .style("text-anchor", "middle")
-      .text("Temperature \u2103")
+      .text("Temperature (\u00B0C)")
       .attr("font-size", "130%");
 
     svg.append("text")

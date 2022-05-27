@@ -4,37 +4,50 @@ all:include/pages/index.html.h include/pages/update.html.h  \
 	include/pages/gauge.min.js.h include/pages/EspressoMachine.svg.h\
 	include/pages/test.html.h include/pages/test2.html.h \
 	include/pages/drawtimeseries.js.h	include/pages/firmware.js.h \
-	include/pages/configuration.html.h 
+	include/pages/configuration.html.h include/pages/configuration_helper.js.h \
+	include/pages/index_helper.js.h
 	@exec true 
 
 
 
 include/pages/test.html.h: WEBSources/test.html 
-	@./ProduceDefine.py $< text/html  > $@
+	@./ProduceDefine.py $< text/html\;charset=UTF-8  > $@
 
 include/pages/test2.html.h: WEBSources/test2.html 
 	@./ProduceDefine.py $< text/html  > $@
 
 include/pages/index.html.h: WEBSources/index.html 
-	@./ProduceDefine.py $< text/html  > $@
+	@./ProduceDefine.py $< text/html\;charset=UTF-8  > $@
 
-include/pages/configuration.html.h: WEBSources/configuration.html 
-	@./ProduceDefine.py $< text/html  > $@
 
-include/pages/button.css.h: WEBsources/button.css
+
+
+
+include/pages/configuration.html.h: WEBSources/configuration-min.html 
+	@./ProduceDefine.py $< text/html\;charset=UTF-8  > $@
+
+include/pages/button.css.h: WEBsources/button-min.css
 	@./ProduceDefine.py $< text/css  > $@
 
-include/pages/ESPresso.css.h: WEBsources/ESPresso.css
+include/pages/ESPresso.css.h: WEBsources/ESPresso-min.css
 	@./ProduceDefine.py $< text/css  > $@
+
+
+include/pages/index_helper.js.h: WEBSources/index_helper-min.js 
+	@./ProduceDefine.py $< text/javascript  > $@
+
+
+include/pages/configuration_helper.js.h: WEBSources/configuration_helper-min.js 
+	@./ProduceDefine.py $< text/javascript  > $@
 
 include/pages/gauge.min.js.h: WEBSources/gauge.min.js
 	@./ProduceDefine.py $< text/javascript  > $@
 
 
-include/pages/drawtimeseries.js.h: WEBSources/drawtimeseries.js
+include/pages/drawtimeseries.js.h: WEBSources/drawtimeseries-min.js
 	@./ProduceDefine.py $< text/javascript  > $@
 
-include/pages/firmware.js.h: WEBSources/firmware.js
+include/pages/firmware.js.h: WEBSources/firmware-min.js
 	@./ProduceDefine.py $< text/javascript  > $@
 
 
@@ -43,7 +56,7 @@ include/pages/EspressoMachine.svg.h: WEBSources/EspressoMachine.svg
 
 
 include/pages/update.html.h: WEBsources/update.html
-	@./ProduceDefine.py $< text/html  > $@
+	@./ProduceDefine.py $< text/html\;charset=UTF-8 > $@
 
 
 clean:

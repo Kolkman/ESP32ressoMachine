@@ -24,14 +24,16 @@
 
 // Various WebSources:
 //#include "pages/test.html.h"
-#include "pages/configuration.html.h"
-#include "pages/button.css.h"
 #include "pages/ESPresso.css.h"
+#include "pages/EspressoMachine.svg.h"
+#include "pages/button.css.h"
+#include "pages/configuration.html.h"
+#include "pages/configuration_helper.js.h"
 #include "pages/drawtimeseries.js.h"
 #include "pages/firmware.js.h"
 #include "pages/gauge.min.js.h"
-#include "pages/EspressoMachine.svg.h"
 #include "pages/index.html.h"
+#include "pages/index_helper.js.h"
 
 #define ONCOLOR "CD212A"
 #define OFFCOLOR "DCDCDC"
@@ -157,6 +159,8 @@ void WebInterface::setupWebSrv(ESPressoMachine *machine, const char *username, c
   DEF_HANDLE_drawtimeseries_js;
   DEF_HANDLE_firmware_js;
   DEF_HANDLE_configuration_html;
+  DEF_HANDLE_configuration_helper_js;
+  DEF_HANDLE_index_helper_js;
 //  DEF_HANDLE_test_html;
 
   // Handle Web Server Events
