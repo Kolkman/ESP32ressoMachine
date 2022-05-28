@@ -5,13 +5,91 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" type="text/css" href="WEBsources/ESPresso.css" media="all" />
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    <style>
+        #HomePageGif {
+            vertical-align: top;
+            width: 39.5%;
+        }
+
+        #ConfigPageGif {
+            vertical-align: top;
+            width: 39.5%;
+        }
+
+        #ResponsivePageGif {
+            vertical-align: top;
+            width: 20%;
+            margin-left: auto;
+        }
+
+        #InterfaceImages {
+            align: top;
+            background-color: cornsilk;
+            padding: 2ex;
+        }
+
+        .main {
+            margin-left: 1em;
+            margin-right 1em;
+        }
+    </style>
 </head>
 
 <body>
-    <h1>ESPresso Machine</h1>
 
 
-    <p>TODO</p>
+    <h1>
+        <div>ESP<div class="numberplaceholder">
+                <div id="number32">32</div>
+            </div>resso Machine </div>
+    </h1>
+
+
+    <div id="EspressoMachinePNG"><img src="ArtSource/ESPressoMachine.png"></div>
+
+    <div class="main">
+        <h2>Overview</h2>
+        <p>
+            This project refactored from the original <a href="https://github.com/Schm1tz1/ESPressIoT">ESPressIoT
+                project by
+                Roman Schmit</a> originally written for an ESP3866 board with a TSIC sensor.
+        </p>
+        <p>
+            This 'fork' ports that code to an ESP32 with a MAX31855 amplified K thermocouple. It has been refactored it
+            to be more
+            object oriented, and graphically more appealing, it for instance includes a GUI for parameter tuning.
+        </p>
+        <p>
+            More information about the bill of material and the development dependencies can be found in the projects <A
+                href="README.md">README</A>.
+        </p>
+
+
+        <h2>Interface</h2>
+        <p>
+            Homepage presents a simple temperature gauge, a power indicator, and the ability to turn the heater on or
+            off. The configuration page contains all that is needed for setting the various parameters that control
+            the temperature. It contains a graph that presents the last 10 minutes of data so you see what the impact is
+            of
+            your tuning. When the page is loaded it initiates its buffer with a few minutes of data from board. Setting
+            the
+            parameters us done using a username and password (currently a value set at compilation time).
+
+        </p>
+        <p>
+            Most of the interaction with the ESP32Machine is done via an restful API. All parameters can be set or read
+            through it.
+            In addition there is an MQTT interface that is used to publish the machines's current status.
+        </p>
+        <p>
+            Below are a few screenshoots to give you an idea.
+        </p>
+        <div id="InterfaceImages">
+            <img id="HomePageGif" src="ArtSource/HomePageAnimation.gif">
+            <img id="ConfigPageGif" src="ArtSource/ConfigPageAnimation.gif">
+            <img id="ResponsivePageGif" src="ArtSource/Responsive.gif">
+        </div>
+    </div>
 </body>
 
 </html>

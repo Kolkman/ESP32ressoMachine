@@ -10,5 +10,6 @@
 * Make MQTT topic configurable 
 * Smooth graph (entry, exit in d3)
 * The simmulation code has not been integratd or tested. Behavior is unpredicted
+* Update d3 from v4 to v7
 
 
