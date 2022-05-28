@@ -29,3 +29,6 @@ WEBsources/index-min.html
 WEBsources/test-min.html
 WEBsources/update copy.min.html
 WEBsources/update-min.html
+include/pages/configuration_helper.js.h
+include/pages/index_helper.js.h
+index-min.html

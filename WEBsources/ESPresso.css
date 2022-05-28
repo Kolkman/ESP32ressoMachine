@@ -1,5 +1,6 @@
 body {
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-size:large;
     background: #626262;
     color: antiquewhite;
 }
@@ -15,21 +16,30 @@ div.gauges {
     margin: auto;
 }
 
+A:link{
+    color:rgb(213, 212, 145);
+}
+A:visited{
+    color:rgb(142, 209, 196);
+}
+A:hover{
+    color:#a5f8fc;
+}
+
 canvas {
     display: block;
     width: 300px;
     margin: auto;
 }
 
-
 h1 {
-    text-align: center;
     color: cornsilk;
     background-color: #8e2d18;
     font-size: xx-large;
     padding: 10px;
     letter-spacing: .4em;
     margin-bottom: 1em;
+    text-align:center;
 
 }
 
@@ -258,4 +268,26 @@ form {
     color: black;
     height: 5ex;
     font-family:'Courier New', Courier, monospace;
+}
+
+#EspressoMachinePNG img {
+    width: 10%;
+    margin-left: 3%;
+    margin-top: -70px
+
+}
+
+.numberplaceholder{
+    display: inline-block;
+    position:relative;
+    width:.3ex;
+
+}
+#number32{
+    letter-spacing: 0.1em;
+    position:absolute;
+    transform-origin: left;
+    top: -1ex;
+    left: -1.9ex;
+    color:burlywood
 }
