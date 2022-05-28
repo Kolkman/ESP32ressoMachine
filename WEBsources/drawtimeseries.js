@@ -1,7 +1,7 @@
 
 const displayInterval = 10 // in minutes
 
-var margin = { top: 10, right: 30, bottom: 30, left: 60 };
+var margin = { top: 10, right: 60, bottom: 30, left: 60 };
 var width = 1500 - margin.left - margin.right;
 var height = 300 - margin.top - margin.bottom;
 
@@ -66,7 +66,7 @@ window.addEventListener("load", function () {
     if (error) throw error;
     svg = d3.select("#graph")
       .append("svg")
-      .attr("width", width + margin.left + margin.right)
+      .attr("width", width)// + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
       .call(responsivefy)
       .append("g")
@@ -79,10 +79,10 @@ window.addEventListener("load", function () {
     svg.append("text")
       .attr("transform",
         "translate(" + (width / 2) + " ," +
-        (height + margin.top + 20) + ")")
+        (height + margin.top ) + ")")
       .style("text-anchor", "middle")
       .text("relative time (min)")
-      .attr("font-size", "130%");
+      .attr("font-size", "110%");
 
     // text label for the y axis
 
@@ -94,7 +94,7 @@ window.addEventListener("load", function () {
       .attr("dy", "1em")
       .style("text-anchor", "middle")
       .text("Temperature (\u00B0C)")
-      .attr("font-size", "130%");
+      .attr("font-size", "110%");
 
     svg.append("text")
       .attr("transform",
@@ -103,7 +103,7 @@ window.addEventListener("load", function () {
       .style("text-anchor", "middle")
       .attr("dy", "1em")
       .text("Power")
-      .attr("font-size", "130%");
+      .attr("font-size", "110%");
 
     dataStore = data;
     //console.log(dataStore);
