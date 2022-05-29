@@ -69,8 +69,7 @@
             reproducible "espresso results" due to temperature regulation and being able to fine-tune. Especially small
             machines have a low heat capacity and quality suffers a lot from different heat-up-times and high hysteresis
             in standard temperature switches. This <i>fork</i> was specifically developed for a Rancilio Silvia (v1)
-            which
-            are known to have
+            which are known to have fluctuations up to 20 degrees Celcius.
         </p>
 
         <p>
@@ -131,7 +130,8 @@
 
         <p>
             For the hardware setup I followed the example from <A
-            href="https://www.instructables.com/PID-Controlled-Thermostat-Using-ESP32-Applied-to-a/">  "Bnayalivne's Instructable page"</A> I used a
+                href="https://www.instructables.com/PID-Controlled-Thermostat-Using-ESP32-Applied-to-a/"> "Bnayalivne's
+                Instructable page"</A> I used a
             splitter to solder
             a USB charger to. And the whole circuit I installed in the space
             behind the frontplate, in a small plastic bag keep it dry from the drip plate.
@@ -140,20 +140,18 @@
         <p>Whilst the Fotek should be able to handle the 3.3 V output from the
             GPIO it failed doing so. The small circuit with the transistor, resistor, and the
             diode (against flowback) uses the GPIO defined in heater.ino to switch the output from
-            the 5v voltage pin.        
+            the 5v voltage pin.
         </p>
-        <img width="30%" src="images/Splitter.jpg" class="anImage" alt="image showing the splitter"
-        >
+        <img width="30%" src="images/Splitter.jpg" class="anImage" alt="image showing the splitter">
 
-  
-        <img width="30%" src="images/Board.jpeg" class="anImage" alt="image showing the board"
-        >
-        <img class="anImage" src="images/Espresso_IoT_Pid_scheme.png" alt="electric scheme" 
-        width="30%" style="vertical-align: top;">
+
+        <img width="30%" src="images/Board.jpeg" class="anImage" alt="image showing the board">
+        <img class="anImage" src="images/Espresso_IoT_Pid_scheme.png" alt="electric scheme" width="30%"
+            style="vertical-align: top;">
 
 
         <h2>Acknowledgements</h2>
-        <p> 
+        <p>
             Roman Schmit, some of the code is a literal copy of his, some of it is butchered. All good idea's are his,
             the errors introduced are mine.
         </p>
