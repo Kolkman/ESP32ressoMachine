@@ -287,7 +287,8 @@ form {
     letter-spacing: 0.1em;
     position:absolute;
     transform-origin: left;
-    top: -1ex;
+    transform: rotate(-33deg);
+    top: 0ex;
     left: -1.9ex;
     color:burlywood
 }
