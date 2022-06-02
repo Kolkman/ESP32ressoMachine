@@ -8,8 +8,6 @@
 * WIFI managment: password management and act as basestation when WIFI fails so reconfiguration can happen.
 * Carefully go over the use of the String object - can/should char * be used?
 * Make MQTT topic configurable 
-* Smooth graph (entry, exit in d3)
 * The simmulation code has not been integratd or tested. Behavior is unpredicted
-* Update d3 from v4 to v7
 
 

@@ -292,3 +292,8 @@ form {
     left: -1.9ex;
     color:burlywood
 }
+
+/* Graph color */
+.axis {
+    color: black;
+}
