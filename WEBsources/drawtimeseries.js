@@ -1,13 +1,20 @@
 
-const displayInterval = 10 // in minutes
 
+/// Global Variables
+
+// Determines the size of the time domain
+const displayInterval = 15 // in minutes
+
+
+//Geometry
 var margin = { top: 10, right: 60, bottom: 30, left: 60 };
 var width = 1500 - margin.left - margin.right;
 var height = 300 - margin.top - margin.bottom;
-
+var new_time = new Date().getTime();
+var old_time = new Date().getTime();
 
 var toTime = d3.scaleLinear()
-  .range(-15, 0)
+  .range(-displayInterval, 0)
 var xScale = d3.scaleLinear()
   .range([0, width - margin.left - margin.right])
 var yScale = d3.scaleLinear()
@@ -62,8 +69,9 @@ function responsivefy(svg) {
 
 window.addEventListener("load", function () {
   console.log("Window Loaded");
-  d3.json(url + '/api/v1/statistics', function (error, data) {
-    if (error) throw error;
+
+  d3.json(url + '/api/v1/statistics').then(function (data) {
+    // Handle dimensions
     svg = d3.select("#graph")
       .append("svg")
       .attr("width", width)// + margin.left + margin.right)
@@ -79,12 +87,12 @@ window.addEventListener("load", function () {
     svg.append("text")
       .attr("transform",
         "translate(" + (width / 2) + " ," +
-        (height + margin.top ) + ")")
+        (height + margin.top) + ")")
       .style("text-anchor", "middle")
       .text("relative time (min)")
       .attr("font-size", "110%");
 
-    // text label for the y axis
+    // text label for the left y axis
 
     svg.append("text")
       .attr("transform",
@@ -95,7 +103,7 @@ window.addEventListener("load", function () {
       .style("text-anchor", "middle")
       .text("Temperature (\u00B0C)")
       .attr("font-size", "110%");
-
+    // text for the right y axis
     svg.append("text")
       .attr("transform",
         "translate(" + (width - margin.right) + " ," +
@@ -106,11 +114,13 @@ window.addEventListener("load", function () {
       .attr("font-size", "110%");
 
     dataStore = data;
-    //console.log(dataStore);
-    visualize(dataStore);
+    CalculateAxes(dataStore)
+    drawAxes();
+    init_visualize(dataStore);
+    old_time = new Date().getTime();
   });
-}
-);
+});
+
 
 // Listen for messages
 var source = new EventSource(url + '/events');
@@ -135,25 +145,24 @@ source.addEventListener('status', function (e) {
   dataStore.push(object);
 
 
-  while ((object.t-dataStore[0].t)>displayInterval*60*1000) {  //This breaks at time roll.
+
+  new_time = new Date().getTime();
+  CalculateAxes(dataStore);
+  deleteAxes();
+  drawAxes();
+  visualize(dataStore);
+  while ((object.t - dataStore[0].t) > displayInterval * 60 * 1000) {  //This breaks at time roll.
     dataStore.shift();
   }
-  visualize(dataStore);
+  old_time = new_time;
 }, false);
 
 
-function visualize(data_in) {
-
+function CalculateAxes(data_in) {
   // mostly following https://d3-graph-gallery.com/graph/line_basic.html
   data_in = data_in.sort(function (a, b) { return parseInt(a.t) - parseInt(b.t) })
+
   xMax = d3.max(data_in, function (d) { return parseInt(d.t); });
-
-
-
-  //   return parseInt(d.t);
-  //xScale.domain(d3.extent(data_in, function (d) {
-  //   return parseInt(d.t);
-  //}));
 
   xScale.domain([-displayInterval, 0]);
 
@@ -174,48 +183,42 @@ function visualize(data_in) {
   y2ScaleMin -= 50;
   y2ScaleMax += 40;
   if (y2ScaleMin < 0) y2ScaleMin = 0;
-
   yScale.domain([yScaleMin, yScaleMax]);
   y2Scale.domain([y2ScaleMin, y2ScaleMax]);
+}
 
 
-
-
-  //create x axis
-  // remove any previously drawn axis
-  svg.selectAll(".x.axis").remove();
-  // draw the new axis
+function drawAxes() {
   svg.append("g").attr("class", "x axis")
     .attr("transform", "translate(0," + (height - margin.top - margin.bottom) + ")")
     .call(d3.axisBottom(xScale));
-  // create temperature  axis
-  // remove any previously drawn axis
-  svg.selectAll(".y.axis").remove();
-  // draw the new axis
   svg.append("g").attr("class", "y axis")
     .call(d3.axisLeft(yScale));
-
-  // create power Axis
-  // remove any previously drawn axis
-  svg.selectAll(".y2.axis").remove();
-  // draw the new axis
   svg.append("g").attr("class", "y2 axis")
     .attr("transform", "translate(" + (width - margin.right - margin.left) + ",0)")
     .call(d3.axisRight(y2Scale));
 
+}
 
-  //var lines_t = svg.selectAll(".line_t").data(data_in).attr("class", "line_t")
+function deleteAxes() {
+  svg.selectAll(".y.axis").remove();
+  svg.selectAll(".y2.axis").remove();
+  svg.selectAll(".x.axis").remove();
+}
 
-  // remove any previously drawn line
-  svg.selectAll(".line_t").remove();
-  svg.selectAll(".line_p").remove();
 
 
-
-  // Plot the temperature graph
-  svg.append("path")
+function init_visualize(data_in) {
+  svg.append("defs").append("clipPath")
+    .attr("id", "clip")
+    .append("rect")
+    .attr("width", width)
+    .attr("height", height);
+  svg.append("g").attr("clip-path", "url(#clip)")
+    .append("path")
+    .attr("id", "temperaturePath")
     .datum(data_in)
-    .attr("class", "line_t")
+    .join()
     .attr("fill", "none")
     .attr("stroke", "steelblue")
     .attr("stroke-width", 2.5)
@@ -225,12 +228,11 @@ function visualize(data_in) {
       })
       .y(function (d) { return yScale(parseFloat(d.T)); })
     )
-  //plot the power graph
 
+  //plot the power graph
   svg.append("path")
+    .attr("id", "powerPath")
     .datum(data_in)
-    .transition().duration(200)
-    .attr("class", "line_p")
     .attr("fill", "none")
     .attr("stroke", "red")
     .attr("opacity", 0.5)
@@ -242,5 +244,42 @@ function visualize(data_in) {
       .y(function (d) { return y2Scale(parseFloat(d.p)); })
     )
 }
+
+function visualize(data_in) {
+
+
+  d3.select("#temperaturePath")
+    .datum(data_in)
+    .join()
+
+    .attr("d", d3.line()
+      .x(function (d) {
+        return xScale((parseInt(d.t) - xMax) / (60 * 1000))
+      })
+      .y(function (d) { return yScale(parseFloat(d.T)); })
+    )
+    .attr("transform", null)
+    .transition().duration(Math.abs(new_time - old_time) * .90).ease(d3.easeLinear)
+    .attr("transform", "translate(" + xScale(-displayInterval - (new_time - old_time) / (1000 * 60)) + ")");
+
+
+
+  //plot the power graph
+  d3.select("#powerPath")
+    .datum(data_in)
+
+    .attr("d", d3.line()
+      .x(function (d) {
+        return xScale((parseInt(d.t) - xMax) / (60 * 1000))
+      })
+      .y(function (d) { return y2Scale(parseFloat(d.p)); })
+    )
+    .attr("transform", null)
+    .transition().duration(Math.abs(new_time - old_time - 20) * .90).ease(d3.easeLinear)
+    .attr("transform", "translate(" + xScale(-displayInterval - (new_time - old_time) / (1000 * 60)) + ")");
+
+
+}
+
 
 
