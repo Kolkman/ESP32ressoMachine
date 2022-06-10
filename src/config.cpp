@@ -4,6 +4,9 @@
 #include <config.h>
 #include <ESPressoMachine.h>
 #include <Arduino.h>
+#include <FS.h>
+#include <LittleFS.h>
+
 
 EspressoConfig::EspressoConfig()
 {
@@ -19,18 +22,31 @@ EspressoConfig::~EspressoConfig()
 
 bool EspressoConfig::prepareFS()
 {
-
-  if (!SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED))
+  if (!LittleFS.begin(false /* false: Do not format if mount failed */))
   {
-    Serial.println("Failed to mount file system");
-    return false;
+    Serial.println("Failed to mount LittleFS");
+    if (!LittleFS.begin(true /* true: format */))
+    {
+      Serial.println("Failed to format LittleFS");
+      return false;
+    }
+    else
+    {
+      Serial.println("LittleFS formatted successfully");
+      return true;
+    }
   }
-  return true;
+  else
+  { // Initial mount success
+    return true;
+  }
 }
+
+
 
 bool EspressoConfig::loadConfig()
 {
-  File configFile = SPIFFS.open("/config.json", "r");
+  File configFile = LittleFS.open("/config.json", "r");
   if (!configFile)
   {
     Serial.println("Failed to open config file");
@@ -54,7 +70,7 @@ bool EspressoConfig::loadConfig()
   awayTarget.P = jsonDocument["aP"], awayTarget.I = jsonDocument["aI"], awayTarget.D = jsonDocument["aD"];
   eqPwr = jsonDocument["Ep"], heaterInterval = jsonDocument["hi"], pidInt = jsonDocument["pidi"],
   sensorSampleInterval = jsonDocument["ssi"];
-  maxCool= jsonDocument["maxcool"];
+  maxCool = jsonDocument["maxcool"];
   return true;
 }
 
@@ -67,8 +83,8 @@ bool EspressoConfig::saveConfig()
   jsonDocument["aP"] = awayTarget.P, jsonDocument["aI"] = awayTarget.I, jsonDocument["aD"] = awayTarget.D;
   jsonDocument["Ep"] = eqPwr, jsonDocument["hi"] = heaterInterval, jsonDocument["pidi"] = pidInt,
   jsonDocument["ssi"] = sensorSampleInterval;
-  jsonDocument["maxcool"] = maxCool;  
-  File configFile = SPIFFS.open("/config.json", "w");
+  jsonDocument["maxcool"] = maxCool;
+  File configFile = LittleFS.open("/config.json", "w", true);
   if (!configFile)
   {
     Serial.println("Failed to open config file for writing");
