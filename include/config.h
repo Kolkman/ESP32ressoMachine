@@ -2,7 +2,7 @@
 #define ESPressoMachineCONFIG_H
 
 #include <StreamUtils.h>
-#include <SPIFFS.h>
+
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include "ESPressoMachineDefaults.h"

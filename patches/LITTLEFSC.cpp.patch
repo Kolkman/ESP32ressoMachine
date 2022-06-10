@@ -1,0 +1,4 @@
+44c44
+<     File f = open(path, "r");
+---
+>     File f = open(path, "r", false);
