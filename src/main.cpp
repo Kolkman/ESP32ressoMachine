@@ -5,9 +5,8 @@
 //
 
 #include <Arduino.h>
-#include <WiFi.h>
-#include <SPIFFS.h>
-#include <PID_v1.h>
+//#include <WiFi.h>
+
 
 // local Includes
 #include "ESPressoMachine.h"
@@ -19,6 +18,7 @@
 #include "webinterface.h"
 #include "mqttinterface.h"
 #include "pidtuner.h"
+
 
 ESPressoMachine  myRancilio;
 
@@ -39,10 +39,10 @@ void setup()
 
 
 
-  Serial.println("Mounting SPIFFS...");
+  Serial.println("Mounting LittleFS...");
   if (!myRancilio.myConfig->prepareFS())
   {
-    Serial.println("Failed to mount SPIFFS !");
+    Serial.println("Failed to mount LittleFS !");
   }
   else
   {
@@ -70,6 +70,7 @@ void setup()
   Serial.print("Firmware Version");
   Serial.println(String(CURRENTFIRMWARE) +" "+ String(F(__DATE__))+":"+String(F(__TIME__)));
   Serial.println("Settin up PID...");
+  /* 
   WiFi.begin(WIFI_SSID, WIFI_PASS);
   WiFi.macAddress(mac);
   Serial.println("");
@@ -96,6 +97,7 @@ void setup()
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
   delay(2);
+*/
 
   // setup the Machine
 

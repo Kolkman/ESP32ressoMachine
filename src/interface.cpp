@@ -5,10 +5,11 @@
 #include <Arduino.h>
 #include "interface.h"
 #include "ESPressoMachine.h"
+#include "wifiManager.h"
 
 ESPressoInterface::ESPressoInterface(ESPressoMachine *machine) : WebInterface(machine)
 {
-
+ wifiMngr= new WiFiManager();
 }
 
 void ESPressoInterface::serialStatus()
@@ -38,6 +39,8 @@ void ESPressoInterface::loop()
 
 void ESPressoInterface::setup()
 {
+  wifiMngr->setup(this->server);
+
 
   setupWebSrv(this->myMachine,WEB_USER,WEB_PASS);
 

@@ -1,15 +1,15 @@
 #ifndef ESPressoMachine_INTERFACE_H
 #define ESPressoMachine_INTERFACE_H
-
 #include "ESPressoMachineDefaults.h"
+#include "wifiManager.h"
 #include "webinterface.h"
-
 //#ifdef ENABLE_TELNET
 #include "telnetinterface.h"
 //#endif
 //#ifdef ENABLE_MQTT
 #include "mqttinterface.h"
 //#endif
+class WiFiManager; // forward declaration
 
 
 class ESPressoInterface : public WebInterface
@@ -28,18 +28,15 @@ class ESPressoInterface : public WebInterface
 #ifdef ENABLE_MQTT
                           public MQTTInterface
 #endif
-
 {
 public:
     ESPressoInterface(ESPressoMachine *);
 #ifdef ENABLE_SERIAL
     void serialStatus();
+    WiFiManager * wifiMngr;
 #endif
     void loop();
     void setup();
-
-//private:
- //   ESPressoMachine *myMachine;
 };
 
 #endif
