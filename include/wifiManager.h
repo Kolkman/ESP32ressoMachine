@@ -43,6 +43,7 @@ CONFIG_NETWORK_PASSWORD "ESP32ressoMachine"
 
 #define MIN_AP_PASSWORD_SIZE 8
 
+
 // WifiMulti STA connection timeouts
 #if (USING_ESP32_S2 || USING_ESP32_C3)
 #define WIFI_MULTI_1ST_CONNECT_WAITING_MS 500L
@@ -80,6 +81,7 @@ CONFIG_NETWORK_PASSWORD "ESP32ressoMachine"
 
 // Use false to disable NTP config. Advisable when using Cellphone, Tablet to access Config Portal.
 // See Issue 23: On Android phone ConfigPortal is unresponsive (https://github.com/khoih-prog/ESP_WiFiManager/issues/23)
+
 #define USE_ESP_WIFIMANAGER_NTP false
 
 /*
@@ -101,8 +103,10 @@ CONFIG_NETWORK_PASSWORD "ESP32ressoMachine"
 #define USE_CLOUDFLARE_NTP false
 
 // New in v1.0.11
+
 // Keeping this to false, compile time errors otherwise.
 #define USING_CORS_FEATURE false
+
 
 
 #define CONFIG_FILENAME F("/wifi_cred.dat")
@@ -146,11 +150,13 @@ CONFIG_NETWORK_PASSWORD "ESP32ressoMachine"
 class WiFiManager : public WiFiMulti
 {
 public:
+
        WiFiManager(EspressoConfig *);
        void setup(EspressoWebServer *);
        // SSID and PW for Config Portal
 
 private:
+
        EspressoConfig *myConfig;
  
        FS *filesystem;
