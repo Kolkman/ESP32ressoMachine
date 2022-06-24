@@ -10,6 +10,7 @@
 #include "ESPressoMachine.h"
 #include <PID_v1.h>
 
+
 #include "webinterface.h"
 #include "config.h"
 #include <Arduino.h>
@@ -34,26 +35,22 @@
 #include "pages/gauge.min.js.h"
 #include "pages/index.html.h"
 #include "pages/index_helper.js.h"
-
 #define ONCOLOR "CD212A"
 #define OFFCOLOR "DCDCDC"
 
 WebInterface::WebInterface()
 {
   Serial.println("Webinterfce Constructor");
-
   _username = "";
   _password = "";
   server = nullptr;
   myMachine = nullptr;
   events = nullptr;
-  //  httpUpdater = new HTTPUpdateServer;
 }
 
 WebInterface::WebInterface(ESPressoMachine * machine)
 {
   Serial.println("Webinterfce Constructor");
-
   _username = "";
   _password = "";
   server = nullptr;
