@@ -13,12 +13,12 @@ public:
     ~WebInterface();
     void setupWebSrv(ESPressoMachine *, const char *username = "", const char *password = "");
     void eventLoop();
-
+    EspressoWebServer *server;
 protected:
     ESPressoMachine *myMachine;
 
 private:
-    EspressoWebServer *server;
+    
     AsyncEventSource *events;
     String _username;
     String _password;
