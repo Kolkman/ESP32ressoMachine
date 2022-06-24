@@ -9,7 +9,11 @@
 
 ESPressoInterface::ESPressoInterface(ESPressoMachine *mach) : WebInterface(mach,WEB_USER,WEB_PASS)
 {
+<<<<<<< HEAD
  wifiMngr= new WiFiManager(mach->myConfig);
+=======
+ wifiMngr= new WiFiManager();
+>>>>>>> f5e6465 (WIFIManager implementation - snapshot of compilable state (not functioning))
 }
 
 void ESPressoInterface::serialStatus()
@@ -40,8 +44,14 @@ void ESPressoInterface::loop()
 void ESPressoInterface::setup()
 {
   wifiMngr->setup(this->server);
+<<<<<<< HEAD
   Serial.println("Wifi Manager done, following up with WebSrv");
   setupWebSrv(this->myMachine);
+=======
+
+
+  setupWebSrv(this->myMachine,WEB_USER,WEB_PASS);
+>>>>>>> f5e6465 (WIFIManager implementation - snapshot of compilable state (not functioning))
 
 #ifdef ENABLE_TELNET
   setupTelnet();

@@ -9,6 +9,7 @@
 //#ifdef ENABLE_MQTT
 #include "mqttinterface.h"
 //#endif
+class WiFiManager; // forward declaration
 
 class WiFiManager; // forward declaration
 
