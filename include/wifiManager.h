@@ -1,8 +1,11 @@
 #ifndef wifiManager_h
 #define wifiManager_h
-
+#include "ESPressoMachineDefaults.h" 
 #include "EspressoWebServer.h"
 
+#ifndef CONFIG_NETWORK_PASSWORD
+CONFIG_NETWORK_PASSWORD "ESP32ressoMachine"
+#endif
 // Anything Wifi Goes into this class..
 
 // Follows the examples from https://github.com/khoih-prog/ESPAsync_WiFiManager/blob/master/examples/Async_ConfigOnSwitch/Async_ConfigOnSwitch.ino
@@ -95,6 +98,7 @@ typedef struct
 #define USE_CLOUDFLARE_NTP false
 
 // New in v1.0.11
+// Keeping this to false, compile time errors otherwise.
 #define USING_CORS_FEATURE false
 
 typedef struct
@@ -154,10 +158,12 @@ private:
        WM_Config WM_config;
        FS *filesystem;
        EspressoWebServer *myServer;
+         DNSServer * dnsServer;
+       WiFiMulti *wifiMulti;
        const int TRIGGER_PIN = PIN_D3; // Pin D3 mapped to pin GPIO03/ADC1-2/TOUCH3 of ESP32-S2
 
        String ssid = "ESP_" + String(ESP_getChipId(), HEX);
-       String password;
+       const char* password=CONFIG_NETWORK_PASSWORD;
 
        // SSID and PW for your Router
        String Router_SSID;
@@ -168,6 +174,11 @@ private:
 
        WiFi_AP_IPConfig WM_AP_IPconfig;
        WiFi_STA_IPConfig WM_STA_IPconfig;
+
+       bool loadConfigData();
+       int calcChecksum(uint8_t *, uint16_t);
+       void displayIPConfigStruct(WiFi_STA_IPConfig);
+       void configWiFi(WiFi_STA_IPConfig);
 };
 
 #endif

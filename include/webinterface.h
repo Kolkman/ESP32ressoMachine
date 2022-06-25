@@ -8,10 +8,9 @@
 class WebInterface
 {
 public:
-    WebInterface();
-    WebInterface(ESPressoMachine *);
+    WebInterface(ESPressoMachine *, const char *username = "", const char *password = "");
     ~WebInterface();
-    void setupWebSrv(ESPressoMachine *, const char *username = "", const char *password = "");
+    void setupWebSrv(ESPressoMachine *);
     void eventLoop();
     EspressoWebServer *server;
 protected:

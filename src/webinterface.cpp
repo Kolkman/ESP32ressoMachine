@@ -10,7 +10,6 @@
 #include "ESPressoMachine.h"
 #include <PID_v1.h>
 
-
 #include "webinterface.h"
 #include "config.h"
 #include <Arduino.h>
@@ -38,24 +37,14 @@
 #define ONCOLOR "CD212A"
 #define OFFCOLOR "DCDCDC"
 
-WebInterface::WebInterface()
+WebInterface::WebInterface(ESPressoMachine *machine, const char *username, const char *password)
 {
   Serial.println("Webinterfce Constructor");
-  _username = "";
-  _password = "";
-  server = nullptr;
-  myMachine = nullptr;
-  events = nullptr;
-}
-
-WebInterface::WebInterface(ESPressoMachine * machine)
-{
-  Serial.println("Webinterfce Constructor");
-  _username = "";
-  _password = "";
-  server = nullptr;
+  _username = username;
+  _password = password;
+  server = new EspressoWebServer(80, username, password);
   myMachine = machine;
-  events = nullptr;
+  events = new AsyncEventSource("/events");
   //  httpUpdater = new HTTPUpdateServer;
 }
 
@@ -90,13 +79,6 @@ void WebInterface::handleRoot(AsyncWebServerRequest *request)
   request->redirect("/index.html");
 }
 
-
-
-
-
-
-
-
 void WebInterface::handleFile(AsyncWebServerRequest *request, const char *mimetype, const unsigned char *compressedData, const size_t compressedDataLen)
 {
   AsyncWebServerResponse *response = request->beginResponse_P(200, mimetype, compressedData, compressedDataLen);
@@ -104,7 +86,6 @@ void WebInterface::handleFile(AsyncWebServerRequest *request, const char *mimety
   response->addHeader("Content-Encoding", "gzip");
   request->send(response);
 }
-
 
 void WebInterface::handleReset(AsyncWebServerRequest *request)
 {
@@ -115,19 +96,32 @@ void WebInterface::handleReset(AsyncWebServerRequest *request)
   ESP.restart();
 }
 
-void WebInterface::setupWebSrv(ESPressoMachine *machine, const char *username, const char *password)
+void WebInterface::setupWebSrv(ESPressoMachine *machine)
 {
   myMachine = machine;
 
   Serial.println("Setting up  Webserver");
-  server = new EspressoWebServer(80, username, password);
+
   if (server == nullptr)
-    Serial.println("SERIAL NULLPTR");
+  {
+    Serial.println("WEBinterface: Server NULLPTR - halting execution");
+    while (true)
+    {
+      // Hang around infinitly...
+      delay(1);
+    }
+  }
 
-  events = new AsyncEventSource("/events");
   if (events == nullptr)
-    Serial.println("Events NULLPTR");
+  {
 
+    Serial.println("WEBinterface: Events NULLPTR - halting execution");
+    while (true)
+    {
+      // Hang around infinitly...
+      delay(1);
+    }
+  }
   // httpUpdater->setup(server);
   // Serial.print("Updater running !");
 
@@ -158,7 +152,7 @@ void WebInterface::setupWebSrv(ESPressoMachine *machine, const char *username, c
   DEF_HANDLE_configuration_html;
   DEF_HANDLE_configuration_helper_js;
   DEF_HANDLE_index_helper_js;
-//  DEF_HANDLE_test_html;
+  //  DEF_HANDLE_test_html;
 
   // Handle Web Server Events
   events->onConnect(std::bind(&WebInterface::handleEventClient, this, std::placeholders::_1));
