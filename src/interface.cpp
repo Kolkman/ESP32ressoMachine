@@ -7,7 +7,7 @@
 #include "ESPressoMachine.h"
 #include "wifiManager.h"
 
-ESPressoInterface::ESPressoInterface(ESPressoMachine *machine) : WebInterface(machine)
+ESPressoInterface::ESPressoInterface(ESPressoMachine *machine) : WebInterface(machine,WEB_USER,WEB_PASS)
 {
  wifiMngr= new WiFiManager();
 }
@@ -40,9 +40,8 @@ void ESPressoInterface::loop()
 void ESPressoInterface::setup()
 {
   wifiMngr->setup(this->server);
-
-
-  setupWebSrv(this->myMachine,WEB_USER,WEB_PASS);
+  Serial.println("Wifi Manager done, following up with WebSrv");
+  setupWebSrv(this->myMachine);
 
 #ifdef ENABLE_TELNET
   setupTelnet();
