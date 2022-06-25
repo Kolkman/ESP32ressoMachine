@@ -55,6 +55,8 @@
 #define ENABLE_SERIAL
 
 
+// SSID password for configuration
+#define CONFIG_NETWORK_PASSWORD "ESP32ressoMachine"
 
 
 
