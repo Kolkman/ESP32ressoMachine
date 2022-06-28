@@ -1,6 +1,6 @@
 #ifndef wifiManager_h
 #define wifiManager_h
-#include "ESPressoMachineDefaults.h" 
+#include "ESPressoMachineDefaults.h"
 #include "EspressoWebServer.h"
 
 #ifndef CONFIG_NETWORK_PASSWORD
@@ -45,7 +45,17 @@ CONFIG_NETWORK_PASSWORD "ESP32ressoMachine"
 // From v1.0.10, WPA2 passwords can be up to 63 characters long.
 #define PASS_MAX_LEN 64
 
-typedef struct
+// WifiMulti STA connection timeouts
+#if (USING_ESP32_S2 || USING_ESP32_C3)
+#define WIFI_MULTI_1ST_CONNECT_WAITING_MS 500L
+#else
+// For ESP32 core v1.0.6, must be >= 500
+#define WIFI_MULTI_1ST_CONNECT_WAITING_MS 800L
+#endif
+
+#define WIFI_MULTI_CONNECT_WAITING_MS 500L
+
+    typedef struct
 {
        char wifi_ssid[SSID_MAX_LEN];
        char wifi_pw[PASS_MAX_LEN];
@@ -78,8 +88,10 @@ typedef struct
 
 // Use false to disable NTP config. Advisable when using Cellphone, Tablet to access Config Portal.
 // See Issue 23: On Android phone ConfigPortal is unresponsive (https://github.com/khoih-prog/ESP_WiFiManager/issues/23)
-#define USE_ESP_WIFIMANAGER_NTP true
+#define USE_ESP_WIFIMANAGER_NTP false
 
+
+/*
 // Just use enough to save memory. On ESP8266, can cause blank ConfigPortal screen
 // if using too much memory
 #define USING_AFRICA false
@@ -92,7 +104,7 @@ typedef struct
 #define USING_INDIAN false
 #define USING_PACIFIC false
 #define USING_ETC_GMT false
-
+*/
 // Use true to enable CloudFlare NTP service. System can hang if you don't have Internet access while accessing CloudFlare
 // See Issue #21: CloudFlare link in the default portal (https://github.com/khoih-prog/ESP_WiFiManager/issues/21)
 #define USE_CLOUDFLARE_NTP false
@@ -158,12 +170,12 @@ private:
        WM_Config WM_config;
        FS *filesystem;
        EspressoWebServer *myServer;
-         DNSServer * dnsServer;
+       DNSServer *dnsServer;
        WiFiMulti *wifiMulti;
        const int TRIGGER_PIN = PIN_D3; // Pin D3 mapped to pin GPIO03/ADC1-2/TOUCH3 of ESP32-S2
 
        String ssid = "ESP_" + String(ESP_getChipId(), HEX);
-       const char* password=CONFIG_NETWORK_PASSWORD;
+       const char *password = CONFIG_NETWORK_PASSWORD;
 
        // SSID and PW for your Router
        String Router_SSID;
@@ -179,6 +191,9 @@ private:
        int calcChecksum(uint8_t *, uint16_t);
        void displayIPConfigStruct(WiFi_STA_IPConfig);
        void configWiFi(WiFi_STA_IPConfig);
+       void saveConfigData();
+       uint8_t connectMultiWiFi();
+
 };
 
 #endif

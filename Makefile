@@ -1,11 +1,15 @@
 
+###
+### Make to manipulate webpages.
+### Note that code relies on MinifyAll extension to first minify the raw source
+
 all:include/pages/index.html.h include/pages/update.html.h  \
 	include/pages/button.css.h include/pages/ESPresso.css.h \
 	include/pages/gauge.min.js.h include/pages/EspressoMachine.svg.h\
 	include/pages/test.html.h include/pages/test2.html.h \
 	include/pages/drawtimeseries.js.h	include/pages/firmware.js.h \
 	include/pages/configuration.html.h include/pages/configuration_helper.js.h \
-	include/pages/index_helper.js.h
+	include/pages/index_helper.js.h include/pages/ESPconfig.css.h
 	@exec true 
 
 
@@ -57,6 +61,12 @@ include/pages/EspressoMachine.svg.h: WEBSources/EspressoMachine.svg
 
 include/pages/update.html.h: WEBsources/update.html
 	@./ProduceDefine.py $< text/html\;charset=UTF-8 > $@
+
+
+
+include/pages/ESPconfig.css.h: WEBsources/ESPconfig-min.css
+	@./ProduceDefine2.py $<  > $@
+
 
 
 clean:
