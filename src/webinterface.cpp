@@ -10,7 +10,6 @@
 #include "ESPressoMachine.h"
 #include <PID_v1.h>
 
-
 #include "webinterface.h"
 #include "config.h"
 #include <Arduino.h>
@@ -41,25 +40,9 @@
 WebInterface::WebInterface(ESPressoMachine *machine, const char *username, const char *password)
 {
   Serial.println("Webinterfce Constructor");
-<<<<<<< HEAD
   _username = username;
   _password = password;
   server = new EspressoWebServer(80, username, password);
-=======
-  _username = "";
-  _password = "";
-  server = nullptr;
-  myMachine = nullptr;
-  events = nullptr;
-}
-
-WebInterface::WebInterface(ESPressoMachine * machine)
-{
-  Serial.println("Webinterfce Constructor");
-  _username = "";
-  _password = "";
-  server = nullptr;
->>>>>>> f5e6465 (WIFIManager implementation - snapshot of compilable state (not functioning))
   myMachine = machine;
   events = new AsyncEventSource("/events");
   //  httpUpdater = new HTTPUpdateServer;

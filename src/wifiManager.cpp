@@ -1,4 +1,3 @@
-
 ///
 /// This is following some hints from https://github.com/khoih-prog/ESPAsync_WiFiManager/blob/master/examples/Async_ConfigOnStartup/Async_ConfigOnStartup.ino
 /// We want the wifimanager to connect to preconfigured network after 120 seconds.
