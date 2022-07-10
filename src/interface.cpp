@@ -31,7 +31,7 @@ void ESPressoInterface::loop()
   loopTelnet(myMachine->machineStatus);
 #endif
 #ifdef ENABLE_MQTT
-  loopMQTT(myMachine->machineStatus);
+  loopMQTT(myMachine);
 #endif
   // This Eventloop invokes
   eventLoop();
