@@ -70,37 +70,6 @@ void setup()
   Serial.print("Firmware Version");
   Serial.println(String(CURRENTFIRMWARE) +" "+ String(F(__DATE__))+":"+String(F(__TIME__)));
   Serial.println("Settin up PID...");
-<<<<<<< HEAD
-=======
-  /* 
-  WiFi.begin(WIFI_SSID, WIFI_PASS);
-  WiFi.macAddress(mac);
-  Serial.println("");
-  Serial.print("MAC address: ");
-  Serial.println(macToString(mac));
-
-  Serial.print("Connecting to Wifi AP");
-  for (int i = 0; i < MAX_CONNECTION_RETRIES && WiFi.status() != WL_CONNECTED; i++)
-  {
-    delay(500);
-    Serial.print(".");
-  }
-
-  if (WiFi.status() != WL_CONNECTED)
-  {
-    Serial.print("Error connection to AP after ");
-    Serial.print(MAX_CONNECTION_RETRIES);
-    Serial.println(" retries.");
-    throw("Could not connect to WIFI");
-  }
-
-  Serial.println("");
-  Serial.println("WiFi connected.");
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
-  delay(2);
-*/
->>>>>>> f5e6465 (WIFIManager implementation - snapshot of compilable state (not functioning))
 
   // setup the Machine
 
