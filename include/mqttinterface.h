@@ -11,6 +11,23 @@
 #ifndef MQTT_TOPIC 
     #define MQTT_TOPIC "EspressoMach"
 #endif
+
+
+
+#ifndef MQTT_STATUS_TOPIC 
+    #define MQTT_STATUS_TOPIC "/status"
+#endif
+
+#ifndef MQTT_CONFIG_TOPIC 
+    #define MQTT_CONFIG_TOPIC "/config"
+#endif
+
+// Max length of the strings above.
+#ifndef MQTT_TOPIC_EXT_LENGTH
+    #define MQTT_TOPIC_EXT_LENGTH 7
+#endif
+
+
 class MQTTInterface
 {
 public:
@@ -25,9 +42,7 @@ private:
     PubSubClient client;
     void MQTT_reconnect();
     void MQTT_callback(char*, byte*, unsigned int, ESPressoMachine *);
-    
-//    void (MQTTInterface::* MQTT_callbackptr) (char*, byte*, unsigned int);
-    const char * const mqttStatusTopic = stringconcat(MQTT_TOPIC, "/status");
-    const char * const mqttConfigTopic = stringconcat(MQTT_TOPIC, "/config");
+    char mqttStatusTopic[256+MQTT_TOPIC_EXT_LENGTH];
+    char mqttConfigTopic[256+MQTT_TOPIC_EXT_LENGTH];
 };
 #endif
