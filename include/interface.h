@@ -9,8 +9,8 @@
 //#ifdef ENABLE_MQTT
 #include "mqttinterface.h"
 //#endif
-class WiFiManager; // forward declaration
 
+class WiFiManager; // forward declaration
 
 class ESPressoInterface : public WebInterface
 // the Interface can be telnet, http, and/or mqtt the parent classes will need to
