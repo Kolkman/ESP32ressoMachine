@@ -6,7 +6,7 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include "ESPressoMachineDefaults.h"
-#include "WiFiSecrets.h"
+
 
 #define FORMAT_SPIFFS_IF_FAILED true
 #define CONFIG_BUF_SIZE 2048
