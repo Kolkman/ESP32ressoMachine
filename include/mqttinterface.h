@@ -1,6 +1,6 @@
 #ifndef ESPRressMach_MQTT_H
 #define ESPRressMach_MQTT_H
-#include "WiFiSecrets.h"
+
 #include <Arduino.h>
 #include <WiFiClient.h>
 #include <PubSubClient.h>
