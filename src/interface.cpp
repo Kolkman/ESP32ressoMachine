@@ -7,9 +7,9 @@
 #include "ESPressoMachine.h"
 #include "wifiManager.h"
 
-ESPressoInterface::ESPressoInterface(ESPressoMachine *machine) : WebInterface(machine,WEB_USER,WEB_PASS)
+ESPressoInterface::ESPressoInterface(ESPressoMachine *mach) : WebInterface(mach,WEB_USER,WEB_PASS)
 {
- wifiMngr= new WiFiManager();
+ wifiMngr= new WiFiManager(mach->myConfig);
 }
 
 void ESPressoInterface::serialStatus()

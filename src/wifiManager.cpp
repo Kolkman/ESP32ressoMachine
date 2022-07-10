@@ -4,26 +4,28 @@
 ///
 
 #include "wifiManager.h"
-#include "WifiSecrets.h"
+
 #include "EspressoWebServer.h"
 #include <ESPAsync_WiFiManager.h>
 
-WiFiManager::WiFiManager()
+WiFiManager::WiFiManager(EspressoConfig *config)
 {
     myServer = nullptr;
+    myConfig = config;
     dnsServer = new DNSServer;
     wifiMulti = new WiFiMulti;
-    WM_AP_IPconfig._ap_static_ip = AP_STATIC_IP;
-    WM_AP_IPconfig._ap_static_gw = AP_STATIC_GW;
-    WM_AP_IPconfig._ap_static_sn = AP_STATIC_SN;
+    myConfig->WM_AP_IPconfig._ap_static_ip = AP_STATIC_IP;
+    myConfig->WM_AP_IPconfig._ap_static_gw = AP_STATIC_GW;
+    myConfig->WM_AP_IPconfig._ap_static_sn = AP_STATIC_SN;
 
-    WM_STA_IPconfig._sta_static_ip = STATION_IP;
-    WM_STA_IPconfig._sta_static_gw = GATEWAY_IP;
-    WM_STA_IPconfig._sta_static_sn = NETMASK;
+    myConfig->WM_STA_IPconfig._sta_static_ip = STATION_IP;
+    myConfig->WM_STA_IPconfig._sta_static_gw = GATEWAY_IP;
+    myConfig->WM_STA_IPconfig._sta_static_sn = NETMASK;
 #if USE_CONFIGURABLE_DNS
-    WM_STA_IPconfig._sta_static_dns1 = DNS_1_IP;
-    WM_STA_IPconfig._sta_static_dns2 = DNS_2_IP;
+    myConfig->WM_STA_IPconfig._sta_static_dns1 = DNS_1_IP;
+    myConfig->WM_STA_IPconfig._sta_static_dns2 = DNS_2_IP;
 #endif
+    
 }
 
 void WiFiManager::setup(EspressoWebServer *server)
@@ -76,30 +78,39 @@ void WiFiManager::setup(EspressoWebServer *server)
     //#endif
 
     ESPAsync_wifiManager.setDebugOutput(true);
-    #include "pages/ESPconfig.css.h"  // Produced from WEBsources/ESPconfig.css using the make script....
-    ESPAsync_wifiManager.setCustomHeadElement(ESPconfig_css);  
-    ESPAsync_WMParameter custom_mqtt_server("server", "mqtt server", "iot.eclipse", 40, " readonly");
+#include "pages/ESPconfig.css.h" // Produced from WEBsources/ESPconfig.css using the make script....
+    ESPAsync_wifiManager.setCustomHeadElement(ESPconfig_css);
+    ESPAsync_WMParameter custom_mqtt_server("mqttHost", "MQTT Server", myConfig->mqttHost, 255);
     ESPAsync_wifiManager.addParameter(&custom_mqtt_server);
-
+    char convertedValue[3];
+    sprintf(convertedValue, "%d", myConfig->mqttPort);
+    ESPAsync_WMParameter custom_mqtt_port("mqttPort", "MQTT Port", convertedValue, 6);
+    ESPAsync_wifiManager.addParameter(&custom_mqtt_port);
+    ESPAsync_WMParameter custom_mqtt_topic("mqttTopic", "MQTT Topic", myConfig->mqttTopic, 255);
+    ESPAsync_wifiManager.addParameter(&custom_mqtt_topic);
+    ESPAsync_WMParameter custom_mqtt_user("mqttUser", "MQTT User", myConfig->mqttUser, 64);
+    ESPAsync_wifiManager.addParameter(&custom_mqtt_user);
+    ESPAsync_WMParameter custom_mqtt_pass("mqttPass", "MQTT Password", myConfig->mqttPass, 64);
+    ESPAsync_wifiManager.addParameter(&custom_mqtt_pass);
 
 #if USE_CUSTOM_AP_IP
         // set custom ip for portal
         //  New in v1.4.0
-        ESPAsync_wifiManager.setAPStaticIPConfig(WM_AP_IPconfig);
-        //////
+        ESPAsync_wifiManager.setAPStaticIPConfig(myConfig->WM_AP_IPconfig);
+    //////
 #endif
         ESPAsync_wifiManager.setMinimumSignalQuality(-1);
 
         // From v1.0.10 only
         // Set config portal channel, default = 1. Use 0 => random channel from 1-13
         ESPAsync_wifiManager.setConfigPortalChannel(0);
-        //////
+    //////
 
 #if !USE_DHCP_IP
         // Set (static IP, Gateway, Subnetmask, DNS1 and DNS2) or (IP, Gateway, Subnetmask). New in v1.0.5
         // New in v1.4.0
-        ESPAsync_wifiManager.setSTAStaticIPConfig(WM_STA_IPconfig);
-        //////
+        ESPAsync_wifiManager.setSTAStaticIPConfig(myConfig->WM_STA_IPconfig);
+    //////
 #endif
 
 #if USING_CORS_FEATURE // leads to compile time errors.
@@ -124,10 +135,10 @@ void WiFiManager::setup(EspressoWebServer *server)
         // From v1.1.0, Don't permit NULL password
         if ((Router_SSID != "") && (Router_Pass != ""))
         {
-            LOGERROR3(F("* Add SSID = "), Router_SSID, F(", PW = "), Router_Pass);
-            wifiMulti->addAP(Router_SSID.c_str(), Router_Pass.c_str());
-            ESPAsync_wifiManager.setConfigPortalTimeout(120); // If no access point name has been previously entered disable timeout.
-            Serial.println(F("Got ESP Self-Stored Credentials. Timeout 120s for Config Portal"));
+        LOGERROR3(F("* Add SSID = "), Router_SSID, F(", PW = "), Router_Pass);
+        wifiMulti->addAP(Router_SSID.c_str(), Router_Pass.c_str());
+        ESPAsync_wifiManager.setConfigPortalTimeout(120); // If no access point name has been previously entered disable timeout.
+        Serial.println(F("Got ESP Self-Stored Credentials. Timeout 120s for Config Portal"));
         }
 
         if (loadConfigData())
@@ -138,11 +149,11 @@ void WiFiManager::setup(EspressoWebServer *server)
             Serial.println(F("Got stored Credentials. Timeout 120s for Config Portal"));
 
 #if USE_ESP_WIFIMANAGER_NTP
-            if (strlen(WM_config.TZ_Name) > 0)
+            if (strlen(myConfig->WM_config.TZ_Name) > 0)
             {
-                LOGERROR3(F("Current TZ_Name ="), WM_config.TZ_Name, F(", TZ = "), WM_config.TZ);
-                // configTzTime(WM_config.TZ, "pool.ntp.org" );
-                configTzTime(WM_config.TZ, "time.nist.gov", "0.pool.ntp.org", "1.pool.ntp.org");
+                LOGERROR3(F("Current TZ_Name ="), myConfig->WM_config.TZ_Name, F(", TZ = "), myConfig->WM_config.TZ);
+                // configTzTime(myConfig->WM_config.TZ, "pool.ntp.org" );
+                configTzTime(myConfig->WM_config.TZ, "time.nist.gov", "0.pool.ntp.org", "1.pool.ntp.org");
             }
             else
             {
@@ -187,55 +198,55 @@ void WiFiManager::setup(EspressoWebServer *server)
         if (String(ESPAsync_wifiManager.getSSID(0)) != "" && String(ESPAsync_wifiManager.getSSID(1)) != "")
         {
             // Stored  for later usage, from v1.1.0, but clear first
-            memset(&WM_config, 0, sizeof(WM_config));
+            memset(&myConfig->WM_config, 0, sizeof(myConfig->WM_config));
 
             for (uint8_t i = 0; i < NUM_WIFI_CREDENTIALS; i++)
             {
                 String tempSSID = ESPAsync_wifiManager.getSSID(i);
                 String tempPW = ESPAsync_wifiManager.getPW(i);
 
-                if (strlen(tempSSID.c_str()) < sizeof(WM_config.WiFi_Creds[i].wifi_ssid) - 1)
-                    strcpy(WM_config.WiFi_Creds[i].wifi_ssid, tempSSID.c_str());
+                if (strlen(tempSSID.c_str()) < sizeof(myConfig->WM_config.WiFi_Creds[i].wifi_ssid) - 1)
+                    strcpy(myConfig->WM_config.WiFi_Creds[i].wifi_ssid, tempSSID.c_str());
                 else
-                    strncpy(WM_config.WiFi_Creds[i].wifi_ssid, tempSSID.c_str(), sizeof(WM_config.WiFi_Creds[i].wifi_ssid) - 1);
+                    strncpy(myConfig->WM_config.WiFi_Creds[i].wifi_ssid, tempSSID.c_str(), sizeof(myConfig->WM_config.WiFi_Creds[i].wifi_ssid) - 1);
 
-                if (strlen(tempPW.c_str()) < sizeof(WM_config.WiFi_Creds[i].wifi_pw) - 1)
-                    strcpy(WM_config.WiFi_Creds[i].wifi_pw, tempPW.c_str());
+                if (strlen(tempPW.c_str()) < sizeof(myConfig->WM_config.WiFi_Creds[i].wifi_pw) - 1)
+                    strcpy(myConfig->WM_config.WiFi_Creds[i].wifi_pw, tempPW.c_str());
                 else
-                    strncpy(WM_config.WiFi_Creds[i].wifi_pw, tempPW.c_str(), sizeof(WM_config.WiFi_Creds[i].wifi_pw) - 1);
+                    strncpy(myConfig->WM_config.WiFi_Creds[i].wifi_pw, tempPW.c_str(), sizeof(myConfig->WM_config.WiFi_Creds[i].wifi_pw) - 1);
 
                 // Don't permit NULL SSID and password len < MIN_AP_PASSWORD_SIZE (8)
-                if ((String(WM_config.WiFi_Creds[i].wifi_ssid) != "") && (strlen(WM_config.WiFi_Creds[i].wifi_pw) >= MIN_AP_PASSWORD_SIZE))
+                if ((String(myConfig->WM_config.WiFi_Creds[i].wifi_ssid) != "") && (strlen(myConfig->WM_config.WiFi_Creds[i].wifi_pw) >= MIN_AP_PASSWORD_SIZE))
                 {
-                    LOGERROR3(F("* Add SSID = "), WM_config.WiFi_Creds[i].wifi_ssid, F(", PW = "), WM_config.WiFi_Creds[i].wifi_pw);
-                    wifiMulti->addAP(WM_config.WiFi_Creds[i].wifi_ssid, WM_config.WiFi_Creds[i].wifi_pw);
+                    LOGERROR3(F("* Add SSID = "), myConfig->WM_config.WiFi_Creds[i].wifi_ssid, F(", PW = "), myConfig->WM_config.WiFi_Creds[i].wifi_pw);
+                    wifiMulti->addAP(myConfig->WM_config.WiFi_Creds[i].wifi_ssid, myConfig->WM_config.WiFi_Creds[i].wifi_pw);
                 }
             }
 
 #if USE_ESP_WIFIMANAGER_NTP
             String tempTZ = ESPAsync_wifiManager.getTimezoneName();
 
-            if (strlen(tempTZ.c_str()) < sizeof(WM_config.TZ_Name) - 1)
-                strcpy(WM_config.TZ_Name, tempTZ.c_str());
+            if (strlen(tempTZ.c_str()) < sizeof(myConfig->WM_config.TZ_Name) - 1)
+                strcpy(myConfig->WM_config.TZ_Name, tempTZ.c_str());
             else
-                strncpy(WM_config.TZ_Name, tempTZ.c_str(), sizeof(WM_config.TZ_Name) - 1);
+                strncpy(myConfig->WM_config.TZ_Name, tempTZ.c_str(), sizeof(myConfig->WM_config.TZ_Name) - 1);
 
-            const char *TZ_Result = ESPAsync_wifiManager.getTZ(WM_config.TZ_Name);
+            const char *TZ_Result = ESPAsync_wifiManager.getTZ(myConfig->WM_config.TZ_Name);
 
-            if (strlen(TZ_Result) < sizeof(WM_config.TZ) - 1)
-                strcpy(WM_config.TZ, TZ_Result);
+            if (strlen(TZ_Result) < sizeof(myConfig->WM_config.TZ) - 1)
+                strcpy(myConfig->WM_config.TZ, TZ_Result);
             else
-                strncpy(WM_config.TZ, TZ_Result, sizeof(WM_config.TZ_Name) - 1);
+                strncpy(myConfig->WM_config.TZ, TZ_Result, sizeof(myConfig->WM_config.TZ_Name) - 1);
 
-            if (strlen(WM_config.TZ_Name) > 0)
+            if (strlen(myConfig->WM_config.TZ_Name) > 0)
             {
-                LOGERROR3(F("Saving current TZ_Name ="), WM_config.TZ_Name, F(", TZ = "), WM_config.TZ);
+                LOGERROR3(F("Saving current TZ_Name ="), myConfig->WM_config.TZ_Name, F(", TZ = "), myConfig->WM_config.TZ);
 
 #if ESP8266
-                configTime(WM_config.TZ, "pool.ntp.org");
+                configTime(myConfig->WM_config.TZ, "pool.ntp.org");
 #else
-                // configTzTime(WM_config.TZ, "pool.ntp.org" );
-                configTzTime(WM_config.TZ, "time.nist.gov", "0.pool.ntp.org", "1.pool.ntp.org");
+                // configTzTime(myConfig->WM_config.TZ, "pool.ntp.org" );
+                configTzTime(myConfig->WM_config.TZ, "time.nist.gov", "0.pool.ntp.org", "1.pool.ntp.org");
 #endif
             }
             else
@@ -244,12 +255,17 @@ void WiFiManager::setup(EspressoWebServer *server)
             }
 #endif
             // New in v1.4.0
-            ESPAsync_wifiManager.getSTAStaticIPConfig(WM_STA_IPconfig);
+            ESPAsync_wifiManager.getSTAStaticIPConfig(myConfig->WM_STA_IPconfig);
             //////
 
-            saveConfigData();
-
-            initialConfig = true;
+        strcpy(myConfig->mqttHost, custom_mqtt_server.getValue());
+        strcpy(myConfig->mqttTopic, custom_mqtt_topic.getValue());
+        strcpy(myConfig->mqttUser, custom_mqtt_user.getValue());
+        strcpy(myConfig->mqttPass, custom_mqtt_pass.getValue());
+        myConfig->mqttPort = atoi(custom_mqtt_port.getValue());
+        myConfig->saveConfig();
+        saveConfigData();
+        initialConfig = true;
         }
 
         digitalWrite(LED_BUILTIN, LED_OFF); // Turn led off as we are not in configuration mode.
@@ -265,10 +281,10 @@ void WiFiManager::setup(EspressoWebServer *server)
             for (uint8_t i = 0; i < NUM_WIFI_CREDENTIALS; i++)
             {
                 // Don't permit NULL SSID and password len < MIN_AP_PASSWORD_SIZE (8)
-                if ((String(WM_config.WiFi_Creds[i].wifi_ssid) != "") && (strlen(WM_config.WiFi_Creds[i].wifi_pw) >= MIN_AP_PASSWORD_SIZE))
+                if ((String(myConfig->WM_config.WiFi_Creds[i].wifi_ssid) != "") && (strlen(myConfig->WM_config.WiFi_Creds[i].wifi_pw) >= MIN_AP_PASSWORD_SIZE))
                 {
-                    LOGERROR3(F("* Add SSID = "), WM_config.WiFi_Creds[i].wifi_ssid, F(", PW = "), WM_config.WiFi_Creds[i].wifi_pw);
-                    wifiMulti->addAP(WM_config.WiFi_Creds[i].wifi_ssid, WM_config.WiFi_Creds[i].wifi_pw);
+                    LOGERROR3(F("* Add SSID = "), myConfig->WM_config.WiFi_Creds[i].wifi_ssid, F(", PW = "), myConfig->WM_config.WiFi_Creds[i].wifi_pw);
+                    wifiMulti->addAP(myConfig->WM_config.WiFi_Creds[i].wifi_ssid, myConfig->WM_config.WiFi_Creds[i].wifi_pw);
                 }
             }
 
@@ -301,6 +317,7 @@ void WiFiManager::setup(EspressoWebServer *server)
             Serial.print(".");
         }
         */
+
 }
 
 bool WiFiManager::loadConfigData()
@@ -308,32 +325,32 @@ bool WiFiManager::loadConfigData()
         File file = FileFS.open(CONFIG_FILENAME, "r");
         LOGERROR(F("LoadWiFiCfgFile "));
 
-        memset((void *)&WM_config, 0, sizeof(WM_config));
+        memset((void *)&myConfig->WM_config, 0, sizeof(myConfig->WM_config));
 
         // New in v1.4.0
-        memset((void *)&WM_STA_IPconfig, 0, sizeof(WM_STA_IPconfig));
+        memset((void *)&myConfig->WM_STA_IPconfig, 0, sizeof(myConfig->WM_STA_IPconfig));
         //////
 
         if (file)
         {
-            file.readBytes((char *)&WM_config, sizeof(WM_config));
+            file.readBytes((char *)&myConfig->WM_config, sizeof(myConfig->WM_config));
 
             // New in v1.4.0
-            file.readBytes((char *)&WM_STA_IPconfig, sizeof(WM_STA_IPconfig));
+            file.readBytes((char *)&myConfig->WM_STA_IPconfig, sizeof(myConfig->WM_STA_IPconfig));
             //////
 
             file.close();
             LOGERROR(F("OK"));
 
-            if (WM_config.checksum != calcChecksum((uint8_t *)&WM_config, sizeof(WM_config) - sizeof(WM_config.checksum)))
+            if (myConfig->WM_config.checksum != calcChecksum((uint8_t *)&myConfig->WM_config, sizeof(myConfig->WM_config) - sizeof(myConfig->WM_config.checksum)))
             {
-                LOGERROR(F("WM_config checksum wrong"));
+                LOGERROR(F("myConfig->WM_config checksum wrong"));
 
                 return false;
             }
 
             // New in v1.4.0
-            displayIPConfigStruct(WM_STA_IPconfig);
+            displayIPConfigStruct(myConfig->WM_STA_IPconfig);
             //////
 
             return true;
@@ -385,14 +402,14 @@ void WiFiManager::saveConfigData()
 
         if (file)
         {
-            WM_config.checksum = calcChecksum((uint8_t *)&WM_config, sizeof(WM_config) - sizeof(WM_config.checksum));
+            myConfig->WM_config.checksum = calcChecksum((uint8_t *)&myConfig->WM_config, sizeof(myConfig->WM_config) - sizeof(myConfig->WM_config.checksum));
 
-            file.write((uint8_t *)&WM_config, sizeof(WM_config));
+            file.write((uint8_t *)&myConfig->WM_config, sizeof(myConfig->WM_config));
 
-            displayIPConfigStruct(WM_STA_IPconfig);
+            displayIPConfigStruct(myConfig->WM_STA_IPconfig);
 
             // New in v1.4.0
-            file.write((uint8_t *)&WM_STA_IPconfig, sizeof(WM_STA_IPconfig));
+            file.write((uint8_t *)&(myConfig->WM_STA_IPconfig), sizeof(myConfig->WM_STA_IPconfig));
             //////
 
             file.close();
@@ -422,9 +439,9 @@ uint8_t WiFiManager::connectMultiWiFi()
         for (uint8_t i = 0; i < NUM_WIFI_CREDENTIALS; i++)
         {
             // Don't permit NULL SSID and password len < MIN_AP_PASSWORD_SIZE (8)
-            if ((String(WM_config.WiFi_Creds[i].wifi_ssid) != "") && (strlen(WM_config.WiFi_Creds[i].wifi_pw) >= MIN_AP_PASSWORD_SIZE))
+            if ((String(myConfig->WM_config.WiFi_Creds[i].wifi_ssid) != "") && (strlen(myConfig->WM_config.WiFi_Creds[i].wifi_pw) >= MIN_AP_PASSWORD_SIZE))
             {
-                LOGERROR3(F("* Additional SSID = "), WM_config.WiFi_Creds[i].wifi_ssid, F(", PW = "), WM_config.WiFi_Creds[i].wifi_pw);
+                LOGERROR3(F("* Additional SSID = "), myConfig->WM_config.WiFi_Creds[i].wifi_ssid, F(", PW = "), myConfig->WM_config.WiFi_Creds[i].wifi_pw);
             }
         }
 
