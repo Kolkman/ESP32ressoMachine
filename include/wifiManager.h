@@ -168,11 +168,9 @@ private:
 
        // Indicates whether ESP has WiFi credentials saved from previous session, or double reset detected
        bool initialConfig = false;
-       bool loadConfigData();
        int calcChecksum(uint8_t *, uint16_t);
        void displayIPConfigStruct(WiFi_STA_IPConfig);
        void configWiFi(WiFi_STA_IPConfig);
-       void saveConfigData();
        uint8_t connectMultiWiFi();
 };
 
