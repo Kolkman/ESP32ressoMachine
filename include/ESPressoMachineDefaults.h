@@ -63,8 +63,8 @@
 
 #define MQTT_HOST "mqtt.example.net"
 #define MQTT_PORT 1883
-#define MQTT_USER "silvia"
-#define MQTT_PASS "MQTTPassword"
-#define MQTT_TOPIC "Espresso-Test"
+#define MQTT_USER "user"
+#define MQTT_PASS "password"
+#define MQTT_TOPIC "Espresso"
 
 #endif
