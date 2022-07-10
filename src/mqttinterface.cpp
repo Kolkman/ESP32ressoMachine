@@ -96,30 +96,15 @@ void MQTTInterface::MQTT_callback(char *topic, byte *payload, unsigned int lengt
       Serial.println("false");
   }
 
-  /*
-    if (strstr(topic, "/config/tset"))
-    {
-
-
-
-
-      if (val > 1e-3)
-        myMachine->myConfig->targetTemp = val;
-        reconf=true;
-        Serial.println("targetTemp set to "+String(val));
-    }
-    else if (strstr(topic, "/config/toggle"))
-    {
-      myMachine->poweroffMode = (!myMachine->poweroffMode);
-    }
-    if (reconf){
-      myMachine->reConfig();
-    }
-    */
 }
 
 void MQTTInterface::setupMQTT(ESPressoMachine *myMachine)
 {
+  strcpy(mqttStatusTopic, myMachine->myConfig->mqttTopic);
+  strcat(mqttStatusTopic,MQTT_STATUS_TOPIC);
+  strcpy(mqttConfigTopic,myMachine->myConfig->mqttTopic);
+  strcat(mqttConfigTopic,MQTT_CONFIG_TOPIC);
+  Serial.println("mqttStatusTopic:" + String(mqttStatusTopic));
   client.setServer(MQTT_HOST, MQTT_PORT);
   client.setCallback(std::bind(&MQTTInterface::MQTT_callback, this,
                                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, myMachine));

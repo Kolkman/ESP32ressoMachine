@@ -2,11 +2,13 @@
 #define wifiManager_h
 #include "ESPressoMachineDefaults.h"
 #include "EspressoWebServer.h"
+#include "config.h"
+
 
 #ifndef CONFIG_NETWORK_PASSWORD
 CONFIG_NETWORK_PASSWORD "ESP32ressoMachine"
 #endif
-// Anything Wifi Goes into this class..
+// Anything Wifi Goes into this class - however the configuration bits are in the config class.
 
 // Follows the examples from https://github.com/khoih-prog/ESPAsync_WiFiManager/blob/master/examples/Async_ConfigOnSwitch/Async_ConfigOnSwitch.ino
 // and others with a lottle of the cruft cut out. We know we are on an ESP32 and we
@@ -41,10 +43,6 @@ CONFIG_NETWORK_PASSWORD "ESP32ressoMachine"
 
 #define MIN_AP_PASSWORD_SIZE 8
 
-#define SSID_MAX_LEN 32
-// From v1.0.10, WPA2 passwords can be up to 63 characters long.
-#define PASS_MAX_LEN 64
-
 // WifiMulti STA connection timeouts
 #if (USING_ESP32_S2 || USING_ESP32_C3)
 #define WIFI_MULTI_1ST_CONNECT_WAITING_MS 500L
@@ -55,23 +53,17 @@ CONFIG_NETWORK_PASSWORD "ESP32ressoMachine"
 
 #define WIFI_MULTI_CONNECT_WAITING_MS 500L
 
-    typedef struct
-{
-       char wifi_ssid[SSID_MAX_LEN];
-       char wifi_pw[PASS_MAX_LEN];
-} WiFi_Credentials;
+//   typedef struct
+//
+//       char wifi_ssid[SSID_MAX_LEN];
+//       char wifi_pw[PASS_MAX_LEN];
+//} WiFi_Credentials;
 
-typedef struct
-{
-       String wifi_ssid;
-       String wifi_pw;
-} WiFi_Credentials_String;
-
-#define NUM_WIFI_CREDENTIALS 2
-
-// Assuming max 49 chars
-#define TZNAME_MAX_LEN 50
-#define TIMEZONE_MAX_LEN 50
+//typedef struct
+//{
+//       String wifi_ssid;
+//       String wifi_pw;
+//} WiFi_Credentials_String;
 
 #define USE_CONFIGURABLE_DNS false
 #define USE_CUSTOM_AP_IP true
@@ -89,7 +81,6 @@ typedef struct
 // Use false to disable NTP config. Advisable when using Cellphone, Tablet to access Config Portal.
 // See Issue 23: On Android phone ConfigPortal is unresponsive (https://github.com/khoih-prog/ESP_WiFiManager/issues/23)
 #define USE_ESP_WIFIMANAGER_NTP false
-
 
 /*
 // Just use enough to save memory. On ESP8266, can cause blank ConfigPortal screen
@@ -113,13 +104,6 @@ typedef struct
 // Keeping this to false, compile time errors otherwise.
 #define USING_CORS_FEATURE false
 
-typedef struct
-{
-       WiFi_Credentials WiFi_Creds[NUM_WIFI_CREDENTIALS];
-       char TZ_Name[TZNAME_MAX_LEN]; // "America/Toronto"
-       char TZ[TIMEZONE_MAX_LEN];    // "EST5EDT,M3.2.0,M11.1.0"
-       uint16_t checksum;
-} WM_Config;
 
 #define CONFIG_FILENAME F("/wifi_cred.dat")
 
@@ -162,12 +146,13 @@ typedef struct
 class WiFiManager : public WiFiMulti
 {
 public:
-       WiFiManager(void);
+       WiFiManager(EspressoConfig *);
        void setup(EspressoWebServer *);
        // SSID and PW for Config Portal
 
 private:
-       WM_Config WM_config;
+       EspressoConfig *myConfig;
+ 
        FS *filesystem;
        EspressoWebServer *myServer;
        DNSServer *dnsServer;
@@ -183,17 +168,12 @@ private:
 
        // Indicates whether ESP has WiFi credentials saved from previous session, or double reset detected
        bool initialConfig = false;
-
-       WiFi_AP_IPConfig WM_AP_IPconfig;
-       WiFi_STA_IPConfig WM_STA_IPconfig;
-
        bool loadConfigData();
        int calcChecksum(uint8_t *, uint16_t);
        void displayIPConfigStruct(WiFi_STA_IPConfig);
        void configWiFi(WiFi_STA_IPConfig);
        void saveConfigData();
        uint8_t connectMultiWiFi();
-
 };
 
 #endif
