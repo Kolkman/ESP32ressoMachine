@@ -10,23 +10,26 @@
 
 EspressoConfig::EspressoConfig()
 {
-  resetConfig(); 
+  resetConfig();
 
+#ifdef ENABLE_MQTT
   // These values we want to initialize but not reset:
-  strcpy(mqttHost,MQTT_HOST);
-  strcpy(mqttPass,MQTT_PASS);
-  strcpy(mqttUser,MQTT_USER);
-  strcpy(mqttTopic,MQTT_TOPIC);
-  mqttPort=1883;
+  strcpy(mqttHost, MQTT_HOST);
+  strcpy(mqttPass, MQTT_PASS);
+  strcpy(mqttUser, MQTT_USER);
+  strcpy(mqttTopic, MQTT_TOPIC);
+  mqttPort = 1883;
+#endif // ENABLE_MQTT
+
   ptargetTemp = &targetTemp;
 
-for (int i=0;i<NUM_WIFI_CREDENTIALS;i++){
-  *WM_config.WiFi_Creds[i].wifi_ssid=0;
-  *WM_config.WiFi_Creds[i].wifi_pw=0;
-}
-*WM_config.TZ_Name=0;
-*WM_config.TZ=0;
-
+  for (int i = 0; i < NUM_WIFI_CREDENTIALS; i++)
+  {
+    *WM_config.WiFi_Creds[i].wifi_ssid = 0;
+    *WM_config.WiFi_Creds[i].wifi_pw = 0;
+  }
+  *WM_config.TZ_Name = 0;
+  *WM_config.TZ = 0;
 }
 
 EspressoConfig::~EspressoConfig()
@@ -93,6 +96,7 @@ bool EspressoConfig::loadConfig()
   sensorSampleInterval = jsonDocument["ssi"];
   maxCool = jsonDocument["maxcool"];
 
+#ifdef ENABLE_MQTT
   if (nullptr == jsonDocument["mqttHost"])
   {
     Serial.println("mqqTHost is a NULLPTR");
@@ -133,6 +137,8 @@ bool EspressoConfig::loadConfig()
   mqttPort = jsonDocument["mqttPort"];
   if (!mqttPort)
     mqttPort = MQTT_PORT;
+
+#endif // ENABLE_MQTT
 
   WM_AP_IPconfig._ap_static_ip[0] = jsonDocument["ap_static_ip"][0];
   WM_AP_IPconfig._ap_static_ip[1] = jsonDocument["ap_static_ip"][1];
@@ -177,12 +183,6 @@ bool EspressoConfig::loadConfig()
 
 #endif
 
-
-
-
-
-
-
   return true;
 }
 
@@ -196,11 +196,17 @@ bool EspressoConfig::saveConfig()
   jsonDocument["Ep"] = eqPwr, jsonDocument["hi"] = heaterInterval, jsonDocument["pidi"] = pidInt,
   jsonDocument["ssi"] = sensorSampleInterval;
   jsonDocument["maxcool"] = maxCool;
-  if (mqttHost)  jsonDocument["mqttHost"] = mqttHost;
-  if (mqttTopic) jsonDocument["mqttTopic"] = mqttTopic;
-  if (mqttUser) jsonDocument["mqttUser"] = mqttUser;
-  if (mqttPass) jsonDocument["mqttPass"] = mqttPass;
+  #ifdef ENABLE_MQTT
+  if (mqttHost)
+    jsonDocument["mqttHost"] = mqttHost;
+  if (mqttTopic)
+    jsonDocument["mqttTopic"] = mqttTopic;
+  if (mqttUser)
+    jsonDocument["mqttUser"] = mqttUser;
+  if (mqttPass)
+    jsonDocument["mqttPass"] = mqttPass;
   jsonDocument["mqttPort"] = mqttPort;
+#endif //ENABLE_MQTT
 
   jsonDocument["ap_static_ip"][0] = WM_AP_IPconfig._ap_static_ip[0];
   jsonDocument["ap_static_ip"][1] = WM_AP_IPconfig._ap_static_ip[1];
@@ -245,23 +251,18 @@ bool EspressoConfig::saveConfig()
 
 #endif
 
+  //  JsonArray data = doc.createNestedArray("data");
+  //  data.add(48.756080);
+  //  data.add(2.302038);
 
+  JsonArray ssid = jsonDocument.createNestedArray("WiffCredetial_ssid");
+  JsonArray pw = jsonDocument.createNestedArray("WiffCredetial_pw");
 
-//  JsonArray data = doc.createNestedArray("data");
-//  data.add(48.756080);
-//  data.add(2.302038);
-
-JsonArray ssid = jsonDocument.createNestedArray("WiffCredetial_ssid");
-JsonArray pw = jsonDocument.createNestedArray("WiffCredetial_pw");
-
-for (int i=0;i<NUM_WIFI_CREDENTIALS;i++){
-  ssid.add(WM_config.WiFi_Creds[i].wifi_ssid);
-  pw.add(WM_config.WiFi_Creds[i].wifi_pw);
-}
-
-
-
-
+  for (int i = 0; i < NUM_WIFI_CREDENTIALS; i++)
+  {
+    ssid.add(WM_config.WiFi_Creds[i].wifi_ssid);
+    pw.add(WM_config.WiFi_Creds[i].wifi_pw);
+  }
 
   File configFile = LittleFS.open("/config.json", "w", true);
   if (!configFile)
@@ -299,5 +300,4 @@ void EspressoConfig::resetConfig()
   heaterInterval = HEATER_INTERVAL;
   maxCool = MAX_COOL;
   sensorSampleInterval = MAX31855_SMP_TIME; ///<=== TODO
-
 }

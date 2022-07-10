@@ -16,7 +16,9 @@
 
 #include "telnetinterface.h"
 #include "webinterface.h"
+#ifdef ENABLE_MQTT
 #include "mqttinterface.h"
+#endif //ENABLE_MQTT
 #include "pidtuner.h"
 
 
