@@ -61,10 +61,12 @@
 #define WEB_USER "admin"
 #define WEB_PASS "silvia"
 
+
+#ifdef ENABLE_MQTT
 #define MQTT_HOST "mqtt.example.net"
 #define MQTT_PORT 1883
 #define MQTT_USER "user"
 #define MQTT_PASS "password"
 #define MQTT_TOPIC "Espresso"
-
+#endif //ENABLE_MQTT
 #endif

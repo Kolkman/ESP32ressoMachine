@@ -26,7 +26,7 @@ MQTTInterface::MQTTInterface() : espClient(), client()
   client.setClient(espClient);
 }
 
-void MQTTInterface::MQTT_reconnect()
+void MQTTInterface::MQTT_reconnect(EspressoConfig * myConfig)
 {
   if (!client.connected())
   {
@@ -34,7 +34,7 @@ void MQTTInterface::MQTT_reconnect()
 
     String clientId = "ESP8266Client";
     clientId += String(random(0xffff), HEX);
-    if (client.connect(clientId.c_str(), MQTT_USER, MQTT_PASS))
+    if (client.connect(clientId.c_str(),myConfig->mqttUser, myConfig->mqttPass))
     {
       Serial.println("connected");
       client.subscribe(mqttConfigTopic, 1); // We should be OK with QOS 0
@@ -104,24 +104,27 @@ void MQTTInterface::setupMQTT(ESPressoMachine *myMachine)
   strcat(mqttStatusTopic,MQTT_STATUS_TOPIC);
   strcpy(mqttConfigTopic,myMachine->myConfig->mqttTopic);
   strcat(mqttConfigTopic,MQTT_CONFIG_TOPIC);
+  Serial.println("mqtt Host:" + String(myMachine->myConfig->mqttHost)+":"+String(myMachine->myConfig->mqttPort));
+  
   Serial.println("mqttStatusTopic:" + String(mqttStatusTopic));
-  client.setServer(MQTT_HOST, MQTT_PORT);
+
+  client.setServer(myMachine->myConfig->mqttHost, myMachine->myConfig->mqttPort);
   client.setCallback(std::bind(&MQTTInterface::MQTT_callback, this,
                                std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, myMachine));
 }
 
-void MQTTInterface::loopMQTT(String jsonstring)
+void MQTTInterface::loopMQTT(ESPressoMachine *myMachine)
 {
 
   for (int i = 0; i < MAX_CONNECTION_RETRIES && !client.connected(); i++)
   {
-    MQTT_reconnect();
+    MQTT_reconnect(myMachine->myConfig);
     Serial.print(".");
-    MQTT_reconnect();
+    MQTT_reconnect(myMachine->myConfig);
   }
 
   client.loop();
-  client.publish(mqttStatusTopic, jsonstring.c_str());
+  client.publish(mqttStatusTopic, myMachine->machineStatus.c_str());
 }
 
 #endif // ENABLE_MQTT
