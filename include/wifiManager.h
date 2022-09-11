@@ -155,7 +155,8 @@ private:
  
        FS *filesystem;
        EspressoWebServer *myServer;
-       DNSServer *dnsServer;
+       
+       AsyncDNSServer *dnsServer;
        WiFiMulti *wifiMulti;
        const int TRIGGER_PIN = PIN_D3; // Pin D3 mapped to pin GPIO03/ADC1-2/TOUCH3 of ESP32-S2
 

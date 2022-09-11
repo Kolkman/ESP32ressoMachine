@@ -13,7 +13,7 @@ WiFiManager::WiFiManager(EspressoConfig *config)
 {
     myServer = nullptr;
     myConfig = config;
-    dnsServer = new DNSServer;
+    dnsServer = new AsyncDNSServer;
     wifiMulti = new WiFiMulti;
     myConfig->WM_AP_IPconfig._ap_static_ip = AP_STATIC_IP;
     myConfig->WM_AP_IPconfig._ap_static_gw = AP_STATIC_GW;
@@ -137,15 +137,15 @@ void WiFiManager::setup(EspressoWebServer *server)
         LOGERROR3(F("* Add SSID = "), Router_SSID, F(", PW = "), Router_Pass);
         wifiMulti->addAP(Router_SSID.c_str(), Router_Pass.c_str());
         ESPAsync_wifiManager.setConfigPortalTimeout(120); // If no access point name has been previously entered disable timeout.
+        Serial.println();
         Serial.println(F("Got ESP Self-Stored Credentials. Timeout 120s for Config Portal"));
     }
-
     if (myConfig->loadConfig())
     {
         configDataLoaded = true;
-
-        ESPAsync_wifiManager.setConfigPortalTimeout(120); // If no access point name has been previously entered disable timeout.
-        Serial.println(F("Got stored Credentials. Timeout 120s for Config Portal"));
+        ESPAsync_wifiManager.setConfigPortalTimeout(60); // If no access point name has been previously entered disable timeout.
+        Serial.println();
+        Serial.println(F("Got stored Credentials. Timeout 60s for Config Portal"));
 
 #if USE_ESP_WIFIMANAGER_NTP
         if (strlen(myConfig->WM_config.TZ_Name) > 0)
@@ -185,7 +185,6 @@ void WiFiManager::setup(EspressoWebServer *server)
 
     // Starts an access point
     if (!ESPAsync_wifiManager.startConfigPortal((const char *)ssid.c_str(), password))
-
         Serial.println(F("Not connected to WiFi but continuing anyway."));
     else
     {
@@ -264,7 +263,7 @@ void WiFiManager::setup(EspressoWebServer *server)
         myConfig->mqttPort = atoi(custom_mqtt_port.getValue());
 #endif // ENABLE_MQTT
         myConfig->saveConfig();
-  
+
         initialConfig = true;
     }
 
@@ -318,8 +317,6 @@ void WiFiManager::setup(EspressoWebServer *server)
     }
     */
 }
-
-
 
 void WiFiManager::displayIPConfigStruct(WiFi_STA_IPConfig in_WM_STA_IPconfig)
 {
