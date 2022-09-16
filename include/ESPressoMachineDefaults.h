@@ -35,9 +35,9 @@
 // GPIO PINS
 #define HEAT_RELAY_PIN 13 // 13 + GND are close on the ESP23 DEV Board
 
-#define SENSOR_MAX_DO 26  
-#define SENSOR_MAX_CS 27
-#define SENSOR_MAX_CLK 14
+#define SENSOR_MAX_DO 25  
+#define SENSOR_MAX_CS 26
+#define SENSOR_MAX_CLK 27
 // 
 // Compile time - not to be user configured.
 //
