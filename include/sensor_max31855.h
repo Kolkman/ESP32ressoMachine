@@ -6,13 +6,13 @@
 
 
 #ifndef SENSOR_MAX_DO
-    #define SENSOR_MAX_DO 26
+    #define SENSOR_MAX_DO 25
 #endif
 #ifndef SENSOR_MAX_CS
-    #define SENSOR_MAX_CS 27
+    #define SENSOR_MAX_CS 26
 #endif
 #ifndef SENSOR_MAX_CLK
-    #define SENSOR_MAX_CLK 14
+    #define SENSOR_MAX_CLK 27
 #endif
 
 
