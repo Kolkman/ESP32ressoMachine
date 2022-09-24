@@ -20,6 +20,7 @@ private:
     void handleGet(AsyncWebServerRequest *);
     void handleStats(AsyncWebServerRequest *);
     void handleConfigFile(AsyncWebServerRequest *);
+    void handleNetwork(AsyncWebServerRequest *);
 };
 
 extern webInterfaceAPI webAPI;
