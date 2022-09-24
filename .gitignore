@@ -33,3 +33,4 @@ include/pages/configuration_helper.js.h
 include/pages/index_helper.js.h
 index-min.html
 pio
+.vscode/launch-min.json
