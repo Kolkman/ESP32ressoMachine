@@ -44,7 +44,7 @@ struct stats
 // must be larger than 1 and will cause problems when to big, consistently causes
 // crashes when to big (in conversion to String somewher in the webserver code).
 // 500 seems to be fine.
-#define STAT_ENTRIES 600
+#define STAT_ENTRIES 100
 // adds commas between entries, and a leading and a training {} - NO trailing \0
 #define STATS_SIZE STAT_ENTRIES *(STAT_LINELENGTH + 1) + 1 //
 

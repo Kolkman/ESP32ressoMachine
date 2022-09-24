@@ -136,6 +136,8 @@ public:
        unsigned int mqttPort;
        char mqttUser[65];
        char mqttPass[65];
+       char webUser[65];
+       char webPass[65];
 #endif                                  // ENABLE_MQTT
        WiFi_AP_IPConfig WM_AP_IPconfig; // WifiManager Configuration
        WiFi_STA_IPConfig WM_STA_IPconfig;
