@@ -41,10 +41,8 @@ void EspressoWebServer::authenticate(AsyncWebServerRequest *request)
     Serial.println("authenticate for:" + request->url());
     if (authRequired)
     {
-
         if (!request->authenticate(this->getUsername(), this->getPassword()))
         {
-
             return request->requestAuthentication();
         }
     }
