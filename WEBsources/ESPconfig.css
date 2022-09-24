@@ -4,9 +4,9 @@
      background-color: #8e2d18;
      font-size: xx-large;
      padding: 10px;
-     letter-spacing: .4em;
-     margin-bottom: 1em;
+     margin-bottom: .2em;
      text-align: center;
+     font-weight: 400;
  }
 
  body {
@@ -61,6 +61,7 @@
      padding-right: 30px;
      box-shadow: 0 8px 16px 0 rgb(0 0 0 / 20%), 0 6px 20px 0 rgb(0 0 0 / 19%);
      background-color: #6d18045d;
+     font-size: xx-large;
  }
 
 
