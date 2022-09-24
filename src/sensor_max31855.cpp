@@ -54,8 +54,8 @@ void TempSensor::setupSensor()
       double c = readCelsius();
       if (isnan(c))
       {
-        Serial.println("ThermoCouple Error");
-      }
+        Serial.print("ThermoCouple Error");
+        Serial.println(time_now);      }
       else
       {
         t += c;
@@ -83,7 +83,9 @@ void TempSensor::updateTempSensor(double sensorSampleInterval)
     double c = readCelsius();
     if (isnan(c) || isnan(i))
     {
-      Serial.println("ThermoCouple Error");
+     
+        Serial.print("ThermoCouple Error");
+        Serial.println(time_now);
     }
     else
     {
