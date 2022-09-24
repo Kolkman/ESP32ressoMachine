@@ -31,14 +31,21 @@
 #define PID_INTERVAL 500
 
 
+#define ESP_PROG 1 // Old pin layout does not work with ESP prog
 
 // GPIO PINS
-#define HEAT_RELAY_PIN 13 // 13 + GND are close on the ESP23 DEV Board
-
+#ifdef ESP_PROG
+#define HEAT_RELAY_PIN 33 
 #define SENSOR_MAX_DO 25  
 #define SENSOR_MAX_CS 26
 #define SENSOR_MAX_CLK 27
 // 
+#else
+#define HEAT_RELAY_PIN 13 // 13 + GND are close on the ESP23 DEV Board
+#define SENSOR_MAX_DO 26  
+#define SENSOR_MAX_CS 27
+#define SENSOR_MAX_CLK 14
+#endif
 // Compile time - not to be user configured.
 //
 #define COLDSTART_TEMP_OFFSET 20 // Below  (S_TSET-COLDSTART_TEMP_OFFSET) the PID vallue will be set to {P,I,D}={COLDSTART_P,0,0}
