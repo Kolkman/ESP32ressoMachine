@@ -114,7 +114,6 @@ void MQTTInterface::setupMQTT(ESPressoMachine *myMachine)
 
 void MQTTInterface::loopMQTT(ESPressoMachine *myMachine)
 {
-
   for (int i = 0; i < MAX_CONNECTION_RETRIES && !client.connected(); i++)
   {
     MQTT_reconnect(myMachine->myConfig);
