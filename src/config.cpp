@@ -12,6 +12,9 @@ EspressoConfig::EspressoConfig()
 {
   resetConfig();
 
+  strcpy(webUser, WEB_USER);
+  strcpy(webPass, WEB_PASS);
+
 #ifdef ENABLE_MQTT
   // These values we want to initialize but not reset:
   strcpy(mqttHost, MQTT_HOST);
@@ -182,6 +185,32 @@ bool EspressoConfig::loadConfig()
   WM_STA_IPconfig._sta_static_dns2[3] = jsonDocument["sta_static_dns2"][3];
 
 #endif
+  if (jsonDocument["WifiCredential_ssid"])
+  {
+    int i = 0;
+    JsonArray j_ssid = jsonDocument["WifiCredential_ssid"];
+    // using C++11 syntax (preferred):
+    for (JsonVariant value : j_ssid)
+    {
+      strcpy(WM_config.WiFi_Creds[i].wifi_ssid, value.as<char *>());
+      i++;
+      if (i == NUM_WIFI_CREDENTIALS)
+        break;
+    }
+  }
+  if (jsonDocument["WifiCredential_pw"])
+  {
+    int i = 0;
+    JsonArray j_ssid = jsonDocument["WifiCredential_pw"];
+    // using C++11 syntax (preferred):
+    for (JsonVariant value : j_ssid)
+    {
+      strcpy(WM_config.WiFi_Creds[i].wifi_pw, value.as<char *>());
+      i++;
+      if (i == NUM_WIFI_CREDENTIALS)
+        break;
+    }
+  }
 
   return true;
 }
@@ -196,7 +225,7 @@ bool EspressoConfig::saveConfig()
   jsonDocument["Ep"] = eqPwr, jsonDocument["hi"] = heaterInterval, jsonDocument["pidi"] = pidInt,
   jsonDocument["ssi"] = sensorSampleInterval;
   jsonDocument["maxcool"] = maxCool;
-  #ifdef ENABLE_MQTT
+#ifdef ENABLE_MQTT
   if (mqttHost)
     jsonDocument["mqttHost"] = mqttHost;
   if (mqttTopic)
@@ -206,7 +235,7 @@ bool EspressoConfig::saveConfig()
   if (mqttPass)
     jsonDocument["mqttPass"] = mqttPass;
   jsonDocument["mqttPort"] = mqttPort;
-#endif //ENABLE_MQTT
+#endif // ENABLE_MQTT
 
   jsonDocument["ap_static_ip"][0] = WM_AP_IPconfig._ap_static_ip[0];
   jsonDocument["ap_static_ip"][1] = WM_AP_IPconfig._ap_static_ip[1];
@@ -255,8 +284,8 @@ bool EspressoConfig::saveConfig()
   //  data.add(48.756080);
   //  data.add(2.302038);
 
-  JsonArray ssid = jsonDocument.createNestedArray("WiffCredetial_ssid");
-  JsonArray pw = jsonDocument.createNestedArray("WiffCredetial_pw");
+  JsonArray ssid = jsonDocument.createNestedArray("WifiCredential_ssid");
+  JsonArray pw = jsonDocument.createNestedArray("WifiCredential_pw");
 
   for (int i = 0; i < NUM_WIFI_CREDENTIALS; i++)
   {
