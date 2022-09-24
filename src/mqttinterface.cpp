@@ -22,11 +22,11 @@
 
 MQTTInterface::MQTTInterface() : espClient(), client()
 {
-//  myMachine = nullptr; // inherited attribute
+  //  myMachine = nullptr; // inherited attribute
   client.setClient(espClient);
 }
 
-void MQTTInterface::MQTT_reconnect(EspressoConfig * myConfig)
+void MQTTInterface::MQTT_reconnect(EspressoConfig *myConfig)
 {
   if (!client.connected())
   {
@@ -34,7 +34,7 @@ void MQTTInterface::MQTT_reconnect(EspressoConfig * myConfig)
 
     String clientId = "ESP8266Client";
     clientId += String(random(0xffff), HEX);
-    if (client.connect(clientId.c_str(),myConfig->mqttUser, myConfig->mqttPass))
+    if (client.connect(clientId.c_str(), myConfig->mqttUser, myConfig->mqttPass))
     {
       Serial.println("connected");
       client.subscribe(mqttConfigTopic, 1); // We should be OK with QOS 0
@@ -95,17 +95,16 @@ void MQTTInterface::MQTT_callback(char *topic, byte *payload, unsigned int lengt
     else
       Serial.println("false");
   }
-
 }
 
 void MQTTInterface::setupMQTT(ESPressoMachine *myMachine)
 {
   strcpy(mqttStatusTopic, myMachine->myConfig->mqttTopic);
-  strcat(mqttStatusTopic,MQTT_STATUS_TOPIC);
-  strcpy(mqttConfigTopic,myMachine->myConfig->mqttTopic);
-  strcat(mqttConfigTopic,MQTT_CONFIG_TOPIC);
-  Serial.println("mqtt Host:" + String(myMachine->myConfig->mqttHost)+":"+String(myMachine->myConfig->mqttPort));
-  
+  strcat(mqttStatusTopic, MQTT_STATUS_TOPIC);
+  strcpy(mqttConfigTopic, myMachine->myConfig->mqttTopic);
+  strcat(mqttConfigTopic, MQTT_CONFIG_TOPIC);
+  Serial.println("mqtt Host:" + String(myMachine->myConfig->mqttHost) + ":" + String(myMachine->myConfig->mqttPort));
+
   Serial.println("mqttStatusTopic:" + String(mqttStatusTopic));
 
   client.setServer(myMachine->myConfig->mqttHost, myMachine->myConfig->mqttPort);
@@ -119,12 +118,12 @@ void MQTTInterface::loopMQTT(ESPressoMachine *myMachine)
   for (int i = 0; i < MAX_CONNECTION_RETRIES && !client.connected(); i++)
   {
     MQTT_reconnect(myMachine->myConfig);
-    Serial.print(".");
-    MQTT_reconnect(myMachine->myConfig);
   }
-
-  client.loop();
-  client.publish(mqttStatusTopic, myMachine->machineStatus.c_str());
+  if (client.connected())
+  {
+    client.loop();
+    client.publish(mqttStatusTopic, myMachine->machineStatus.c_str());
+  }
 }
 
 #endif // ENABLE_MQTT
