@@ -7,8 +7,10 @@
 #include <PubSubClient.h>
 #include "ESPressoMachineDefaults.h"
 #include "ESPressoMachine.h"
-
+#include "ExponentialFallback.h"
 #ifdef ENABLE_MQTT
+
+
 
 class MQTTInterface
 {
@@ -26,6 +28,7 @@ private:
     void MQTT_callback(char*, byte*, unsigned int, ESPressoMachine *);
     char mqttStatusTopic[256+MQTT_TOPIC_EXT_LENGTH];
     char mqttConfigTopic[256+MQTT_TOPIC_EXT_LENGTH];
+    ExpFallback connectionAttempts;
 };
 #endif //ESPRessoMach_MQTT_H
 #endif //ENABLE_MQTT
