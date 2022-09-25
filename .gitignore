@@ -34,3 +34,6 @@ include/pages/index_helper.js.h
 index-min.html
 pio
 .vscode/launch-min.json
+docs/html
+docs/latex
+
