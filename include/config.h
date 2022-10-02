@@ -1,11 +1,15 @@
+#pragma once
 #ifndef ESPressoMachineCONFIG_H
 #define ESPressoMachineCONFIG_H
 
 #include <StreamUtils.h>
-#include <ESPAsync_WiFiManager.hpp>
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include "ESPressoMachineDefaults.h"
+#include "debug.h"
+#include "wifiManager.h"
+
+
 
 #define FORMAT_SPIFFS_IF_FAILED true
 #define CONFIG_BUF_SIZE 2048
@@ -55,13 +59,7 @@
 #define MAX_COOL 0.025 // 1.5 deg/min
 #endif
 
-// WifiManager Related config
-#define NUM_WIFI_CREDENTIALS 2
-// Assuming max 49 chars
-#define TZNAME_MAX_LEN 50
-#define TIMEZONE_MAX_LEN 50
-#define SSID_MAX_LEN 32
-#define PASS_MAX_LEN 64
+
 
 #ifdef ENABLE_MQTT
 #ifndef MQTT_TOPIC
@@ -87,26 +85,7 @@ struct PIDval
        double P, I, D;
 };
 
-// WifiManager related config
 
-typedef struct
-{
-       char wifi_ssid[SSID_MAX_LEN];
-       char wifi_pw[PASS_MAX_LEN];
-} WiFi_Credentials;
-
-typedef struct
-{
-       String wifi_ssid;
-       String wifi_pw;
-} WiFi_Credentials_String;
-typedef struct
-{
-       WiFi_Credentials WiFi_Creds[NUM_WIFI_CREDENTIALS];
-       char TZ_Name[TZNAME_MAX_LEN]; // "America/Toronto"
-       char TZ[TIMEZONE_MAX_LEN];    // "EST5EDT,M3.2.0,M11.1.0"
-       uint16_t checksum;
-} WM_Config;
 
 // Class to handle all things that have to do with configuration
 class EspressoConfig
@@ -130,6 +109,7 @@ public:
        unsigned int sensorSampleInterval;
        unsigned int heaterInterval;
        int pidInt;
+
 #ifdef ENABLE_MQTT
        char mqttHost[256];
        char mqttTopic[256];

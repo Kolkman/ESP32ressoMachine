@@ -9,7 +9,7 @@
 
 ESPressoInterface::ESPressoInterface(ESPressoMachine *mach) : WebInterface(mach,WEB_USER,WEB_PASS)
 {
- wifiMngr= new WiFiManager(mach->myConfig);
+ wifiMngr= new WiFiManager();
 }
 
 void ESPressoInterface::serialStatus()

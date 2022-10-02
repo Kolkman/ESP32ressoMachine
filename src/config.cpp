@@ -26,13 +26,15 @@ EspressoConfig::EspressoConfig()
 
   ptargetTemp = &targetTemp;
 
-  for (int i = 0; i < NUM_WIFI_CREDENTIALS; i++)
+  /* for (int i = 0; i < NUM_WIFI_CREDENTIALS; i++)
   {
     *WM_config.WiFi_Creds[i].wifi_ssid = 0;
     *WM_config.WiFi_Creds[i].wifi_pw = 0;
   }
   *WM_config.TZ_Name = 0;
   *WM_config.TZ = 0;
+*/
+
 }
 
 EspressoConfig::~EspressoConfig()
@@ -185,6 +187,7 @@ bool EspressoConfig::loadConfig()
   WM_STA_IPconfig._sta_static_dns2[3] = jsonDocument["sta_static_dns2"][3];
 
 #endif
+
   if (jsonDocument["WifiCredential_ssid"])
   {
     int i = 0;
@@ -192,7 +195,7 @@ bool EspressoConfig::loadConfig()
     // using C++11 syntax (preferred):
     for (JsonVariant value : j_ssid)
     {
-      strcpy(WM_config.WiFi_Creds[i].wifi_ssid, value.as<char *>());
+      strcpy(WM_config.WiFi_Creds[i].wifi_ssid, value.as<const char *>());
       i++;
       if (i == NUM_WIFI_CREDENTIALS)
         break;
@@ -205,7 +208,7 @@ bool EspressoConfig::loadConfig()
     // using C++11 syntax (preferred):
     for (JsonVariant value : j_ssid)
     {
-      strcpy(WM_config.WiFi_Creds[i].wifi_pw, value.as<char *>());
+      strcpy(WM_config.WiFi_Creds[i].wifi_pw, value.as<const char *>());
       i++;
       if (i == NUM_WIFI_CREDENTIALS)
         break;
