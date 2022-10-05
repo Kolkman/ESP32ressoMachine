@@ -34,8 +34,9 @@ EspressoConfig::EspressoConfig()
   *WM_config.TZ_Name = 0;
   *WM_config.TZ = 0;
 */
-
 }
+
+
 
 EspressoConfig::~EspressoConfig()
 {
@@ -145,49 +146,20 @@ bool EspressoConfig::loadConfig()
 
 #endif // ENABLE_MQTT
 
-  WM_AP_IPconfig._ap_static_ip[0] = jsonDocument["ap_static_ip"][0];
-  WM_AP_IPconfig._ap_static_ip[1] = jsonDocument["ap_static_ip"][1];
-  WM_AP_IPconfig._ap_static_ip[2] = jsonDocument["ap_static_ip"][2];
-  WM_AP_IPconfig._ap_static_ip[3] = jsonDocument["ap_static_ip"][3];
-
-  WM_AP_IPconfig._ap_static_gw[0] = jsonDocument["ap_static_gw"][0];
-  WM_AP_IPconfig._ap_static_gw[1] = jsonDocument["ap_static_gw"][1];
-  WM_AP_IPconfig._ap_static_gw[2] = jsonDocument["ap_static_gw"][2];
-  WM_AP_IPconfig._ap_static_gw[3] = jsonDocument["ap_static_gw"][3];
-
-  WM_AP_IPconfig._ap_static_sn[0] = jsonDocument["ap_static_sn"][0];
-  WM_AP_IPconfig._ap_static_sn[1] = jsonDocument["ap_static_sn"][1];
-  WM_AP_IPconfig._ap_static_sn[2] = jsonDocument["ap_static_sn"][2];
-  WM_AP_IPconfig._ap_static_sn[3] = jsonDocument["ap_static_sn"][3];
-
-  WM_STA_IPconfig._sta_static_ip[0] = jsonDocument["sta_static_ip"][0];
-  WM_STA_IPconfig._sta_static_ip[1] = jsonDocument["sta_static_ip"][1];
-  WM_STA_IPconfig._sta_static_ip[2] = jsonDocument["sta_static_ip"][2];
-  WM_STA_IPconfig._sta_static_ip[3] = jsonDocument["sta_static_ip"][3];
-
-  WM_STA_IPconfig._sta_static_gw[0] = jsonDocument["sta_static_gw"][0];
-  WM_STA_IPconfig._sta_static_gw[1] = jsonDocument["sta_static_gw"][1];
-  WM_STA_IPconfig._sta_static_gw[2] = jsonDocument["sta_static_gw"][2];
-  WM_STA_IPconfig._sta_static_gw[3] = jsonDocument["sta_static_gw"][3];
-
-  WM_STA_IPconfig._sta_static_sn[0] = jsonDocument["sta_static_sn"][0];
-  WM_STA_IPconfig._sta_static_sn[1] = jsonDocument["sta_static_sn"][1];
-  WM_STA_IPconfig._sta_static_sn[2] = jsonDocument["sta_static_sn"][2];
-  WM_STA_IPconfig._sta_static_sn[3] = jsonDocument["sta_static_sn"][3];
-
+  for (int i = 0; i < 4; i++)
+  {
+    // itterate over the IP4 tupples
+    WM_AP_IPconfig._ap_static_ip[i] = jsonDocument["ap_static_ip"][i];
+    WM_AP_IPconfig._ap_static_gw[i] = jsonDocument["ap_static_gw"][i];
+    WM_AP_IPconfig._ap_static_sn[i] = jsonDocument["ap_static_sn"][i];
+    WM_STA_IPconfig._sta_static_ip[i] = jsonDocument["sta_static_ip"][i];
+    WM_STA_IPconfig._sta_static_gw[i] = jsonDocument["sta_static_gw"][i];
+    WM_STA_IPconfig._sta_static_sn[i] = jsonDocument["sta_static_sn"][i];
 #if USE_CONFIGURABLE_DNS
-  WM_STA_IPconfig._sta_static_dns1[0] = jsonDocument["sta_static_dns1"][0];
-  WM_STA_IPconfig._sta_static_dns1[1] = jsonDocument["sta_static_dns1"][1];
-  WM_STA_IPconfig._sta_static_dns1[2] = jsonDocument["sta_static_dns1"][2];
-  WM_STA_IPconfig._sta_static_dns1[3] = jsonDocument["sta_static_dns1"][3];
-
-  WM_STA_IPconfig._sta_static_dns2[0] = jsonDocument["sta_static_dns2"][0];
-  WM_STA_IPconfig._sta_static_dns2[1] = jsonDocument["sta_static_dns2"][1];
-  WM_STA_IPconfig._sta_static_dns2[2] = jsonDocument["sta_static_dns2"][2];
-  WM_STA_IPconfig._sta_static_dns2[3] = jsonDocument["sta_static_dns2"][3];
-
+    WM_STA_IPconfig._sta_static_dns1[i] = jsonDocument["sta_static_dns1"][i];
+    WM_STA_IPconfig._sta_static_dns2[i] = jsonDocument["sta_static_dns2"][i];
 #endif
-
+  }
   if (jsonDocument["WifiCredential_ssid"])
   {
     int i = 0;
@@ -332,4 +304,17 @@ void EspressoConfig::resetConfig()
   heaterInterval = HEATER_INTERVAL;
   maxCool = MAX_COOL;
   sensorSampleInterval = MAX31855_SMP_TIME; ///<=== TODO
+}
+
+String EspressoConfig::passForSSID(String _SSID){
+  String pass;
+  pass="";
+for (int i = 0; i < NUM_WIFI_CREDENTIALS; i++)
+  {
+    if (String(WM_config.WiFi_Creds[i].wifi_ssid) == _SSID){
+pass=String(WM_config.WiFi_Creds[i].wifi_pw); 
+    }
+   ;
+  }
+  return(pass);
 }

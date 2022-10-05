@@ -34,6 +34,9 @@
 #include "pages/gauge.min.js.h"
 #include "pages/index.html.h"
 #include "pages/index_helper.js.h"
+#include "pages/redCircleCrossed.svg.h"
+#include "pages/networkSetup.html.h"
+#include "pages/networkConfigPage.js.h"
 #define ONCOLOR "CD212A"
 #define OFFCOLOR "DCDCDC"
 
@@ -142,6 +145,9 @@ void WebInterface::setupWebSrv(ESPressoMachine *machine)
              { request->redirect("/configuration.html"); });
   server->on("/config", HTTP_GET, [&](AsyncWebServerRequest *request)
              { request->redirect("/configuration.html"); });
+
+  server->on("/scan", HTTP_GET, std::bind(&WebInterface::handleScan, this, std::placeholders::_1));
+  server->on("/configConfig", HTTP_GET, std::bind(&WebInterface::handleConfigConfig, this, std::placeholders::_1));
   DEF_HANDLE_index_html;
   DEF_HANDLE_button_css;
   DEF_HANDLE_ESPresso_css;
@@ -152,13 +158,15 @@ void WebInterface::setupWebSrv(ESPressoMachine *machine)
   DEF_HANDLE_configuration_html;
   DEF_HANDLE_configuration_helper_js;
   DEF_HANDLE_index_helper_js;
+  DEF_HANDLE_redCircleCrossed_svg;
+  DEF_HANDLE_networkSetup_html;
+  DEF_HANDLE_networkConfigPage_js;
   //  DEF_HANDLE_test_html;
 
   // Handle Web Server Events
   events->onConnect(std::bind(&WebInterface::handleEventClient, this, std::placeholders::_1));
   server->addHandler(events);
 
-  server->begin();
   Serial.println("HTTP server started");
 }
 
@@ -177,4 +185,84 @@ void WebInterface::handleEventClient(AsyncEventSourceClient *client)
 void WebInterface::eventLoop()
 {
   events->send(myMachine->machineStatus.c_str(), "status", millis());
+}
+
+void WebInterface::setConfigPortalPages()
+{
+  server->on("/scan", HTTP_GET, std::bind(&WebInterface::handleScan, this, std::placeholders::_1));
+  server->on("/", HTTP_GET, std::bind(&WebInterface::handleCaptivePortal, this, std::placeholders::_1));
+  server->on("/configConfig", HTTP_GET, std::bind(&WebInterface::handleConfigConfig, this, std::placeholders::_1));
+
+  DEF_HANDLE_redCircleCrossed_svg;
+  DEF_HANDLE_networkSetup_html;
+  DEF_HANDLE_button_css;
+  DEF_HANDLE_ESPresso_css;
+  DEF_HANDLE_networkConfigPage_js;
+
+  return;
+}
+
+void WebInterface::handleCaptivePortal(AsyncWebServerRequest *request)
+{
+  LOGINFO("CalptivePortal Hit")
+  waitingForClientAction = true;
+  return;
+}
+
+void WebInterface::handleScan(AsyncWebServerRequest *request)
+{
+  LOGINFO("Scan Handle");
+  String json = "[";
+  int n = WiFi.scanComplete();
+  if (n == -2)
+  {
+    WiFi.scanNetworks(true);
+  }
+  else if (n)
+  {
+    for (int i = 0; i < n; ++i)
+    {
+      if (i)
+        json += ",";
+      json += "{";
+      json += "\"rssi\":" + String(WiFi.RSSI(i));
+      json += ",\"ssid\":\"" + WiFi.SSID(i) + "\"";
+      json += ",\"pass\":\"" + myMachine->myConfig->passForSSID(WiFi.SSID(i)) + "\"";
+      json += ",\"bssid\":\"" + WiFi.BSSIDstr(i) + "\"";
+      json += ",\"channel\":" + String(WiFi.channel(i));
+      json += ",\"secure\":" + String(WiFi.encryptionType(i));
+      json += "}";
+    }
+    WiFi.scanDelete();
+    if (WiFi.scanComplete() == -2)
+    {
+      WiFi.scanNetworks(true);
+    }
+  }
+  json += "]";
+  request->send(200, "application/json", json);
+  json = String();
+};
+
+void WebInterface::handleConfigConfig(AsyncWebServerRequest *request)
+{
+  bool MQTT=false;
+  #ifdef  ENABLE_MQTT
+  MQTT=true;
+  #endif
+
+  String json = "{";
+  json += "\"maxNets\":" + String(NUM_WIFI_CREDENTIALS);
+  json += ",\"mqtt\":" + String(MQTT);
+  #ifdef ENABLE_MQTT
+  json += ",\"mqttHost\":\"" + String(myMachine->myConfig->mqttHost) + "\"";
+    json += ",\"mqttPort\":\"" + String(myMachine->myConfig->mqttPort) + "\"";
+  json += ",\"mqttUser\":\"" + String(myMachine->myConfig->mqttUser) + "\"";
+  json += ",\"mqttPass\":\"" + String(myMachine->myConfig->mqttPass) + "\"";
+  json += ",\"mqttTopic\":\"" + String(myMachine->myConfig->mqttTopic) + "\"";
+  #endif
+  json += "}";
+  request->send(200, "application/json", json);
+  json = String();
+
 }

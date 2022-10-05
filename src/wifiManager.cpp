@@ -1,38 +1,29 @@
 /// O.M. Kolkman
 /// This is code draws heavilly from  https://github.com/khoih-prog/ESPAsync_WiFiManager/blob/master/examples/Async_ConfigOnStartup/Async_ConfigOnStartup.ino
-/// 
+///
 /// A number of functions are verbatim copies and so is some of its structure.
 /// I wrote this because I wanted a little different functionality, mainly having configuration available after
-/// connecting to MultiWifi. 
+/// connecting to MultiWifi.
 /// I removed a lot of configuration (this is very ESP32 specific now)
-
 
 #include "wifiManager.h"
 #include "WiFiMulti.h"
 #include "EspressoWebServer.h"
+#include "EspressoMachine.h"
 #include "config.h"
 
 WiFiManager::WiFiManager()
 {
-    myServer = nullptr;
+    myInterface = nullptr;
     // myConfig = config;
     dnsServer = new AsyncDNSServer;
     //   wifiMulti = new WiFiMulti;
 }
 
-void WiFiManager::setup(EspressoWebServer *server)
+void WiFiManager::setupWiFiAp()
 {
-    myServer = server;
+
     unsigned long startedAt = millis();
-    if (!myServer)
-    {
-        Serial.print("WARNING SERVER NULLPTR");
-        while (true)
-        {
-            // Hang around infinitly...
-            delay(1);
-        }
-    }
 
     // Initiation of all.
     ApSSID = "ESP32Mach";
@@ -60,24 +51,17 @@ void WiFiManager::setup(EspressoWebServer *server)
     // Check if there is stored WiFi router/password credentials.
     // If not found, device will remain in configuration mode until switched off via webserver.
     LOGERROR(F("Starting Setup of AP"));
-     _configPortalStart = millis();
+    _configPortalStart = millis();
 
     if (WiFi.getAutoConnect() == 0)
         WiFi.setAutoConnect(1);
 
-
-   
-    // Random Channel Assignment 
-    static int channel = random(1,MAX_WIFI_CHANNEL);
+    // Random Channel Assignment
+    static int channel = random(1, MAX_WIFI_CHANNEL);
 
     // Strating the Access Point
     WiFi.softAP(ApSSID.c_str(), ApPass.c_str(), channel);
-     delay(500); 
-
-
-    // Reset all web server content
-    myServer->reset();
-
+    delay(500);
     // initiate a dnsServer
     if (!dnsServer)
         dnsServer = new AsyncDNSServer;
@@ -95,79 +79,92 @@ void WiFiManager::setup(EspressoWebServer *server)
             // No socket available
             LOGERROR(F("Can't start DNS Server. No available socket"));
         }
+        else
+            LOGINFO("DNS for Captive Portal");
     }
-
-
-     LOGWARN1(F("AP IP address ="), WiFi.softAPIP());
-
-
-
-
-
+    LOGWARN1(F("AP IP address ="), WiFi.softAPIP());
+    
+    {// Start an asynchronous scan, we are bound to need it soon.
+        int n = WiFi.scanComplete();
+        if (n == -2)
+        {
+            WiFi.scanNetworks(true);
+        }
+        return;
+    }
 }
 
-uint8_t WiFiManager::connectMultiWiFi()
+void WiFiManager::loopPortal(ESPressoInterface *myInterface)
 {
-    // For ESP32, this better be 0 to shorten the connect time.
-    // For ESP32-S2/C3, must be > 500
+    connect = false;
+    bool TimedOut = true;
+    LOGINFO("startConfigPortal : Enter loop");
+    // TODO: we should be waiting for Action as long as there is no stored credentials.
+    while (myInterface->waitingForClientAction || millis() < _configPortalStart + CONFIGPORTAL_TIMEOUT)
+    {
+        delay(1);
+    }
+    LOGINFO1(F("Waiting for Client Action"), myInterface->waitingForClientAction);
+    LOGINFO("startConfigPortal : Exits loop");
+    return;
+}
+
+uint8_t WiFiManager::connectMultiWiFi(EspressoConfig *myConfig)
+{
+
     uint8_t status;
 
     LOGERROR(F("ConnectMultiWiFi with :"));
+
+    for (uint8_t i = 0; i < NUM_WIFI_CREDENTIALS; i++)
+    {
+        // Don't permit NULL SSID and password len < MIN_AP_PASSWORD_SIZE (8)
+        if ((String(myConfig->WM_config.WiFi_Creds[i].wifi_ssid) != "") && (strlen(myConfig->WM_config.WiFi_Creds[i].wifi_pw) >= MIN_AP_PASSWORD_SIZE))
+        {
+            LOGERROR3(F("* Additional SSID = "), myConfig->WM_config.WiFi_Creds[i].wifi_ssid, F(", PW = "), myConfig->WM_config.WiFi_Creds[i].wifi_pw);
+
+            addAP(myConfig->WM_config.WiFi_Creds[i].wifi_ssid, myConfig->WM_config.WiFi_Creds[i].wifi_pw);
+        }
+    }
+
+    LOGERROR(F("Connecting MultiWifi..."));
     /*
-        if ((Router_SSID != "") && (Router_Pass != ""))
-        {
-            LOGERROR3(F("* Flash-stored Router_SSID = "), Router_SSID, F(", Router_Pass = "), Router_Pass);
-            LOGERROR3(F("* Add SSID = "), Router_SSID, F(", PW = "), Router_Pass);
-            wifiMulti->addAP(Router_SSID.c_str(), Router_Pass.c_str());
-        }
-        for (uint8_t i = 0; i < NUM_WIFI_CREDENTIALS; i++)
-        {
-            // Don't permit NULL SSID and password len < MIN_AP_PASSWORD_SIZE (8)
-            if ((String(myConfig->WM_config.WiFi_Creds[i].wifi_ssid) != "") && (strlen(myConfig->WM_config.WiFi_Creds[i].wifi_pw) >= MIN_AP_PASSWORD_SIZE))
-            {
-                LOGERROR3(F("* Additional SSID = "), myConfig->WM_config.WiFi_Creds[i].wifi_ssid, F(", PW = "), myConfig->WM_config.WiFi_Creds[i].wifi_pw);
-            }
-        }
+        #if !USE_DHCP_IP
+            // New in v1.4.0
+            configWiFi(WM_STA_IPconfig);
+            //////
+        #endif
+    */
+    int i = 0;
+    status = run();
+    WiFi.mode(WIFI_STA);
 
-        LOGERROR(F("Connecting MultiWifi..."));
+    delay(WIFI_MULTI_1ST_CONNECT_WAITING_MS);
 
-    #if !USE_DHCP_IP
-        // New in v1.4.0
-        configWiFi(WM_STA_IPconfig);
-        //////
-    #endif
-
-        int i = 0;
-        status = wifiMulti->run();
-        delay(WIFI_MULTI_1ST_CONNECT_WAITING_MS);
-
-        while ((i++ < 20) && (status != WL_CONNECTED))
-        {
-            status = WiFi.status();
-
-            if (status == WL_CONNECTED)
-                break;
-            else
-                delay(WIFI_MULTI_CONNECT_WAITING_MS);
-        }
+    while ((i++ < 20) && (status != WL_CONNECTED))
+    {
+        status = WiFi.status();
 
         if (status == WL_CONNECTED)
-        {
-            LOGERROR1(F("WiFi connected after time: "), i);
-            LOGERROR3(F("SSID:"), WiFi.SSID(), F(",RSSI="), WiFi.RSSI());
-            LOGERROR3(F("Channel:"), WiFi.channel(), F(",IP address:"), WiFi.localIP());
-        }
+            break;
         else
-        {
-            LOGERROR(F("WiFi not connected"));
+            delay(WIFI_MULTI_CONNECT_WAITING_MS);
+    }
 
-            ESP.restart();
-        }
+    if (status == WL_CONNECTED)
+    {
+        LOGERROR2(F("WiFi connected after : "), i, F("trials."));
+        LOGERROR3(F("SSID:"), WiFi.SSID(), F(",RSSI="), WiFi.RSSI());
+        LOGERROR3(F("Channel:"), WiFi.channel(), F(",IP address:"), WiFi.localIP());
+    }
+    else
+    {
+        LOGERROR(F("WiFi not connected"));
 
-        return status;
-        */
+        ESP.restart();
+    }
 
-    return 10; // to return something...  for now.
+    return status;
 }
 
 char *WiFiManager::getRFC952_hostname(const char *iHostname)

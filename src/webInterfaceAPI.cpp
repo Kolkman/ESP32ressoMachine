@@ -11,7 +11,7 @@ webInterfaceAPI::webInterfaceAPI()
 {
   server = nullptr;
   myMachine = nullptr;
-  content_len=0;
+  content_len = 0;
 }
 
 void webInterfaceAPI::begin(EspressoWebServer *s, ESPressoMachine *m)
@@ -29,38 +29,7 @@ void webInterfaceAPI::begin(EspressoWebServer *s, ESPressoMachine *m)
   server->on("/api/v1/set", HTTP_GET, std::bind(&webInterfaceAPI::handleSet, this, std::placeholders::_1));
   server->on("/api/v1/statistics", HTTP_GET, std::bind(&webInterfaceAPI::handleStats, this, std::placeholders::_1));
   server->on("/api/v1/config", HTTP_GET, std::bind(&webInterfaceAPI::handleConfigFile, this, std::placeholders::_1));
-
-  server->on("/scan", HTTP_GET, [](AsyncWebServerRequest *request){
-  String json = "[";
-  int n = WiFi.scanComplete();
-  if(n == -2){
-    WiFi.scanNetworks(true);
-  } else if(n){
-    for (int i = 0; i < n; ++i){
-      if(i) json += ",";
-      json += "{";
-      json += "\"rssi\":"+String(WiFi.RSSI(i));
-      json += ",\"ssid\":\""+WiFi.SSID(i)+"\"";
-      json += ",\"bssid\":\""+WiFi.BSSIDstr(i)+"\"";
-      json += ",\"channel\":"+String(WiFi.channel(i));
-      json += ",\"secure\":"+String(WiFi.encryptionType(i));
-   //   json += ",\"hidden\":"+String(WiFi.isHidden(i)?"true":"false");
-      json += "}";
-    }
-    WiFi.scanDelete();
-    if(WiFi.scanComplete() == -2){
-      WiFi.scanNetworks(true);
-    }
-  }
-  json += "]";
-  request->send(200, "application/json", json);
-  json = String();
-});
-
 }
-
-
-
 
 void webInterfaceAPI::handleStatus(AsyncWebServerRequest *request)
 {
@@ -384,7 +353,6 @@ void webInterfaceAPI::handleSet(AsyncWebServerRequest *request)
   request->send(200, "application/json", message);
 }
 
-
 void webInterfaceAPI::handleConfigFile(AsyncWebServerRequest *request)
 {
   Serial.println(request->argName(0));
@@ -423,7 +391,7 @@ void webInterfaceAPI::handleConfigFile(AsyncWebServerRequest *request)
     myMachine->myConfig->resetConfig();
 
     myMachine->reConfig();
-     strcpy(message, "{\"default\":true}");
+    strcpy(message, "{\"default\":true}");
   }
   request->send(200, "application/json", message);
 }

@@ -7,6 +7,8 @@
 #include "EspressoWebServer.h"
 #include "WiFiMulti.h"
 
+class ESPressoInterface; /// forward declaration
+
 #define NUM_WIFI_CREDENTIALS 2
 // Assuming max 49 chars
 #define TZNAME_MAX_LEN 50
@@ -15,11 +17,18 @@
 #define PASS_MAX_LEN 64
 
 #define AP_PASSWORD "E32" // HEX will be added
-#define DNS_PORT 53
-#define RFC952_HOSTNAME_MAXLEN 63  // HOSTNAME can be up to 255 chars, but we'll take DNS label length. (longer than  in original code)
-#define MAX_WIFI_CHANNEL      13
 
-class EspressoConfig; // Forward declaration
+#define MIN_AP_PASSWORD_SIZE 8
+#define DNS_PORT 53
+#define RFC952_HOSTNAME_MAXLEN 63 // HOSTNAME can be up to 255 chars, but we'll take DNS label length. (longer than  in original code)
+#define MAX_WIFI_CHANNEL 13
+#define CONFIGPORTAL_TIMEOUT 40 * 1000
+#define WIFI_MULTI_CONNECT_WAITING_MS 10000 // MultiWifi reconnects after 10 seconds.
+#define WIFI_MULTI_1ST_CONNECT_WAITING_MS 20000
+
+
+class EspressoConfig;  // Forward declaration
+class ESPressoMachine; // Foraward declaration
 
 #include <esp_wifi.h>
 #define ESP_getChipId() ((uint32_t)ESP.getEfuseMac())
@@ -74,19 +83,23 @@ class WiFiManager : public WiFiMulti
 {
 public:
        WiFiManager();
-       void setup(EspressoWebServer *);
+       void setupWiFiAp();
+       void loopPortal(ESPressoInterface * myInterface);
+       uint8_t connectMultiWiFi(EspressoConfig *);
        // SSID and PW for Config Portal
 
 private:
-       EspressoWebServer *myServer;
+       ESPressoInterface *myInterface;
        AsyncDNSServer *dnsServer;
-       uint8_t connectMultiWiFi();
+
        String ApSSID;
        String ApPass;
 
-       char * getRFC952_hostname(const char *);
+       bool connect;
+
+       char *getRFC952_hostname(const char *);
        char RFC952_hostname[RFC952_HOSTNAME_MAXLEN + 1];
-       unsigned long _configPortalStart    = 0;
+       unsigned long _configPortalStart = 0;
 };
 
 #endif

@@ -33,10 +33,13 @@ public:
     ESPressoInterface(ESPressoMachine *);
 #ifdef ENABLE_SERIAL
     void serialStatus();
-    WiFiManager * wifiMngr;
+    WiFiManager *wifiMngr;
 #endif
     void loop();
     void setup();
+
+private:
+    bool wasNotConnected = true;
 };
 
 #endif
