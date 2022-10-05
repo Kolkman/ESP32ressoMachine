@@ -9,8 +9,6 @@
 #include "debug.h"
 #include "wifiManager.h"
 
-
-
 #define FORMAT_SPIFFS_IF_FAILED true
 #define CONFIG_BUF_SIZE 2048
 
@@ -59,8 +57,6 @@
 #define MAX_COOL 0.025 // 1.5 deg/min
 #endif
 
-
-
 #ifdef ENABLE_MQTT
 #ifndef MQTT_TOPIC
 #define MQTT_TOPIC "EspressoMach"
@@ -76,16 +72,13 @@
 #define MQTT_TOPIC_EXT_LENGTH 7
 #endif
 
-
-#endif //ENABLE_MQTT
+#endif // ENABLE_MQTT
 
 // Struct to store pid values
 struct PIDval
 {
        double P, I, D;
 };
-
-
 
 // Class to handle all things that have to do with configuration
 class EspressoConfig
@@ -97,6 +90,7 @@ public:
        bool loadConfig();  // load current config to disk (limited set of vallues)
        bool saveConfig();  // save current config to disk (limited set of vallues)
        void resetConfig(); // resetConfig to values that were programmed by default
+       String passForSSID(String);
        //    String statusAsJson();
        PIDval nearTarget;
        PIDval awayTarget;

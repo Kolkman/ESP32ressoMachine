@@ -1,8 +1,7 @@
 body {
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-    font-size:large;
-    background: #626262;
-    color: antiquewhite;
+    background: cornsilk;
+    color: black;
 }
 
 html,
@@ -16,14 +15,16 @@ div.gauges {
     margin: auto;
 }
 
-A:link{
-    color:rgb(213, 212, 145);
+A:link {
+    color: rgb(95, 62, 1);
 }
-A:visited{
-    color:rgb(142, 209, 196);
+
+A:visited {
+    color: rgb(112, 84, 16);
 }
-A:hover{
-    color:#a5f8fc;
+
+A:hover {
+    color: #705208;
 }
 
 canvas {
@@ -35,11 +36,11 @@ canvas {
 h1 {
     color: cornsilk;
     background-color: #8e2d18;
-    font-size: xx-large;
+    font-size: x-large;
     padding: 10px;
     letter-spacing: .4em;
     margin-bottom: 1em;
-    text-align:center;
+    text-align: center;
 
 }
 
@@ -123,7 +124,7 @@ div.buttonPressed {
 a#settingbutton,
 input,
 button {
-    color: cornsilk;
+    color: rgb(0, 0, 0);
     text-align: center;
     border-color: black;
     border: solid #000;
@@ -134,7 +135,7 @@ button {
     padding-left: 30px;
     padding-right: 30px;
     box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-    background-color: #6d18045d;
+    background-color: ##ffffff5c;
 }
 
 div#notFoundInfo {
@@ -175,8 +176,8 @@ div#graph {
 .formParameterValuePair {
     border-top: .5px dotted black;
     display: grid;
-    grid-template-columns: minmax(180px, 0.6fr) 1fr ;
-    margin-top:1ex;
+    grid-template-columns: minmax(180px, 0.6fr) 1fr;
+    margin-top: 1ex;
 
 }
 
@@ -187,38 +188,41 @@ div#graph {
     padding-right: 0;
     width: 15ex;
     color: black;
-    font-family:'Courier New', Courier, monospace;
-    font-weight:bolder;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bolder;
 }
 
 .PIDParameterValuePair {
     display: grid;
-    grid-template-columns: minmax(22px,.1fr) 1fr ;
- 
+    grid-template-columns: minmax(22px, .1fr) 1fr;
+
 
 }
 
-.formParameterValuePair.PID{
+.formParameterValuePair.PID {
     margin-top: 3ex;
 }
 
-.ManagementAndPower{
+.ManagementAndPower {
     margin: 5ex;
     grid-template-columns: 1fr 1fr;
 
 }
-.Management{
+
+.Management {
 
     /*display: grid;*/
-     
+
     margin-left: 3%;
 
     grid-template-columns: minmax(150px, 0.2fr) 1fr;
 }
+
 .Management input {
     width: 30%;
     min-width: 170px;
 }
+
 .Management div button {
     margin-top: 2ex;
     width: 50%;
@@ -226,11 +230,12 @@ div#graph {
     max-width: 200px
 }
 
-#configAPI{
+#configAPI {
     border-top: 1px dotted cornsilk;
     border-bottom: 1px dotted cornsilk;
 }
-.configblock{
+
+.configblock {
     display: inline-block;
     vertical-align: top;
     min-width: 300px;
@@ -243,57 +248,153 @@ div#graph {
 
 form {
     border-top: 1px solid cornsilk;
-    padding-top:1ex;
+    padding-top: 1ex;
     border-bottom: 1px solid cornsilk;
-    padding-bottom:1ex;
-  /*  display:grid;
+    padding-bottom: 1ex;
+    /*  display:grid;
     grid-template-columns: 1fr 1fr;*/
+    margin: 1ex;
+}
+
+.footermaterial {
     margin: 5ex;
 }
 
-.footermaterial{
-    margin: 5ex;
-}
-
-#StatsReporting{
+#StatsReporting {
     background-color: lightgray;
     color: black;
     height: 110px;
     overflow: scroll;
-    font-family:'Courier New', Courier, monospace;
+    font-family: 'Courier New', Courier, monospace;
 }
 
-#ConfigReporting{
+#ConfigReporting {
     background-color: lightgray;
     color: black;
     height: 5ex;
-    font-family:'Courier New', Courier, monospace;
+    font-family: 'Courier New', Courier, monospace;
 }
 
 #EspressoMachinePNG img {
     width: 10%;
     margin-left: 3%;
     margin-top: -70px
-
 }
 
-.numberplaceholder{
+.numberplaceholder {
     display: inline-block;
-    position:relative;
-    width:.3ex;
+    position: relative;
+    width: .3ex;
 
 }
-#number32{
+
+#number32 {
     letter-spacing: 0.1em;
-    position:absolute;
+    position: absolute;
     transform-origin: left;
     transform: rotate(-33deg);
     top: 0ex;
     left: -1.9ex;
-    color:burlywood
+    color: burlywood
 }
 
 /* Graph color */
 .axis {
     color: black;
+}
+
+/* Elements used for configuration */
+/*  From CODEPEN.IO https://codepen.io/shanker-kumar/pen/MGqwoN */
+.wave {
+    display: inline-block;
+    border: 2px solid transparent;
+    border-top-color: currentColor;
+    border-radius: 50%;
+    border-style: solid;
+    margin: 2px;
+    color: black;
+    zoom: 1;
+ 
+}
+
+.waveStrength-3 .wv4.wave,
+.waveStrength-2 .wv4.wave,
+.waveStrength-2 .wv3.wave,
+.waveStrength-1 .wv4.wave,
+.waveStrength-1 .wv3.wave,
+.waveStrength-1 .wv2.wave,
+.waveStrength-0 .wv4.wave,
+.waveStrength-0 .wv3.wave,
+.waveStrength-0 .wv2.wave,
+.waveStrength-0 .wv1.wave {
+    border-top-color: rgb(198, 18, 18);
+}
+.wv0.wave {
+    color:transparent;
+}
+
+
+.wifiSymbol{
+    margin-bottom: -22px;
+    width:35px;
+}
+.SecurityField{
+    min-width: 100px;
+}
+.SSIDField{
+    min-width: 150px;
+}
+/* Display as a table */
+.networkSelection{
+    
+    display:  table;
+    width:auto;
+    border:1px solid  #fafafa;
+
+}
+.tableRow {
+    /* These are rows */
+    display:table-row;
+    width: auto;
+}
+.tableField{
+    float:left;/*fix for  buggy browsers*/
+    display:table-column;
+  /*    background-color:#ccc;*/
+}
+
+#powerGauge {
+    width:90%;
+}
+.networktable{
+    display: block;
+}
+.redCross { 
+
+    display: inline-block;
+}
+.redCross img{
+    width: 15px;
+}
+.nettableLabel {
+    display: inline-block;
+    width: 3em;
+}
+
+.nettableLabel label {
+    display:inline-block;
+}
+.wrapperblock {
+    max-width:320px;
+}
+#MQTTSettings fieldset{
+    width: 320px;
+}
+#MQTTSettings input {
+    width: 225px;;
+    padding: 3px;
+}
+#selectedNetworks input {
+    width: 225px;;
+    padding: 3px;
 }

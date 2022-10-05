@@ -103,9 +103,9 @@ var powerGauge = new LinearGauge({
         "1000"
     ],
     minorTicks: 0.1,
-    colorPlate: "#8881",
+    colorPlate: "#333e",
 
-    borderShadowWidth: 0,
+    borderShadowWidth: 1,
     borders: false,
     barBeginCircle: false,
     ticksWidth: 20,
@@ -121,7 +121,7 @@ var powerGauge = new LinearGauge({
     needleSide: "left",
     needleWidth: 7,
     colorBarProgress: "#327ac0",
-    colorBar: "#f5f5f5"
+    colorBar: "#bd976d"
 
 });
 
