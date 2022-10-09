@@ -31,6 +31,14 @@ void ESPressoInterface::loop()
       LOGERROR3(F("SSID:"), WiFi.SSID(), F(",RSSI="), WiFi.RSSI());
       LOGERROR3(F("Channel:"), WiFi.channel(), F(",IP address:"), WiFi.localIP());
       wasNotConnected = false;
+      int n = WiFi.scanComplete();
+      if (n == -2)
+      {
+         WiFi.scanDelete();
+        // Just to have some resuls when needed.
+        LOGERROR("Scanning started");
+        WiFi.scanNetworks(true);
+      }
     }
   }
   else
@@ -58,7 +66,7 @@ void ESPressoInterface::setup()
 {
   wifiMngr->setupWiFiAp();
 
-  server->reset(); 
+  server->reset();
   setConfigPortalPages();
   // wifiMngr->setupConfigPortal(this); // Setsup a bunch of hooks for the webportal
   server->begin(); /// Webserver is now running....
