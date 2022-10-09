@@ -136,9 +136,10 @@ uint8_t WiFiManager::connectMultiWiFi(EspressoConfig *myConfig)
         #endif
     */
     int i = 0;
-    status = run();
     WiFi.mode(WIFI_STA);
 
+    status = run();
+    
     delay(WIFI_MULTI_1ST_CONNECT_WAITING_MS);
 
     while ((i++ < 20) && (status != WL_CONNECTED))

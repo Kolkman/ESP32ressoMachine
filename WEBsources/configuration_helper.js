@@ -5,8 +5,8 @@ const configNames = ["tset", "tband", "eqPwr", "pgain", "igain", "dgain",
     "sensorSampleInterval", "maxCool", "powerOffMode"];
 
 const tuningNames = ["tunethres", "tunestep", "tuningOn"]
-var configuration = {};
-var configerror = false;
+let configuration = {};
+let configerror = false;
 
 // The Eventlistner that populates
 // the configuration page after load
@@ -16,12 +16,12 @@ window.addEventListener("load", function () {
         event.preventDefault(); //stop form submission
         // chec on all input
         configerror = false;
-        var argObj = { form: configForm, errordiv: 'confform-errormessage' };
+        let argObj = { form: configForm, errordiv: 'confform-errormessage' };
         configNames.forEach(GetFormValues, argObj);
 
         if (!configerror) {
             param = new URLSearchParams(configuration);
-            var setapi = url + "/api/v1/set?" + param.toString();
+            let setapi = url + "/api/v1/set?" + param.toString();
 
             fetch(setapi)
                 .then(function (response) {
@@ -40,11 +40,11 @@ window.addEventListener("load", function () {
     tuningForm.addEventListener('submit', (event) => {
         configerror = false;
         event.preventDefault(); //stop form submission
-        var argObj = { form: tuningForm, errordiv: 'tuneform-errormessage' };
+        let argObj = { form: tuningForm, errordiv: 'tuneform-errormessage' };
         tuningNames.forEach(GetFormValues, argObj);
         if (!configerror) {
             param = new URLSearchParams(configuration);
-            var setapi = url + "/api/v1/set?" + param.toString();
+            let setapi = url + "/api/v1/set?" + param.toString();
             fetch(setapi)
                 .then(function (response) {
                     return response.json()
@@ -196,7 +196,7 @@ function DefaultConf() {
 function setFormValues() {
     const configForm = document.getElementById('configForm');
     const tuningForm = document.getElementById('tuningForm');
-    var getapi = url + "/api/v1/get?"
+    let getapi = url + "/api/v1/get?"
     fieldnames = configNames.concat(tuningNames);
     configNames.concat(tuningNames).forEach(ConstructGetAPI);
     function ConstructGetAPI(value) {
@@ -222,14 +222,14 @@ function setFormDefaults(data, form, fieldnames) {
     function setFormValues(value) {
         // First handle special values
         if (value == "powerOffMode") {
-            var pidModeSwitch = document.getElementById("toggle--pwr");
+            let pidModeSwitch = document.getElementById("toggle--pwr");
             if (data.powerOffMode) {
                 pidModeSwitch.checked = false;
             } else {
                 pidModeSwitch.checked = true;
             }
         } else if (value == "tuningOn") {
-            var tunerSwitch = document.getElementById("toggle--tuner");
+            let tunerSwitch = document.getElementById("toggle--tuner");
             if (data.tuningOn) {
                 tunerSwitch.checked = true;
                 updateTuningStats();
@@ -270,9 +270,9 @@ function GetFormValues(value) { // NB thisArg sets this with the forEach() funct
     if (value == "powerOffMode") return;
     if (value == "tuningOn") return;
     const e = this['form'].elements[value];
-    var n = parseFloat(e.value);
+    let n = parseFloat(e.value);
     if (isNaN(n)) {
-        Errordiv.textContent = "Error " + value + "should be a number (" + n + ")";
+        Errordiv.textContent = "Error " + value + " should be a number (" + n + ")";
         e.style.backgroundColor = "red";
         configerror = true;
         return

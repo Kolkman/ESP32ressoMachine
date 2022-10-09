@@ -26,7 +26,7 @@
 //#include "pages/test.html.h"
 #include "pages/ESPresso.css.h"
 #include "pages/EspressoMachine.svg.h"
-#include "pages/button.css.h"
+#include "pages/switch.css.h"
 #include "pages/configuration.html.h"
 #include "pages/configuration_helper.js.h"
 #include "pages/drawtimeseries.js.h"
@@ -37,6 +37,7 @@
 #include "pages/redCircleCrossed.svg.h"
 #include "pages/networkSetup.html.h"
 #include "pages/networkConfigPage.js.h"
+#include "pages/captivePortal.html.h"
 #define ONCOLOR "CD212A"
 #define OFFCOLOR "DCDCDC"
 
@@ -149,7 +150,7 @@ void WebInterface::setupWebSrv(ESPressoMachine *machine)
   server->on("/scan", HTTP_GET, std::bind(&WebInterface::handleScan, this, std::placeholders::_1));
   server->on("/configConfig", HTTP_GET, std::bind(&WebInterface::handleConfigConfig, this, std::placeholders::_1));
   DEF_HANDLE_index_html;
-  DEF_HANDLE_button_css;
+  DEF_HANDLE_switch_css;
   DEF_HANDLE_ESPresso_css;
   DEF_HANDLE_gauge_min_js;
   DEF_HANDLE_EspressoMachine_svg;
@@ -195,9 +196,10 @@ void WebInterface::setConfigPortalPages()
 
   DEF_HANDLE_redCircleCrossed_svg;
   DEF_HANDLE_networkSetup_html;
-  DEF_HANDLE_button_css;
+  DEF_HANDLE_switch_css;
   DEF_HANDLE_ESPresso_css;
   DEF_HANDLE_networkConfigPage_js;
+  DEF_HANDLE_captivePortal_html;
 
   return;
 }
@@ -206,6 +208,7 @@ void WebInterface::handleCaptivePortal(AsyncWebServerRequest *request)
 {
   LOGINFO("CalptivePortal Hit")
   waitingForClientAction = true;
+  request->redirect("/captivePortal.html");
   return;
 }
 
@@ -216,6 +219,7 @@ void WebInterface::handleScan(AsyncWebServerRequest *request)
   int n = WiFi.scanComplete();
   if (n == -2)
   {
+    LOGERROR("Scanning no result, initiating no scan");
     WiFi.scanNetworks(true);
   }
   else if (n)
@@ -244,25 +248,65 @@ void WebInterface::handleScan(AsyncWebServerRequest *request)
   json = String();
 };
 
+// helper function for below checks whether a value is in a vectpr
+using namespace std;
+template <typename T>
+
+bool contains(vector<T> vec, const T &elem)
+{
+  bool result = false;
+  if (find(vec.begin(), vec.end(), elem) != vec.end())
+  {
+    result = true;
+  }
+  return result;
+}
+
 void WebInterface::handleConfigConfig(AsyncWebServerRequest *request)
 {
-  bool MQTT=false;
-  #ifdef  ENABLE_MQTT
-  MQTT=true;
-  #endif
+  vector<String> wifinets;
+
+  bool MQTT = false;
+#ifdef ENABLE_MQTT
+  MQTT = true;
+#endif
 
   String json = "{";
   json += "\"maxNets\":" + String(NUM_WIFI_CREDENTIALS);
   json += ",\"mqtt\":" + String(MQTT);
-  #ifdef ENABLE_MQTT
+#ifdef ENABLE_MQTT
   json += ",\"mqttHost\":\"" + String(myMachine->myConfig->mqttHost) + "\"";
-    json += ",\"mqttPort\":\"" + String(myMachine->myConfig->mqttPort) + "\"";
+  json += ",\"mqttPort\":" + String(myMachine->myConfig->mqttPort) ;
   json += ",\"mqttUser\":\"" + String(myMachine->myConfig->mqttUser) + "\"";
   json += ",\"mqttPass\":\"" + String(myMachine->myConfig->mqttPass) + "\"";
   json += ",\"mqttTopic\":\"" + String(myMachine->myConfig->mqttTopic) + "\"";
-  #endif
+#endif
+  json += ",\"wifiNets\":[";
+  bool firstSSID = false;
+  String networklist;
+  for (int i = 0; i < NUM_WIFI_CREDENTIALS; i++)
+  {
+    String tmpssid = myMachine->myConfig->WM_config.WiFi_Creds[i].wifi_ssid;
+    if (tmpssid && tmpssid != "")
+    {
+      if (!contains(wifinets, tmpssid))
+      {
+        wifinets.push_back(tmpssid);
+      }
+    }
+  }
+
+    for (int i = 0; i < wifinets.size(); i++)
+    {
+      if (i)
+      {
+        json += ", ";
+      }
+      json += "\""+wifinets[i]+"\"";
+    }
+
+  json += "]";
   json += "}";
   request->send(200, "application/json", json);
   json = String();
-
 }
