@@ -29,10 +29,14 @@ pio
 docs/html
 docs/latex
 
-WEBsources/*-min.html
-WEBsources/*-min.js
-WEBsources/*-min.css
+#WEBsources/*-min.html
+#WEBsources/*-min.js
+#WEBsources/*-min.css
 Websources/scan
 WebSources/configConfig
 WebSources/ExampleConfig*
+WebSources/test*.html
 
+WEBsources/tmp.js
+WEBsources/tmp-min.json
+WEBsources/test.*
