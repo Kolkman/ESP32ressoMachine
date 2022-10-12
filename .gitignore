@@ -35,8 +35,12 @@ docs/latex
 Websources/scan
 WebSources/configConfig
 WebSources/ExampleConfig*
-WebSources/test*.html
+
 
 WEBsources/tmp.js
 WEBsources/tmp-min.json
-WEBsources/test.*
+WEBsources/test*
+compile_commands.json
+CustomList.doxygen
+
+
