@@ -26,14 +26,14 @@ EspressoConfig::EspressoConfig()
 
   ptargetTemp = &targetTemp;
 
-  /* for (int i = 0; i < NUM_WIFI_CREDENTIALS; i++)
+for (int i = 0; i < NUM_WIFI_CREDENTIALS; i++)
   {
-    *WM_config.WiFi_Creds[i].wifi_ssid = 0;
-    *WM_config.WiFi_Creds[i].wifi_pw = 0;
+    *WM_config.WiFi_Creds[i].wifi_ssid = '\0';
+    *WM_config.WiFi_Creds[i].wifi_pw = '\0';
   }
-  *WM_config.TZ_Name = 0;
-  *WM_config.TZ = 0;
-*/
+  WM_AP_IPconfig._ap_static_ip= {192, 168, 100, 1};
+  WM_AP_IPconfig._ap_static_gw= {192, 168, 100, 1};
+  WM_AP_IPconfig._ap_static_sn= {255, 255, 255, 0};
 }
 
 

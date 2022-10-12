@@ -357,7 +357,7 @@ input {
 .waveStrength-0 #w2 path,
 .waveStrength-0 #w1 path,
 .waveStrength-0 #w0 circle  {
-  stroke: rgb(176, 8, 8)!important;
+  stroke: #b82b2b57 !important;
 }
 
 .wifiRaw {

@@ -64,12 +64,12 @@ void ESPressoInterface::loop()
 
 void ESPressoInterface::setup()
 {
-  wifiMngr->setupWiFiAp();
-
+  wifiMngr->setupWiFiAp(&myMachine->myConfig->WM_AP_IPconfig);
   server->reset();
   setConfigPortalPages();
-  // wifiMngr->setupConfigPortal(this); // Setsup a bunch of hooks for the webportal
+  
   server->begin(); /// Webserver is now running....
+
   LOGINFO("Wifi Manager done, following up with WebSrv");
   wifiMngr->loopPortal(this); /// Wait the configuration to be finished or timed out.
   /// Configuration should now be set.

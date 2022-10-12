@@ -1,9 +1,11 @@
 //
 // ESPressIoT Controller for Espresso Machines
-// 2016-2021 by Roman Schmitz
+// 2016-2021 by Roman Schmitz refactored and adopted by Olaf Kolkman
 //
-// Web Server with Options and Plotter
+// Web Server w
 //
+// Contains code fragments from  ESPAsync_WiFiManager by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
+
 
 //#define ELEGANT_OTA
 
@@ -91,7 +93,7 @@ void WebInterface::handleFile(AsyncWebServerRequest *request, const char *mimety
   request->send(response);
 }
 
-void WebInterface::handleReset(AsyncWebServerRequest *request)
+void WebInterface::handleRestart(AsyncWebServerRequest *request)
 {
   String message = "<head><meta http-equiv=\"refresh\" content=\"2;url=/\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><title>EspressIoT</title></head>";
   message += "<h1> Reseting Device ! </h1>";
@@ -131,7 +133,7 @@ void WebInterface::setupWebSrv(ESPressoMachine *machine)
 
   server->on("/", HTTP_GET, std::bind(&WebInterface::handleRoot, this, std::placeholders::_1));
   server->onNotFound(std::bind(&WebInterface::handleNotFound, this, std::placeholders::_1));
-  server->on("/reset", HTTP_GET, std::bind(&WebInterface::handleReset, this, std::placeholders::_1));
+  server->on("/restart", HTTP_GET, std::bind(&WebInterface::handleRestart, this, std::placeholders::_1));
   webAPI.begin(server, myMachine);
 
 #ifdef ELEGANT_OTA
@@ -191,9 +193,10 @@ void WebInterface::eventLoop()
 void WebInterface::setConfigPortalPages()
 {
   server->on("/scan", HTTP_GET, std::bind(&WebInterface::handleScan, this, std::placeholders::_1));
+  server->onNotFound(std::bind(&WebInterface::handleCaptivePortal, this, std::placeholders::_1));
   server->on("/", HTTP_GET, std::bind(&WebInterface::handleCaptivePortal, this, std::placeholders::_1));
   server->on("/configConfig", HTTP_GET, std::bind(&WebInterface::handleConfigConfig, this, std::placeholders::_1));
-
+  server->on("/restart", HTTP_GET, std::bind(&WebInterface::handleRestart, this, std::placeholders::_1));
   DEF_HANDLE_redCircleCrossed_svg;
   DEF_HANDLE_networkSetup_html;
   DEF_HANDLE_switch_css;
@@ -204,11 +207,66 @@ void WebInterface::setConfigPortalPages()
   return;
 }
 
+/**
+   HTTPD redirector
+   Redirect to captive portal if we got a request for another domain.
+   Return true in that case so the page handler do not try to handle the request again.
+*/
+bool WebInterface::captivePortal(AsyncWebServerRequest *request)
+{
+ 
+  if (!isIp(request->host()))
+  {
+    LOGINFO1(F("Incomming request"),request->url());
+    LOGINFO(F("Request redirected to captive portal"));
+    LOGINFO1(F("Location http://"),(request->client()->localIP()).toString());
+
+    AsyncWebServerResponse *response = request->beginResponse(302, "text/plain", "");
+    response->addHeader("Location", String("http://") + (request->client()->localIP()).toString());
+
+    request->send(response);
+
+    return true;
+  }
+
+  LOGDEBUG1(F("request host IP ="), request->host());
+
+  return false;
+}
+
+
+// Is this an IP?
+bool WebInterface::isIp(const String& str)
+{
+  for (unsigned int i = 0; i < str.length(); i++)
+  {
+    int c = str.charAt(i);
+
+    if (c != '.' && c != ':' && (c < '0' || c > '9'))
+    {
+      return false;
+    }
+  }
+  
+  return true;
+}
+
 void WebInterface::handleCaptivePortal(AsyncWebServerRequest *request)
 {
-  LOGINFO("CalptivePortal Hit")
+  LOGINFO("CaptivePortal Hit")
   waitingForClientAction = true;
-  request->redirect("/captivePortal.html");
+
+  if (captivePortal(request))
+  {
+    // If captive portal redirect instead of displaying the error page.
+    return;
+  }
+
+  AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html;charset=UTF-8", captivePortal_html, captivePortal_html_len);
+  response->addHeader("Content-Encoding", "gzip");
+  response->addHeader("Access-Control-Allow-Origin", "WM_HTTP_CORS_ALLOW_ALL");
+  request->send(response);
+
   return;
 }
 
@@ -276,7 +334,7 @@ void WebInterface::handleConfigConfig(AsyncWebServerRequest *request)
   json += ",\"mqtt\":" + String(MQTT);
 #ifdef ENABLE_MQTT
   json += ",\"mqttHost\":\"" + String(myMachine->myConfig->mqttHost) + "\"";
-  json += ",\"mqttPort\":" + String(myMachine->myConfig->mqttPort) ;
+  json += ",\"mqttPort\":" + String(myMachine->myConfig->mqttPort);
   json += ",\"mqttUser\":\"" + String(myMachine->myConfig->mqttUser) + "\"";
   json += ",\"mqttPass\":\"" + String(myMachine->myConfig->mqttPass) + "\"";
   json += ",\"mqttTopic\":\"" + String(myMachine->myConfig->mqttTopic) + "\"";
@@ -296,14 +354,14 @@ void WebInterface::handleConfigConfig(AsyncWebServerRequest *request)
     }
   }
 
-    for (int i = 0; i < wifinets.size(); i++)
+  for (int i = 0; i < wifinets.size(); i++)
+  {
+    if (i)
     {
-      if (i)
-      {
-        json += ", ";
-      }
-      json += "\""+wifinets[i]+"\"";
+      json += ", ";
     }
+    json += "\"" + wifinets[i] + "\"";
+  }
 
   json += "]";
   json += "}";
