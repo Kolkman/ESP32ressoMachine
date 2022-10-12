@@ -11,7 +11,6 @@
 #include "interface.h"
 
 #define CURRENTFIRMWARE "ESPressoMachine-PlatFormIO"
-#define DEBUG
 #define MQTT_DEBUG
 
 #define MAX_CONNECTION_RETRIES 60

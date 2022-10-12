@@ -2,7 +2,12 @@
 #ifndef wifiManager_h
 #define wifiManager_h
 
+#define USE_ASYNC_DNS true
+#ifdef USE_ASYNC_DNS 
 #include <ESPAsyncDNSServer.h>
+#else
+#include <DNSServer.h>
+#endif
 #include "ESPressoMachineDefaults.h"
 #include "EspressoWebServer.h"
 #include "WiFiMulti.h"
@@ -25,7 +30,6 @@ class ESPressoInterface; /// forward declaration
 #define CONFIGPORTAL_TIMEOUT 80 * 1000
 #define WIFI_MULTI_CONNECT_WAITING_MS 10 * 1000 // MultiWifi reconnects after 10 seconds.
 #define WIFI_MULTI_1ST_CONNECT_WAITING_MS 3 * 1000
-
 
 class EspressoConfig;  // Forward declaration
 class ESPressoMachine; // Foraward declaration
@@ -83,14 +87,18 @@ class WiFiManager : public WiFiMulti
 {
 public:
        WiFiManager();
-       void setupWiFiAp();
-       void loopPortal(ESPressoInterface * myInterface);
+       void setupWiFiAp(WiFi_AP_IPConfig *);
+       void loopPortal(ESPressoInterface *myInterface);
        uint8_t connectMultiWiFi(EspressoConfig *);
+#ifdef USE_ASYNC_DNS
+       AsyncDNSServer *dnsServer;
+#else
+       DNSServer *dnsServer;
+#endif
        // SSID and PW for Config Portal
 
 private:
        ESPressoInterface *myInterface;
-       AsyncDNSServer *dnsServer;
 
        String ApSSID;
        String ApPass;
