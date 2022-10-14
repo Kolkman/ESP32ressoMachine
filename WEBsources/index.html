@@ -3,7 +3,7 @@
 
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" type="text/css" href="button.css" media="all" />
+    <link rel="stylesheet" type="text/css" href="switch.css" media="all" />
     <link rel="stylesheet" type="text/css" href="ESPresso.css" media="all" />
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
     <script src="gauge.min.js"></script>
@@ -12,7 +12,11 @@
 </head>
 
 <body>
-    <h1><div>ESP<div class="numberplaceholder"><div id="number32">32</div> </div>resso Machine </div></h1>
+    <h1>
+        <div>ESP<div class="numberplaceholder">
+                <div id="number32">32</div>
+            </div>resso Machine </div>
+    </h1>
 
     <div class="gauges">
         <script>
@@ -46,10 +50,13 @@
 
 
     </div>
-    <div class=Settings><a href="./config" id="settingbutton">Settings</a></div>
+    <div class="footermaterial">
 
-    <div id="firmware"></div>
-
+        <a href="./config"><button class="btn">Settings</button></a>
+        <hr />
+        <div id="firmware"></div>
+        <hr />
+    </div>
 
 
 </body>
