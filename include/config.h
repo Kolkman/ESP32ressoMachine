@@ -57,6 +57,26 @@
 #define MAX_COOL 0.025 // 1.5 deg/min
 #endif
 
+#ifdef ENABLE_MQTT
+#ifndef MQTT_TOPIC
+#define MQTT_TOPIC "EspressoMach"
+#endif
+#ifndef MQTT_STATUS_TOPIC
+#define MQTT_STATUS_TOPIC "/status"
+#endif
+#ifndef MQTT_CONFIG_TOPIC
+#define MQTT_CONFIG_TOPIC "/config"
+#endif
+// Max length of the strings above.
+#ifndef MQTT_TOPIC_EXT_LENGTH
+#define MQTT_TOPIC_EXT_LENGTH 7
+#endif
+
+#define MQTTFIELDS_LENGTH 255
+#define MQTTUSERFIELDS_LENGTH 63
+
+#endif // ENABLE_MQTT
+
 // Struct to store pid values
 struct PIDval
 {
@@ -75,7 +95,10 @@ public:
        void resetConfig(); // resetConfig to values that were programmed by default
        String passForSSID(String);
        //    String statusAsJson();
+       PIDval nearTarget;
+       PIDval awayTarget;
        double targetTemp;
+       double *ptargetTemp;
        double temperatureBand;
        double eqPwr;
        double mxPwr;
@@ -83,7 +106,8 @@ public:
        unsigned int sensorSampleInterval;
        unsigned int heaterInterval;
        int pidInt;
-##ifdef ENABLE_MQTT
+
+#ifdef ENABLE_MQTT
        char mqttHost[MQTTFIELDS_LENGTH+1];
        char mqttTopic[MQTTFIELDS_LENGTH+1];
        unsigned int mqttPort;
@@ -95,6 +119,7 @@ public:
        WiFi_AP_IPConfig WM_AP_IPconfig; // WifiManager Configuration
        WiFi_STA_IPConfig WM_STA_IPconfig;
        WM_Config WM_config;
+
 private:
 };
 
