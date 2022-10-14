@@ -7,9 +7,9 @@
 #include "ESPressoMachine.h"
 #include "wifiManager.h"
 
-ESPressoInterface::ESPressoInterface(ESPressoMachine *mach) : WebInterface(mach,WEB_USER,WEB_PASS)
+ESPressoInterface::ESPressoInterface(ESPressoMachine *mach) : WebInterface(mach, WEB_USER, WEB_PASS)
 {
- wifiMngr= new WiFiManager(mach->myConfig);
+  wifiMngr = new WiFiManager();
 }
 
 void ESPressoInterface::serialStatus()
@@ -22,6 +22,31 @@ void ESPressoInterface::serialStatus()
 
 void ESPressoInterface::loop()
 {
+
+  if (wifiMngr->run(WIFI_MULTI_CONNECT_WAITING_MS) == WL_CONNECTED)
+  {
+    if (wasNotConnected)
+    {
+      LOGERROR(F("WiFi (re)connected"));
+      LOGERROR3(F("SSID:"), WiFi.SSID(), F(",RSSI="), WiFi.RSSI());
+      LOGERROR3(F("Channel:"), WiFi.channel(), F(",IP address:"), WiFi.localIP());
+      wasNotConnected = false;
+      int n = WiFi.scanComplete();
+      if (n == -2)
+      {
+        WiFi.scanDelete();
+        // Just to have some resuls when needed.
+        LOGERROR("Scanning started");
+        WiFi.scanNetworks(true);
+      }
+    }
+  }
+  else
+  {
+    Serial.println("WiFi not connected!");
+    wasNotConnected = true;
+  }
+
   myMachine->setMachineStatus();
 #ifdef ENABLE_SERIAL
   // serialStatus(machineStatus); //bit noisy
@@ -39,8 +64,30 @@ void ESPressoInterface::loop()
 
 void ESPressoInterface::setup()
 {
-  wifiMngr->setup(this->server);
-  Serial.println("Wifi Manager done, following up with WebSrv");
+// We set this for later. Wnen there are no credentials set we want to keep the captive portal open - ad infinitum
+  _waitingForClientAction = true;
+  for (int i = 0; i < NUM_WIFI_CREDENTIALS; i++){
+
+    if (strlen(myMachine->myConfig->WM_config.WiFi_Creds[i].wifi_ssid)>0)
+      {
+        _waitingForClientAction = false;
+      }
+  }
+  if (_waitingForClientAction) LOGINFO("NO WiFi NEtworks set, we'll later keep the captive portal open");
+
+  wifiMngr->setupWiFiAp(&myMachine->myConfig->WM_AP_IPconfig);
+  server->reset();
+  setConfigPortalPages();
+
+  server->begin(); /// Webserver is now running....
+
+  LOGINFO("Wifi Manager done, following up with WebSrv");
+  wifiMngr->loopPortal(this); /// Wait the configuration to be finished or timed out.
+  /// Configuration should now be set.
+
+  wifiMngr->connectMultiWiFi(myMachine->myConfig);
+  server->reset();
+
   setupWebSrv(this->myMachine);
 
 #ifdef ENABLE_TELNET

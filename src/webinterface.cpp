@@ -1,9 +1,10 @@
 //
 // ESPressIoT Controller for Espresso Machines
-// 2016-2021 by Roman Schmitz
+// 2016-2021 by Roman Schmitz refactored and adopted by Olaf Kolkman
 //
-// Web Server with Options and Plotter
+// Web Server w
 //
+// Contains code fragments from  ESPAsync_WiFiManager by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
 
 //#define ELEGANT_OTA
 
@@ -26,7 +27,7 @@
 //#include "pages/test.html.h"
 #include "pages/ESPresso.css.h"
 #include "pages/EspressoMachine.svg.h"
-#include "pages/button.css.h"
+#include "pages/switch.css.h"
 #include "pages/configuration.html.h"
 #include "pages/configuration_helper.js.h"
 #include "pages/drawtimeseries.js.h"
@@ -34,6 +35,10 @@
 #include "pages/gauge.min.js.h"
 #include "pages/index.html.h"
 #include "pages/index_helper.js.h"
+#include "pages/redCircleCrossed.svg.h"
+#include "pages/networkSetup.html.h"
+#include "pages/networkConfigPage.js.h"
+#include "pages/captivePortal.html.h"
 #define ONCOLOR "CD212A"
 #define OFFCOLOR "DCDCDC"
 
@@ -87,7 +92,7 @@ void WebInterface::handleFile(AsyncWebServerRequest *request, const char *mimety
   request->send(response);
 }
 
-void WebInterface::handleReset(AsyncWebServerRequest *request)
+void WebInterface::handleRestart(AsyncWebServerRequest *request)
 {
   String message = "<head><meta http-equiv=\"refresh\" content=\"2;url=/\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><title>EspressIoT</title></head>";
   message += "<h1> Reseting Device ! </h1>";
@@ -127,7 +132,7 @@ void WebInterface::setupWebSrv(ESPressoMachine *machine)
 
   server->on("/", HTTP_GET, std::bind(&WebInterface::handleRoot, this, std::placeholders::_1));
   server->onNotFound(std::bind(&WebInterface::handleNotFound, this, std::placeholders::_1));
-  server->on("/reset", HTTP_GET, std::bind(&WebInterface::handleReset, this, std::placeholders::_1));
+  server->on("/restart", HTTP_GET, std::bind(&WebInterface::handleRestart, this, std::placeholders::_1));
   webAPI.begin(server, myMachine);
 
 #ifdef ELEGANT_OTA
@@ -142,8 +147,11 @@ void WebInterface::setupWebSrv(ESPressoMachine *machine)
              { request->redirect("/configuration.html"); });
   server->on("/config", HTTP_GET, [&](AsyncWebServerRequest *request)
              { request->redirect("/configuration.html"); });
+
+  server->on("/scan", HTTP_GET, std::bind(&WebInterface::handleScan, this, std::placeholders::_1));
+  server->on("/configConfig", HTTP_GET, std::bind(&WebInterface::handleConfigConfig, this, std::placeholders::_1));
   DEF_HANDLE_index_html;
-  DEF_HANDLE_button_css;
+  DEF_HANDLE_switch_css;
   DEF_HANDLE_ESPresso_css;
   DEF_HANDLE_gauge_min_js;
   DEF_HANDLE_EspressoMachine_svg;
@@ -152,13 +160,15 @@ void WebInterface::setupWebSrv(ESPressoMachine *machine)
   DEF_HANDLE_configuration_html;
   DEF_HANDLE_configuration_helper_js;
   DEF_HANDLE_index_helper_js;
+  DEF_HANDLE_redCircleCrossed_svg;
+  DEF_HANDLE_networkSetup_html;
+  DEF_HANDLE_networkConfigPage_js;
   //  DEF_HANDLE_test_html;
 
   // Handle Web Server Events
   events->onConnect(std::bind(&WebInterface::handleEventClient, this, std::placeholders::_1));
   server->addHandler(events);
 
-  server->begin();
   Serial.println("HTTP server started");
 }
 
@@ -177,4 +187,207 @@ void WebInterface::handleEventClient(AsyncEventSourceClient *client)
 void WebInterface::eventLoop()
 {
   events->send(myMachine->machineStatus.c_str(), "status", millis());
+}
+
+void WebInterface::setConfigPortalPages()
+{
+
+  server->on("/scan", HTTP_GET, std::bind(&WebInterface::handleScan, this, std::placeholders::_1));
+  server->onNotFound(std::bind(&WebInterface::handleCaptivePortal, this, std::placeholders::_1));
+  server->on("/", HTTP_GET, std::bind(&WebInterface::handleCaptivePortal, this, std::placeholders::_1));
+  server->on("/configConfig", HTTP_GET, std::bind(&WebInterface::handleConfigConfig, this, std::placeholders::_1));
+  server->on("/restart", HTTP_GET, std::bind(&WebInterface::handleRestart, this, std::placeholders::_1));
+  server->on("/networkSetup.html", HTTP_GET, std::bind(&WebInterface::handleNetworkSetup, this, std::placeholders::_1));
+  server->on("/exitconfig",HTTP_GET, [&](AsyncWebServerRequest *request){
+    _waitingForClientAction=false;
+    request->redirect("/");
+
+  });
+
+
+  DEF_HANDLE_redCircleCrossed_svg;
+  DEF_HANDLE_switch_css;
+  DEF_HANDLE_ESPresso_css;
+  DEF_HANDLE_networkConfigPage_js;
+  DEF_HANDLE_captivePortal_html;
+  webAPI.begin(server, myMachine);
+  return;
+}
+
+/**
+   HTTPD redirector
+   Redirect to captive portal if we got a request for another domain.
+   Return true in that case so the page handler do not try to handle the request again.
+*/
+bool WebInterface::captivePortal(AsyncWebServerRequest *request)
+{
+
+  if (!isIp(request->host()))
+  {
+    LOGINFO1(F("Incomming request"), request->url());
+    LOGINFO(F("Request redirected to captive portal"));
+    LOGINFO1(F("Location http://"), (request->client()->localIP()).toString());
+
+    AsyncWebServerResponse *response = request->beginResponse(302, "text/plain", "");
+    response->addHeader("Location", String("http://") + (request->client()->localIP()).toString());
+
+    request->send(response);
+
+    return true;
+  }
+
+  LOGDEBUG1(F("request host IP ="), request->host());
+
+  return false;
+}
+
+unsigned long  WebInterface::remainingPortaltime(){
+    return (std::max((unsigned long)0,(_configPortalInterfaceStart + CONFIGPORTAL_TIMEOUT- millis())/1000));
+}
+
+
+void WebInterface::handleNetworkSetup(AsyncWebServerRequest *request)
+{ // only used as config portal
+  LOGINFO("Blocking for finalizing input");
+  _waitingForClientAction = true;
+
+  AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html;charset=UTF-8", networkSetup_html, networkSetup_html_len);
+  response->addHeader("Content-Encoding", "gzip");
+  response->addHeader("Access-Control-Allow-Origin", "WM_HTTP_CORS_ALLOW_ALL");
+  request->send(response);
+  return;
+}
+
+// Is this an IP?
+bool WebInterface::isIp(const String &str)
+{
+  for (unsigned int i = 0; i < str.length(); i++)
+  {
+    int c = str.charAt(i);
+
+    if (c != '.' && c != ':' && (c < '0' || c > '9'))
+    {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+void WebInterface::handleCaptivePortal(AsyncWebServerRequest *request)
+{
+  LOGINFO("CaptivePortal Hit")
+
+  if (captivePortal(request))
+  {
+    // If captive portal redirect instead of displaying the error page.
+    return;
+  }
+
+  AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html;charset=UTF-8", captivePortal_html, captivePortal_html_len);
+  response->addHeader("Content-Encoding", "gzip");
+  response->addHeader("Access-Control-Allow-Origin", "WM_HTTP_CORS_ALLOW_ALL");
+  request->send(response);
+
+  return;
+}
+
+void WebInterface::handleScan(AsyncWebServerRequest *request)
+{
+  LOGINFO("Scan Handle");
+  String json = "[";
+  int n = WiFi.scanComplete();
+  if (n == -2)
+  {
+    LOGERROR("Scanning no result, initiating no scan");
+    WiFi.scanNetworks(true);
+  }
+  else if (n)
+  {
+    for (int i = 0; i < n; ++i)
+    {
+      if (i)
+        json += ",";
+      json += "{";
+      json += "\"rssi\":" + String(WiFi.RSSI(i));
+      json += ",\"ssid\":\"" + WiFi.SSID(i) + "\"";
+      json += ",\"pass\":\"" + myMachine->myConfig->passForSSID(WiFi.SSID(i)) + "\"";
+      json += ",\"bssid\":\"" + WiFi.BSSIDstr(i) + "\"";
+      json += ",\"channel\":" + String(WiFi.channel(i));
+      json += ",\"secure\":" + String(WiFi.encryptionType(i));
+      json += "}";
+    }
+    WiFi.scanDelete();
+    if (WiFi.scanComplete() == -2)
+    {
+      WiFi.scanNetworks(true);
+    }
+  }
+  json += "]";
+  request->send(200, "application/json", json);
+  json = String();
+};
+
+// helper function for below checks whether a value is in a vectpr
+using namespace std;
+template <typename T>
+
+bool contains(vector<T> vec, const T &elem)
+{
+  bool result = false;
+  if (find(vec.begin(), vec.end(), elem) != vec.end())
+  {
+    result = true;
+  }
+  return result;
+}
+
+void WebInterface::handleConfigConfig(AsyncWebServerRequest *request)
+{
+  vector<String> wifinets;
+
+  bool MQTT = false;
+#ifdef ENABLE_MQTT
+  MQTT = true;
+#endif
+
+  String json = "{";
+  json += "\"timeout\":" + String(remainingPortaltime());
+  json += ",\"maxNets\":" + String(NUM_WIFI_CREDENTIALS);
+  json += ",\"mqtt\":" + String(MQTT);
+#ifdef ENABLE_MQTT
+  json += ",\"mqttHost\":\"" + String(myMachine->myConfig->mqttHost) + "\"";
+  json += ",\"mqttPort\":" + String(myMachine->myConfig->mqttPort);
+  json += ",\"mqttUser\":\"" + String(myMachine->myConfig->mqttUser) + "\"";
+  json += ",\"mqttPass\":\"" + String(myMachine->myConfig->mqttPass) + "\"";
+  json += ",\"mqttTopic\":\"" + String(myMachine->myConfig->mqttTopic) + "\"";
+#endif
+  json += ",\"wifiNets\":[";
+  bool firstSSID = false;
+  String networklist;
+  for (int i = 0; i < NUM_WIFI_CREDENTIALS; i++)
+  {
+    String tmpssid = myMachine->myConfig->WM_config.WiFi_Creds[i].wifi_ssid;
+    if (tmpssid && tmpssid != "")
+    {
+      if (!contains(wifinets, tmpssid))
+      {
+        wifinets.push_back(tmpssid);
+      }
+    }
+  }
+
+  for (int i = 0; i < wifinets.size(); i++)
+  {
+    if (i)
+    {
+      json += ", ";
+    }
+    json += "\"" + wifinets[i] + "\"";
+  }
+
+  json += "]";
+  json += "}";
+  request->send(200, "application/json", json);
+  json = String();
 }

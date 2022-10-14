@@ -18,6 +18,7 @@
 #include <PubSubClient.h>
 #include "mqttinterface.h"
 #include "ESPressoMachine.h"
+#include "ExponentialFallback.h"
 // PubSubClient::setBufferSize(512)
 
 MQTTInterface::MQTTInterface() : espClient(), client()
@@ -30,20 +31,24 @@ void MQTTInterface::MQTT_reconnect(EspressoConfig *myConfig)
 {
   if (!client.connected())
   {
-    Serial.print("Attempting MQTT connection...");
+    if (connectionAttempts.mustAttempt())
+    {
+      Serial.print("Attempting MQTT connection...");
 
-    String clientId = "ESP8266Client";
-    clientId += String(random(0xffff), HEX);
-    if (client.connect(clientId.c_str(), myConfig->mqttUser, myConfig->mqttPass))
-    {
-      Serial.println("connected");
-      client.subscribe(mqttConfigTopic, 1); // We should be OK with QOS 0
-      Serial.println("Subscribed to " + String(mqttConfigTopic));
-    }
-    else
-    {
-      Serial.print("failed, rc=");
-      Serial.println(client.state());
+      String clientId = "ESP32esso_" + String(ESP_getChipId(), HEX);
+      // clientId += String(random(0xffff), HEX);
+      if (client.connect(clientId.c_str(), myConfig->mqttUser, myConfig->mqttPass))
+      {
+        Serial.println("connected");
+        client.subscribe(mqttConfigTopic, 1); // We should be OK with QOS 0
+        Serial.println("Subscribed to " + String(mqttConfigTopic));
+        connectionAttempts.hadSuccess(true);
+      }
+      else
+      {
+        Serial.print("failed, rc=");
+        Serial.println(client.state());
+      }
     }
   }
 }
