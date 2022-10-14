@@ -33,8 +33,7 @@
       </div>
     </div>
     <div class="configblock">
-      <form method="get" action="networkSafe">
-
+      <form method="get" action="api/v1/set">
         <div id="wifiSettings">
           <div class="tableTable">
             <div id="selectedNetworks" class="tableBody"></div>
@@ -81,8 +80,13 @@
 
           <button class="btn" type="submit">Save</button>
         </div>
-
+        <input type="hiden" style="display:none;" name="safeandrestart" value="true" >
       </form>
     </div>
   </div>
+  <div class="footermaterial">
+
+    <a href="./exitconfig"><button class="btn">Exit</button></a>
+    <hr />
+</div>
 </body>

@@ -4,6 +4,8 @@
 
 #include "webInterfaceAPI.h"
 #include <ESPAsyncWebServer.h>
+#include "debug.h"
+#include "pages/configDone.html.h"
 
 webInterfaceAPI webAPI;
 
@@ -203,9 +205,10 @@ void webInterfaceAPI::handleGet(AsyncWebServerRequest *request)
 }
 void webInterfaceAPI::handleSet(AsyncWebServerRequest *request)
 {
+  bool safeandrestart = false;
   bool reconf = false;
   bool firstarg = true;
-
+  LOGINFO1("API SET with", request->url());
   char message[2048]; // This is sufficiently big to store all key:val combinations
   strcpy(message, "{");
   for (uint8_t i = 0; i < request->args(); i++)
@@ -344,11 +347,82 @@ void webInterfaceAPI::handleSet(AsyncWebServerRequest *request)
         addjson(message, firstarg, "tuningOn", "false");
       }
     }
+    else if (request->argName(i).startsWith("wifi_ssid"))
+    {
+      LOGINFO("wifi_ssid Found");
+      for (int z = 0; z < NUM_WIFI_CREDENTIALS; z++)
+      {
+        if (request->argName(i).equals("wifi_ssid" + String(z)) && request->arg(i) != "")
+        {
+          LOGINFO("--- wifi_ssid" + String(z));
+          addjson(message, firstarg, "wifi_ssid" + String(z), request->arg(i));
+          strlcpy(myMachine->myConfig->WM_config.WiFi_Creds[z].wifi_ssid, request->arg(i).c_str(), SSID_MAX_LEN);
+          reconf = true;
+        }
+      }
+    }
+    else if (request->argName(i).startsWith("wifi_pw"))
+    {
+      LOGINFO("wifi_pw Found");
+      for (int z = 0; z < NUM_WIFI_CREDENTIALS; z++)
+      {
+        if (request->argName(i).equals("wifi_pw" + String(z)) && request->arg(i) != "")
+        {
+          LOGINFO("--- wifi_pw" + String(z));
+          addjson(message, firstarg, "wifi_pw" + String(z), request->arg(i));
+          strlcpy(myMachine->myConfig->WM_config.WiFi_Creds[z].wifi_pw, request->arg(i).c_str(), PASS_MAX_LEN);
+          reconf = true;
+        }
+      }
+    }
+    else if (request->argName(i) == "mqttHost")
+    {
+
+      strlcpy(myMachine->myConfig->mqttHost, request->arg(i).c_str(), MQTTFIELDS_LENGTH);
+    }
+    else if (request->argName(i) == "mqttTopic")
+    {
+
+      strlcpy(myMachine->myConfig->mqttTopic, request->arg(i).c_str(), MQTTFIELDS_LENGTH);
+    }
+    else if (request->argName(i) == "mqttUser")
+    {
+
+      strlcpy(myMachine->myConfig->mqttUser, request->arg(i).c_str(), MQTTUSERFIELDS_LENGTH);
+    }
+    else if (request->argName(i) == "mqttPass")
+    {
+
+      strlcpy(myMachine->myConfig->mqttPass, request->arg(i).c_str(), MQTTUSERFIELDS_LENGTH);
+    }
+    else if (request->argName(i) == "mqttPort")
+    {
+
+      myMachine->myConfig->mqttPort, request->arg(i).toInt();
+    }
+
+    else if (request->argName(i) == "safeandrestart" || request->arg(i))
+    {
+      safeandrestart = true;
+    }
   }
   if (reconf)
   {
     myMachine->reConfig(); // apply all settings
   }
+  if (safeandrestart)
+  {
+    myMachine->myConfig->saveConfig();
+
+    AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html;charset=UTF-8", configDone_html, configDone_html_len);
+    response->addHeader("Content-Encoding", "gzip");
+    response->addHeader("Access-Control-Allow-Origin", "WM_HTTP_CORS_ALLOW_ALL");
+    request->send(response);
+
+    delay(2000);
+    ESP.restart();
+  }
+
   strcat(message, "}");
   request->send(200, "application/json", message);
 }

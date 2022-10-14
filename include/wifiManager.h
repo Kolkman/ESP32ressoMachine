@@ -99,12 +99,9 @@ public:
 
 private:
        ESPressoInterface *myInterface;
-
        String ApSSID;
        String ApPass;
-
        bool connect;
-
        char *getRFC952_hostname(const char *);
        char RFC952_hostname[RFC952_HOSTNAME_MAXLEN + 1];
        unsigned long _configPortalStart = 0;

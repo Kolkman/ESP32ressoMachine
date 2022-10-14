@@ -11,7 +11,7 @@
 // the configuration page after load
 
 
-function getWifiSVG(){
+function getWifiSVG() {
     const tmplt = document.createElement("template");
     tmplt.innerHTML = ' <svg width="100%" height="100%" class="wifiRaw" viewBox="0 0 39 26" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;"> \
     <g transform="matrix(1,0,0,1,-18.1604,-42.0371)"> \
@@ -56,7 +56,7 @@ function UpdateScanTable() {
     const scantable = document.getElementById("scantable");
     scantable.setAttribute("class", "tableTable");
     while (scantable.hasChildNodes()) {
-        console.log("Removing"+scantable.firstChild);
+        console.log("Removing" + scantable.firstChild);
         scantable.removeChild(scantable.firstChild);
     }
     fetch(url + "scan")
@@ -250,13 +250,13 @@ function c(l, passwd) {
 
     for (let i = 0; i < maxNets; i++) {
 
-        if (document.getElementById("s" + i).value != "") {
-            console.log("s" + i + " is defined" + document.getElementById("s" + i).value);
+        if (document.getElementById("wifi_ssid" + i).value != "") {
+            console.log("wifi_ssid" + i + " is defined" + document.getElementById("s" + i).value);
 
         } else {
-            document.getElementById('s' + i).value = l.innerText || l.textContent;
-            document.getElementById('p' + i).value = passwd;
-            document.getElementById('p' + i).focus();
+            document.getElementById('wifi_ssid' + i).value = l.innerText || l.textContent;
+            document.getElementById('wifi_pw' + i).value = passwd;
+            document.getElementById('wifi_pw' + i).focus();
             break;
         }
 
@@ -316,8 +316,8 @@ function updatePage() {
                 ssidinputdiv = document.createElement("div");
                 ssidinputdiv.setAttribute("class", "tableField wifiInputField");
                 ip = document.createElement("input");
-                ip.setAttribute("id", "s" + i);
-                ip.setAttribute("name", "s" + i);
+                ip.setAttribute("id", "wifi_ssid" + i);
+                ip.setAttribute("name", "wifi_ssid" + i);
 
                 ip.setAttribute("placeholder", "SSID" + i);
                 ssidinputdiv.appendChild(ip);
@@ -345,8 +345,8 @@ function updatePage() {
                 passinputdiv = document.createElement("div");
                 passinputdiv.setAttribute("class", "tableField wifiInputField");
                 ip = document.createElement("input");
-                ip.setAttribute("id", "p" + i);
-                ip.setAttribute("name", "p" + i);
+                ip.setAttribute("id", "wifi_pw" + i);
+                ip.setAttribute("name", "wifi_pw" + i);
                 ip.setAttribute("placeholder", "Password" + i);
                 passinputdiv.appendChild(ip);
                 //empty filed
@@ -388,7 +388,7 @@ function displayLoading(loader) {
     setTimeout(() => {
         loader.classList.remove("display");
     }, 50000)
-    ;
+        ;
 }
 function hideLoading(loader) {
     loader.classList.remove("display");

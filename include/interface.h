@@ -40,6 +40,7 @@ public:
 
 private:
     bool wasNotConnected = true;
+
 };
 
 #endif

@@ -10,7 +10,8 @@ all:include/pages/index.html.h include/pages/update.html.h  \
 	include/pages/configuration.html.h include/pages/configuration_helper.js.h \
 	include/pages/index_helper.js.h include/pages/ESPconfig.css.h \
 	include/pages/networkSetup.html.h \
-		include/pages/captivePortal.html.h \
+	include/pages/captivePortal.html.h \
+	include/pages/configDone.html.h \
 	include/pages/networkConfigPage.js.h \
 	include/pages/redCircleCrossed.svg.h
 	@exec true 
@@ -68,16 +69,17 @@ include/pages/redCircleCrossed.svg.h: WEBSources/redCircleCrossed.svg
 include/pages/captivePortal.html.h: WEBSources/captivePortal.html
 	@./ProduceDefine.py $< text/html\;charset=UTF-8 > $@
 
-
+include/pages/networkSetup.html.h: WEBsources/networkSetup.html
+	@./ProduceDefine.py $< text/html\;charset=UTF-8 > $@
 
 include/pages/update.html.h: WEBsources/update.html
 	@./ProduceDefine.py $< text/html\;charset=UTF-8 > $@
 
-
+include/pages/configDone.html.h: WEBsources/configDone.html
+	@./ProduceDefine.py $< text/html\;charset=UTF-8 > $@
 
 include/pages/ESPconfig.css.h: WEBsources/ESPconfig-min.css
 	@./ProduceDefine2.py $<  > $@
-
 
 
 clean:

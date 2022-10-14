@@ -97,6 +97,8 @@ void WiFiManager::setupWiFiAp(WiFi_AP_IPConfig *WifiApIP)
     return;
 }
 
+
+
 void WiFiManager::loopPortal(ESPressoInterface *myInterface)
 {
     connect = false;
@@ -111,8 +113,8 @@ void WiFiManager::loopPortal(ESPressoInterface *myInterface)
     }
 
     LOGINFO("startConfigPortal : Enter loop");
-    // TODO: we should be waiting for Action as long as there is no stored credentials.
-    while (myInterface->waitingForClientAction || millis() < _configPortalStart + CONFIGPORTAL_TIMEOUT)
+    
+    while ( myInterface->_waitingForClientAction || millis() < _configPortalStart + CONFIGPORTAL_TIMEOUT)
     {
 #ifdef USE_ASYNC_DNS
         // left blank
@@ -121,7 +123,7 @@ void WiFiManager::loopPortal(ESPressoInterface *myInterface)
 #endif
         yield();
     }
-    LOGINFO1(F("Waiting for Client Action"), myInterface->waitingForClientAction);
+    LOGINFO1(F("Waiting for Client Action"), myInterface->_waitingForClientAction);
     LOGINFO("startConfigPortal : Exits loop");
     return;
 }
@@ -189,6 +191,8 @@ uint8_t WiFiManager::connectMultiWiFi(EspressoConfig *myConfig)
 
     return status;
 }
+
+
 
 char *WiFiManager::getRFC952_hostname(const char *iHostname)
 // From https://github.com/khoih-prog/ESPAsync_WiFiManager/blob/master/src/ESPAsync_WiFiManager-Impl.h

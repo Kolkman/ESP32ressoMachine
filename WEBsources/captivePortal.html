@@ -8,50 +8,84 @@
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
 
 
+
+    <style>
+        #myProgress {
+            width: 100%;
+            background-color: #ddd;
+        }
+
+        #myBar {
+            width: 100%;
+            height: 10px;
+            background-color: #000000;
+        }
+    </style>
     <script>
-        window.addEventListener("load", function () {
+        var i = 0;
+
+        function move(time) {
+            if (i == 0) {
+                i = 1;
+                var elem = document.getElementById("myBar");
+                var width = 100;
+                var id = setInterval(frame, time * 10);
+                function frame() {
+    
+                    if (width <= 0) {
+                        clearInterval(id);
+                        i = 0;
+                    } else {
+                        width--;
+                        elem.style.width = width + "%";
+                    }
+                }
+            }
+        }
+
+        function updatePage() {
+            let time;
 
             let s;
             const configuredNetworks = document.getElementById("configuredNetworks");
             fetch("configConfig")
-                .then(function (response) {
-                    console.log(response);
-                    return response.json();
+                .then(function (configjson) {
+                    return configjson.json()
                 })
                 .then(function (data) {
-                    console.log(data);
+                               time = data.timeout;
                     let wifinets = data.wifiNets;
                     console.log(wifinets);
-                    console.log("hier");
-                    if ( Array.isArray(wifinets) &&  (wifinets.length !=0) ) {
-                
+                    if (Array.isArray(wifinets) && (wifinets.length != 0)) {
+
                         s = "";
-                        for (i = 0; i < wifinets.length; i++) {
-                            console.log(i);
-                            if (i != 0) {
-                                if (i == wifinets.length - 1) {
-                                    s += " and ";
+                        for (j = 0; j < wifinets.length; j++) {
+                            if (j != 0) {
+                                if (j == wifinets.length - 1) {
+                                    s += " or ";
                                 }
                                 s += ", ";
                             }
-                            s += wifinets[i
-                            ];
+                            s += wifinets[j];
                         }
-                        }else{
-                            s="no networks";
-                        }
-                    
-          
-                    if (wifinets.lentgh == 0){
-                       
+                    } else {
                         s = "no networks";
                     }
                     s +=".";
                     configuredNetworks.innerHTML = s;
+                    time = data.timeout;
+                    console.log("time set to: " + time);
+    
+                    move(time);
                 })
                 .catch(function (err) {
                     console.log(err);
                 });
+        }
+
+
+        window.addEventListener("load", function () {
+            updatePage();
         });
 
 
@@ -65,14 +99,27 @@
     <h1>Captive Portal</h1>
     <div id="bodyBlock">
         <div class="configblock fullwidth">
-            <div class="configurationMessage">
-                The system is configured to connect to <div style="display:inline-block" id="configuredNetworks">no
+            <div class="configurationMessage" style="font-size: larger;"">
+              The system is configured to connect to <div style="display:inline-block" id="configuredNetworks">no
                     networks</div>
             </div>
         </div>
         <div class="configblock fullwidth">
-            <div><a href="./networkSetup.html"><button class="btn">Configure Device</button></a></div>
-            <div><a href="./restart"><button class="btn" id="resetdiv">Restart Device</button></a></div>
+            <div style="display:inline-block; vertical-align: top; width: 130px;">
+                <div><a href="./networkSetup.html"><button class="btn">Configure Device</button></a></div>
+                <div><a href="./restart"><button class="btn" id="resetdiv">Restart Device</button></a></div>
+            </div>
+            <div style="display:inline-block; vertical-align:top; width: calc(100% - 140px);">
+                <p> Instead choosing to configure you can wait for the ESP32resso Machine to start up and connect to an
+                    existing network.</p>
+                <p> Alternatively you let the portal time-out.</p>
+            </div>
+            <div id="myProgress">
+                <div id="myBar"></div>
+            </div>
+        </div>
+        <div>
+
         </div>
     </div>
 
