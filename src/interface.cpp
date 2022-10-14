@@ -34,7 +34,7 @@ void ESPressoInterface::loop()
       int n = WiFi.scanComplete();
       if (n == -2)
       {
-         WiFi.scanDelete();
+        WiFi.scanDelete();
         // Just to have some resuls when needed.
         LOGERROR("Scanning started");
         WiFi.scanNetworks(true);
@@ -64,10 +64,21 @@ void ESPressoInterface::loop()
 
 void ESPressoInterface::setup()
 {
+// We set this for later. Wnen there are no credentials set we want to keep the captive portal open - ad infinitum
+  _waitingForClientAction = true;
+  for (int i = 0; i < NUM_WIFI_CREDENTIALS; i++){
+
+    if (strlen(myMachine->myConfig->WM_config.WiFi_Creds[i].wifi_ssid)>0)
+      {
+        _waitingForClientAction = false;
+      }
+  }
+  if (_waitingForClientAction) LOGINFO("NO WiFi NEtworks set, we'll later keep the captive portal open");
+
   wifiMngr->setupWiFiAp(&myMachine->myConfig->WM_AP_IPconfig);
   server->reset();
   setConfigPortalPages();
-  
+
   server->begin(); /// Webserver is now running....
 
   LOGINFO("Wifi Manager done, following up with WebSrv");

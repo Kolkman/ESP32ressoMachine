@@ -72,6 +72,9 @@
 #define MQTT_TOPIC_EXT_LENGTH 7
 #endif
 
+#define MQTTFIELDS_LENGTH 255
+#define MQTTUSERFIELDS_LENGTH 63
+
 #endif // ENABLE_MQTT
 
 // Struct to store pid values
@@ -105,11 +108,11 @@ public:
        int pidInt;
 
 #ifdef ENABLE_MQTT
-       char mqttHost[256];
-       char mqttTopic[256];
+       char mqttHost[MQTTFIELDS_LENGTH+1];
+       char mqttTopic[MQTTFIELDS_LENGTH+1];
        unsigned int mqttPort;
-       char mqttUser[65];
-       char mqttPass[65];
+       char mqttUser[MQTTUSERFIELDS_LENGTH+1];
+       char mqttPass[MQTTUSERFIELDS_LENGTH+1];
        char webUser[65];
        char webPass[65];
 #endif                                  // ENABLE_MQTT

@@ -6,7 +6,6 @@
 //
 // Contains code fragments from  ESPAsync_WiFiManager by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
 
-
 //#define ELEGANT_OTA
 
 #include "ESPressoMachine.h"
@@ -192,18 +191,26 @@ void WebInterface::eventLoop()
 
 void WebInterface::setConfigPortalPages()
 {
+
   server->on("/scan", HTTP_GET, std::bind(&WebInterface::handleScan, this, std::placeholders::_1));
   server->onNotFound(std::bind(&WebInterface::handleCaptivePortal, this, std::placeholders::_1));
   server->on("/", HTTP_GET, std::bind(&WebInterface::handleCaptivePortal, this, std::placeholders::_1));
   server->on("/configConfig", HTTP_GET, std::bind(&WebInterface::handleConfigConfig, this, std::placeholders::_1));
   server->on("/restart", HTTP_GET, std::bind(&WebInterface::handleRestart, this, std::placeholders::_1));
+  server->on("/networkSetup.html", HTTP_GET, std::bind(&WebInterface::handleNetworkSetup, this, std::placeholders::_1));
+  server->on("/exitconfig",HTTP_GET, [&](AsyncWebServerRequest *request){
+    _waitingForClientAction=false;
+    request->redirect("/");
+
+  });
+
+
   DEF_HANDLE_redCircleCrossed_svg;
-  DEF_HANDLE_networkSetup_html;
   DEF_HANDLE_switch_css;
   DEF_HANDLE_ESPresso_css;
   DEF_HANDLE_networkConfigPage_js;
   DEF_HANDLE_captivePortal_html;
-
+  webAPI.begin(server, myMachine);
   return;
 }
 
@@ -214,12 +221,12 @@ void WebInterface::setConfigPortalPages()
 */
 bool WebInterface::captivePortal(AsyncWebServerRequest *request)
 {
- 
+
   if (!isIp(request->host()))
   {
-    LOGINFO1(F("Incomming request"),request->url());
+    LOGINFO1(F("Incomming request"), request->url());
     LOGINFO(F("Request redirected to captive portal"));
-    LOGINFO1(F("Location http://"),(request->client()->localIP()).toString());
+    LOGINFO1(F("Location http://"), (request->client()->localIP()).toString());
 
     AsyncWebServerResponse *response = request->beginResponse(302, "text/plain", "");
     response->addHeader("Location", String("http://") + (request->client()->localIP()).toString());
@@ -234,9 +241,25 @@ bool WebInterface::captivePortal(AsyncWebServerRequest *request)
   return false;
 }
 
+unsigned long  WebInterface::remainingPortaltime(){
+    return (std::max((unsigned long)0,(_configPortalInterfaceStart + CONFIGPORTAL_TIMEOUT- millis())/1000));
+}
+
+
+void WebInterface::handleNetworkSetup(AsyncWebServerRequest *request)
+{ // only used as config portal
+  LOGINFO("Blocking for finalizing input");
+  _waitingForClientAction = true;
+
+  AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html;charset=UTF-8", networkSetup_html, networkSetup_html_len);
+  response->addHeader("Content-Encoding", "gzip");
+  response->addHeader("Access-Control-Allow-Origin", "WM_HTTP_CORS_ALLOW_ALL");
+  request->send(response);
+  return;
+}
 
 // Is this an IP?
-bool WebInterface::isIp(const String& str)
+bool WebInterface::isIp(const String &str)
 {
   for (unsigned int i = 0; i < str.length(); i++)
   {
@@ -247,14 +270,13 @@ bool WebInterface::isIp(const String& str)
       return false;
     }
   }
-  
+
   return true;
 }
 
 void WebInterface::handleCaptivePortal(AsyncWebServerRequest *request)
 {
   LOGINFO("CaptivePortal Hit")
-  waitingForClientAction = true;
 
   if (captivePortal(request))
   {
@@ -330,7 +352,8 @@ void WebInterface::handleConfigConfig(AsyncWebServerRequest *request)
 #endif
 
   String json = "{";
-  json += "\"maxNets\":" + String(NUM_WIFI_CREDENTIALS);
+  json += "\"timeout\":" + String(remainingPortaltime());
+  json += ",\"maxNets\":" + String(NUM_WIFI_CREDENTIALS);
   json += ",\"mqtt\":" + String(MQTT);
 #ifdef ENABLE_MQTT
   json += ",\"mqttHost\":\"" + String(myMachine->myConfig->mqttHost) + "\"";
