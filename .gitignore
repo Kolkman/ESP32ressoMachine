@@ -46,3 +46,4 @@ CustomList.doxygen
 
 .vscode/ltex.disabledRules.en-US.txt
 .gitignore
+.vscode/ltex.hiddenFalsePositives.en-US.txt
