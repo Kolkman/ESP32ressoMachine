@@ -44,3 +44,5 @@ compile_commands.json
 CustomList.doxygen
 
 
+.vscode/ltex.disabledRules.en-US.txt
+.gitignore
