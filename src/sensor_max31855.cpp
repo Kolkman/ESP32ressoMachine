@@ -12,19 +12,21 @@
 
 #undef DEBUG
 
-TempSensor::TempSensor() : Adafruit_MAX31855(SENSOR_MAX_CLK, SENSOR_MAX_CS, SENSOR_MAX_DO)
+TempSensor::TempSensor() 
 {
-
+  
   lastT = 0.0;
   SumT = 0.0;
   lastI = 0.0;
   SumI = 0.0;
-  time_now=millis();
+  time_now = millis();
 
   lastErr = 0.0;
   CntT = 0;
   CntI = 0;
   lastSensTime = 0;
+
+  thermocouple=new Adafruit_MAX31855(SENSOR_MAX_CLK, SENSOR_MAX_CS, SENSOR_MAX_DO);
 }
 
 void TempSensor::setupSensor()
@@ -37,7 +39,7 @@ void TempSensor::setupSensor()
   // wait for MAX chip to stabilize
   delay(500);
   Serial.println("Initializing sensor...");
-  if (!begin())
+  if (!thermocouple->begin())
   {
     Serial.println("ERROR.");
     while (1)
@@ -51,11 +53,21 @@ void TempSensor::setupSensor()
     for (int i = 0; i < 5; i++)
     {
 
-      double c = readCelsius();
+      double c = thermocouple->readCelsius();
       if (isnan(c))
       {
-        Serial.print("ThermoCouple Error");
-        Serial.println(time_now);      }
+        Serial.print("Thermocouple fault(s) detected!    @");
+        Serial.println(time_now);
+
+        uint8_t e = thermocouple->readError();
+        if (e & MAX31855_FAULT_OPEN)
+          Serial.println("FAULT: Thermocouple is open - no connections.");
+        if (e & MAX31855_FAULT_SHORT_GND)
+          Serial.println("FAULT: Thermocouple is short-circuited to GND.");
+        if (e & MAX31855_FAULT_SHORT_VCC)
+          Serial.println("FAULT: Thermocouple is short-circuited to VCC.");
+
+      }
       else
       {
         t += c;
@@ -63,7 +75,7 @@ void TempSensor::setupSensor()
       }
       Serial.print(".");
       delay(100);
-    } 
+    }
     Serial.println();
     lastT = t / x;
     Serial.println("Initial temperature: " + String(lastT));
@@ -79,13 +91,13 @@ void TempSensor::updateTempSensor(double sensorSampleInterval)
 
   if ((max(time_now, lastSensTime) - min(time_now, lastSensTime)) >= sensorSampleInterval)
   {
-   double i = readInternal();  
-    double c = readCelsius();
+    double i = thermocouple->readInternal();
+    double c = thermocouple->readCelsius();
     if (isnan(c) || isnan(i))
     {
-     
-        Serial.print("ThermoCouple Error");
-        Serial.println(time_now);
+
+      Serial.print("ThermoCouple Error");
+      Serial.println(time_now);
     }
     else
     {
@@ -100,13 +112,13 @@ void TempSensor::updateTempSensor(double sensorSampleInterval)
         lastT = curT;
         CntT++;
       }
-      
-        if (abs(curI - lastI) < 15 || lastI < 1)
-        {
-          SumI += curI;
-          lastI = curI;
-          CntI++;
-        }
+
+      if (abs(curI - lastI) < 15 || lastI < 1)
+      {
+        SumI += curI;
+        lastI = curI;
+        CntI++;
+      }
 
       lastSensTime = millis();
     }
@@ -129,10 +141,9 @@ float TempSensor::getTemp(float temp)
 #endif
   }
 #ifdef DEBUG
-  Serial.println("old/ret: " + String(temp)+"," + String(retVal));
+  Serial.println("old/ret: " + String(temp) + "," + String(retVal));
 #endif
   return retVal;
 }
-
 
 #endif
