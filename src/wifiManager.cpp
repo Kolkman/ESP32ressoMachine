@@ -138,7 +138,8 @@ uint8_t WiFiManager::connectMultiWiFi(EspressoConfig *myConfig)
     for (uint8_t i = 0; i < NUM_WIFI_CREDENTIALS; i++)
     {
         // Don't permit NULL SSID and password len < MIN_AP_PASSWORD_SIZE (8)
-        if ((String(myConfig->WM_config.WiFi_Creds[i].wifi_ssid) != "") && (strlen(myConfig->WM_config.WiFi_Creds[i].wifi_pw) >= MIN_AP_PASSWORD_SIZE))
+        if ((String(myConfig->WM_config.WiFi_Creds[i].wifi_ssid) != "") && 
+        (strlen(myConfig->WM_config.WiFi_Creds[i].wifi_pw)==0  || strlen(myConfig->WM_config.WiFi_Creds[i].wifi_pw) >= MIN_AP_PASSWORD_SIZE))
         {
             LOGERROR3(F("* Additional SSID = "), myConfig->WM_config.WiFi_Creds[i].wifi_ssid, F(", PW = "), myConfig->WM_config.WiFi_Creds[i].wifi_pw);
             addAP(myConfig->WM_config.WiFi_Creds[i].wifi_ssid, myConfig->WM_config.WiFi_Creds[i].wifi_pw);
