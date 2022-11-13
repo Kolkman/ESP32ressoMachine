@@ -68,6 +68,7 @@ typedef struct
 {
        char wifi_ssid[SSID_MAX_LEN];
        char wifi_pw[PASS_MAX_LEN];
+       bool config_change;  // used to see if during configuration the wifi changes without a password (it should then be deleted)
 } WiFi_Credentials;
 
 typedef struct
