@@ -18,6 +18,7 @@ webInterfaceOTAUpdate::webInterfaceOTAUpdate()
 void webInterfaceOTAUpdate::begin(EspressoWebServer *server)
 {
     _server = server;
+   
     _server->on("/update/", HTTP_GET, [&](AsyncWebServerRequest *request)
                 { request->redirect("/update.html"); });
 
@@ -31,7 +32,7 @@ void webInterfaceOTAUpdate::begin(EspressoWebServer *server)
         response->addHeader("Content-Encoding", "gzip");
         request->send(response); });
 
-    server->on(
+    _server->on(
         "/doUpdate", HTTP_POST,
         [](AsyncWebServerRequest *request) {},
         std::bind(&webInterfaceOTAUpdate::handleDoUpdate, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6));

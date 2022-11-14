@@ -21,6 +21,7 @@ private:
     void handleStats(AsyncWebServerRequest *);
     void handleConfigFile(AsyncWebServerRequest *);
     void handleNetwork(AsyncWebServerRequest *);
+    void handleIsAuthenticated(AsyncWebServerRequest *);
 };
 
 extern webInterfaceAPI webAPI;
