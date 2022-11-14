@@ -68,6 +68,7 @@
 #define WEB_USER "admin"
 #define WEB_PASS "silvia"
 
+#define COOKIENAME "ESP32RESSO_ID"
 
 #ifdef ENABLE_MQTT
 #define MQTT_HOST "mqtt.example.net"

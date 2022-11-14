@@ -27,7 +27,7 @@ class ESPressoInterface; /// forward declaration
 #define DNS_PORT 53
 #define RFC952_HOSTNAME_MAXLEN 63 // HOSTNAME can be up to 255 chars, but we'll take DNS label length. (longer than  in original code)
 #define MAX_WIFI_CHANNEL 13
-#define CONFIGPORTAL_TIMEOUT 80 * 1000
+#define CONFIGPORTAL_TIMEOUT 10 * 1000
 #define WIFI_MULTI_CONNECT_WAITING_MS 10 * 1000 // MultiWifi reconnects after 10 seconds.
 #define WIFI_MULTI_1ST_CONNECT_WAITING_MS 3 * 1000
 

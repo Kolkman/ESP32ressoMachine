@@ -5,6 +5,7 @@
 // Web Server w
 //
 // Contains code fragments from  ESPAsync_WiFiManager by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
+// Contains code fragments from https://www.mischianti.org/2020/11/09/web-server-with-esp8266-and-esp32-manage-security-and-authentication-4/#Simple_token_authentication
 
 //#define ELEGANT_OTA
 
@@ -25,17 +26,13 @@
 
 // Various WebSources:
 //#include "pages/test.html.h"
-#include "pages/ESPresso.css.h"
-#include "pages/EspressoMachine.svg.h"
-#include "pages/switch.css.h"
+
 #include "pages/configuration.html.h"
 #include "pages/configuration_helper.js.h"
 #include "pages/drawtimeseries.js.h"
-#include "pages/firmware.js.h"
 #include "pages/gauge.min.js.h"
 #include "pages/index.html.h"
 #include "pages/index_helper.js.h"
-#include "pages/redCircleCrossed.svg.h"
 #include "pages/networkSetup.html.h"
 #include "pages/networkConfigPage.js.h"
 #include "pages/captivePortal.html.h"
@@ -58,39 +55,12 @@ WebInterface::~WebInterface()
   Serial.println("Webinterfce Destructor");
 }
 
-void WebInterface::handleNotFound(AsyncWebServerRequest *request)
-{
-  String message = htmlHeader;
-  message += "<H1>Error 400 <br/> File Not Found</H1>\n\n";
-  message += "<div id=\"notFoundInfo\"><div id=\"notFoundURI\">URI: <span id=\"notFoundURL\">";
-  message += request->url();
-  message += "</span></div>\n<div id=\"notFoundMethod\">Method: ";
-  message += (request->method() == HTTP_GET) ? "GET" : "POST";
-  message += "</div>\n<div id=\"notFoundArguments\">Arguments: ";
-  message += request->args();
-  message += "</div>\n";
-
-  for (uint8_t i = 0; i < request->args(); i++)
-  {
-    message += "<div class=\"notFoundArgument\"><span class=\"notFoundargName\">" + request->argName(i) + "</span>:<span class=\"notFoundarg\"> " + request->arg(i) + "</span></div>\n";
-  }
-  message += "</div>";
-  message += htmlFooter;
-  request->send(404, "text/html", message);
-}
 
 void WebInterface::handleRoot(AsyncWebServerRequest *request)
 {
   request->redirect("/index.html");
 }
 
-void WebInterface::handleFile(AsyncWebServerRequest *request, const char *mimetype, const unsigned char *compressedData, const size_t compressedDataLen)
-{
-  AsyncWebServerResponse *response = request->beginResponse_P(200, mimetype, compressedData, compressedDataLen);
-  response->addHeader("Server", "ESP Async Web Server");
-  response->addHeader("Content-Encoding", "gzip");
-  request->send(response);
-}
 
 void WebInterface::handleRestart(AsyncWebServerRequest *request)
 {
@@ -129,9 +99,9 @@ void WebInterface::setupWebSrv(ESPressoMachine *machine)
   }
   // httpUpdater->setup(server);
   // Serial.print("Updater running !");
-
+ server->InitPages(); // sets some default pages.
   server->on("/", HTTP_GET, std::bind(&WebInterface::handleRoot, this, std::placeholders::_1));
-  server->onNotFound(std::bind(&WebInterface::handleNotFound, this, std::placeholders::_1));
+  
   server->on("/restart", HTTP_GET, std::bind(&WebInterface::handleRestart, this, std::placeholders::_1));
   webAPI.begin(server, myMachine);
 
@@ -151,18 +121,14 @@ void WebInterface::setupWebSrv(ESPressoMachine *machine)
   server->on("/scan", HTTP_GET, std::bind(&WebInterface::handleScan, this, std::placeholders::_1));
   server->on("/configConfig", HTTP_GET, std::bind(&WebInterface::handleConfigConfig, this, std::placeholders::_1));
   DEF_HANDLE_index_html;
-  DEF_HANDLE_switch_css;
-  DEF_HANDLE_ESPresso_css;
   DEF_HANDLE_gauge_min_js;
-  DEF_HANDLE_EspressoMachine_svg;
   DEF_HANDLE_drawtimeseries_js;
-  DEF_HANDLE_firmware_js;
   DEF_HANDLE_configuration_html;
   DEF_HANDLE_configuration_helper_js;
   DEF_HANDLE_index_helper_js;
-  DEF_HANDLE_redCircleCrossed_svg;
   DEF_HANDLE_networkSetup_html;
   DEF_HANDLE_networkConfigPage_js;
+
   //  DEF_HANDLE_test_html;
 
   // Handle Web Server Events
@@ -191,23 +157,22 @@ void WebInterface::eventLoop()
 
 void WebInterface::setConfigPortalPages()
 {
-
+  server->InitPages();
   server->on("/scan", HTTP_GET, std::bind(&WebInterface::handleScan, this, std::placeholders::_1));
-  server->onNotFound(std::bind(&WebInterface::handleCaptivePortal, this, std::placeholders::_1));
+
   server->on("/", HTTP_GET, std::bind(&WebInterface::handleCaptivePortal, this, std::placeholders::_1));
   server->on("/configConfig", HTTP_GET, std::bind(&WebInterface::handleConfigConfig, this, std::placeholders::_1));
   server->on("/restart", HTTP_GET, std::bind(&WebInterface::handleRestart, this, std::placeholders::_1));
   server->on("/networkSetup.html", HTTP_GET, std::bind(&WebInterface::handleNetworkSetup, this, std::placeholders::_1));
-  server->on("/exitconfig",HTTP_GET, [&](AsyncWebServerRequest *request){
-    _waitingForClientAction=false;
-    request->redirect("/");
+  server->on("/exitconfig", HTTP_GET, [&](AsyncWebServerRequest *request)
+             {
+               _waitingForClientAction = false;
+               request->redirect("/");
+             });
 
-  });
 
 
-  DEF_HANDLE_redCircleCrossed_svg;
-  DEF_HANDLE_switch_css;
-  DEF_HANDLE_ESPresso_css;
+
   DEF_HANDLE_networkConfigPage_js;
   DEF_HANDLE_captivePortal_html;
   webAPI.begin(server, myMachine);
@@ -241,10 +206,10 @@ bool WebInterface::captivePortal(AsyncWebServerRequest *request)
   return false;
 }
 
-unsigned long  WebInterface::remainingPortaltime(){
-    return (std::max((unsigned long)0,(_configPortalInterfaceStart + CONFIGPORTAL_TIMEOUT- millis())/1000));
+unsigned long WebInterface::remainingPortaltime()
+{
+  return (std::max((unsigned long)0, (_configPortalInterfaceStart + CONFIGPORTAL_TIMEOUT - millis()) / 1000));
 }
-
 
 void WebInterface::handleNetworkSetup(AsyncWebServerRequest *request)
 { // only used as config portal
@@ -391,3 +356,5 @@ void WebInterface::handleConfigConfig(AsyncWebServerRequest *request)
   request->send(200, "application/json", json);
   json = String();
 }
+
+

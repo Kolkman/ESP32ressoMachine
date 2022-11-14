@@ -6,7 +6,6 @@
 #include <ESPAsyncWebServer.h>
 #include "debug.h"
 #include "pages/configDone.html.h"
-
 webInterfaceAPI webAPI;
 
 webInterfaceAPI::webInterfaceAPI()
@@ -25,6 +24,9 @@ void webInterfaceAPI::begin(EspressoWebServer *s, ESPressoMachine *m)
     Serial.println("_Machine is a null pointer");
     throw("webInterfaceAPI::begin ESPresspMachine * is a NULL PTR");
   }
+
+  server->InitPages();
+  server->on("/api/v1/authenticated", HTTP_GET, std::bind(&webInterfaceAPI::handleIsAuthenticated, this, std::placeholders::_1));
   server->on("/api/v1/status", HTTP_GET, std::bind(&webInterfaceAPI::handleStatus, this, std::placeholders::_1));
   server->on("/api/v1/firmware", HTTP_GET, std::bind(&webInterfaceAPI::handleFirmware, this, std::placeholders::_1));
   server->on("/api/v1/get", HTTP_GET, std::bind(&webInterfaceAPI::handleGet, this, std::placeholders::_1));
@@ -210,7 +212,16 @@ void webInterfaceAPI::handleSet(AsyncWebServerRequest *request)
   bool firstarg = true;
   LOGINFO1("API SET with", request->url());
   char message[2048]; // This is sufficiently big to store all key:val combinations
+  if (!server->is_authenticated(request))
+  {
+    LOGINFO("API not authenticed")
+    strcpy(message, "{\"authenticated\": false}");
+    request->send(200, "application/json", message);
+    return;
+  }
+
   strcpy(message, "{");
+
   for (int z = 0; z < NUM_WIFI_CREDENTIALS; z++)
   {
     myMachine->myConfig->WM_config.WiFi_Creds[z].config_change = false; // initiate
@@ -219,7 +230,7 @@ void webInterfaceAPI::handleSet(AsyncWebServerRequest *request)
   {
     if (request->argName(i) == "tset")
     {
-      server->authenticate(request);
+
       double t = (request->arg(i)).toDouble();
       if (t > MAXTEMP)
         t = MAXTEMP; // bit of a safety thing
@@ -483,6 +494,20 @@ void webInterfaceAPI::handleConfigFile(AsyncWebServerRequest *request)
 
     myMachine->reConfig();
     strcpy(message, "{\"default\":true}");
+  }
+  request->send(200, "application/json", message);
+}
+
+void webInterfaceAPI::handleIsAuthenticated(AsyncWebServerRequest *request)
+{
+  char message[32]; // This is sufficiently for any of the messages below
+  if (server->is_authenticated(request))
+  {
+    strcpy(message, "{\"authenticated\":true}");
+  }
+  else
+  {
+    strcpy(message, "{\"authenticated\":false}");
   }
   request->send(200, "application/json", message);
 }

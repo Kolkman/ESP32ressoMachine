@@ -10,9 +10,9 @@
 </head>
 <script>
 
-  const url = "";  // Setting in production.
+const url = "";  // Setting in production.
 
-  //  const url = "http://192.168.179.78";  // This is for development purposes only
+//const url = "http://192.168.179.123";  // This is for development purposes only
 
 
 </script>
@@ -26,8 +26,12 @@
   <h1>Configuration</h1>
   <div id="graph" style="margin-left:3%; margin-right:3%"></div>
   <div id="bodyBlock">
+    <div id="LoginRequired" style="display:none">
+      You need to login to change parameters.
+      <div><a href="./WebLogin.html?url=configuration.html"><button class="btn">Login</button></a></div>
 
-    <div class="configblock">
+    </div>
+    <div class="configblock" id="PidConfigParamsForm">
       <form id="configForm">
         <div class="tableTable">
           <div class="tableBody">
@@ -95,7 +99,7 @@
           <div class="tableBody">
             <div class="formParameterValuePair tableRow PID">
               <div class="formParameter tableField">
-                PID within <span id="trangemin"></span> to <span id="trangemax"></span> band
+                PID within <span id="trangemin"></span>&nbsp;to <span id="trangemax"></span>&nbsp; band
               </div>
               <div class="formValue tableField">
                 <div class="tableTable">
@@ -176,14 +180,15 @@
           <input type="submit" value="Submit" class="btn">
           <span id="confform-errormessage"></span>
         </div>
+        
     </div>
     </form>
 
 
     <div class="configblock">
       <div class="Management">
-        <div>
-          <div id='configAPI'>
+        <div id="configAPI">
+          <div>
             <input type="button" value="Load Config" class="btn" onclick="LoadConf(this)">
             <input type="button" value="Save Config" class="btn" onclick="SaveConf(this)">
             <input type="button" value="Default Config" class="btn" onclick="DefaultConf(this)">
