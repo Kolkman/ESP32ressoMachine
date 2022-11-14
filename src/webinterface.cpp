@@ -55,12 +55,10 @@ WebInterface::~WebInterface()
   Serial.println("Webinterfce Destructor");
 }
 
-
 void WebInterface::handleRoot(AsyncWebServerRequest *request)
 {
   request->redirect("/index.html");
 }
-
 
 void WebInterface::handleRestart(AsyncWebServerRequest *request)
 {
@@ -99,11 +97,12 @@ void WebInterface::setupWebSrv(ESPressoMachine *machine)
   }
   // httpUpdater->setup(server);
   // Serial.print("Updater running !");
- server->InitPages(); // sets some default pages.
+  server->InitPages(); // sets some default pages.
   server->on("/", HTTP_GET, std::bind(&WebInterface::handleRoot, this, std::placeholders::_1));
-  
+
   server->on("/restart", HTTP_GET, std::bind(&WebInterface::handleRestart, this, std::placeholders::_1));
   webAPI.begin(server, myMachine);
+  webAPI.requireAuthorization(true);
 
 #ifdef ELEGANT_OTA
   AsyncElegantOTA.begin(server);
@@ -167,15 +166,12 @@ void WebInterface::setConfigPortalPages()
   server->on("/exitconfig", HTTP_GET, [&](AsyncWebServerRequest *request)
              {
                _waitingForClientAction = false;
-               request->redirect("/");
-             });
-
-
-
+               request->redirect("/"); });
 
   DEF_HANDLE_networkConfigPage_js;
   DEF_HANDLE_captivePortal_html;
   webAPI.begin(server, myMachine);
+  webAPI.requireAuthorization(false);  // The API is wide open during the configportal phase
   return;
 }
 
@@ -356,5 +352,3 @@ void WebInterface::handleConfigConfig(AsyncWebServerRequest *request)
   request->send(200, "application/json", json);
   json = String();
 }
-
-
