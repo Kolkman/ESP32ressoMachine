@@ -60,6 +60,7 @@
 #define ENABLE_TELNET
 #define ENABLE_MQTT
 #define ENABLE_SERIAL
+#define ENABLE_LIQUID
 
 
 // SSID password for configuration

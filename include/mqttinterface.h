@@ -10,8 +10,6 @@
 #include "ExponentialFallback.h"
 #ifdef ENABLE_MQTT
 
-
-
 class MQTTInterface
 {
 public:
@@ -19,16 +17,15 @@ public:
     void setupMQTT(ESPressoMachine *);
     void loopMQTT(ESPressoMachine *);
 
-
 private:
-//    ESPressoMachine *myMachine;
+    //    ESPressoMachine *myMachine;
     WiFiClient espClient;
     PubSubClient client;
     void MQTT_reconnect(EspressoConfig *);
-    void MQTT_callback(char*, byte*, unsigned int, ESPressoMachine *);
-    char mqttStatusTopic[256+MQTT_TOPIC_EXT_LENGTH];
-    char mqttConfigTopic[256+MQTT_TOPIC_EXT_LENGTH];
+    void MQTT_callback(char *, byte *, unsigned int, ESPressoMachine *);
+    char mqttStatusTopic[256 + MQTT_TOPIC_EXT_LENGTH];
+    char mqttConfigTopic[256 + MQTT_TOPIC_EXT_LENGTH];
     ExpFallback connectionAttempts;
 };
-#endif //ESPRessoMach_MQTT_H
-#endif //ENABLE_MQTT
+#endif // ESPRessoMach_MQTT_H
+#endif // ENABLE_MQTT

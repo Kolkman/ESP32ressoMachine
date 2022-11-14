@@ -64,16 +64,22 @@ void ESPressoInterface::loop()
 
 void ESPressoInterface::setup()
 {
-// We set this for later. Wnen there are no credentials set we want to keep the captive portal open - ad infinitum
-  _waitingForClientAction = true;
-  for (int i = 0; i < NUM_WIFI_CREDENTIALS; i++){
 
-    if (strlen(myMachine->myConfig->WM_config.WiFi_Creds[i].wifi_ssid)>0)
-      {
-        _waitingForClientAction = false;
-      }
+  #ifdef ENABLE_LIQUID
+      setupLiquid();
+  #endif
+  // We set this for later. Wnen there are no credentials set we want to keep the captive portal open - ad infinitum
+  _waitingForClientAction = true;
+  for (int i = 0; i < NUM_WIFI_CREDENTIALS; i++)
+  {
+
+    if (strlen(myMachine->myConfig->WM_config.WiFi_Creds[i].wifi_ssid) > 0)
+    {
+      _waitingForClientAction = false;
+    }
   }
-  if (_waitingForClientAction) LOGINFO("NO WiFi NEtworks set, we'll later keep the captive portal open");
+  if (_waitingForClientAction)
+    LOGINFO("NO WiFi NEtworks set, we'll later keep the captive portal open");
 
   wifiMngr->setupWiFiAp(&myMachine->myConfig->WM_AP_IPconfig);
   server->reset();
@@ -98,7 +104,9 @@ void ESPressoInterface::setup()
   setupMQTT(this->myMachine);
 #endif
 
+
+
 #ifdef ENABLE_SWITCH_DETECTION
-  setupSwitch();
+      setupSwitch();
 #endif
 }
