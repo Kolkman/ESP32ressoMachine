@@ -13,6 +13,7 @@ webInterfaceAPI::webInterfaceAPI()
   server = nullptr;
   myMachine = nullptr;
   content_len = 0;
+  mustAuthenticate=true;
 }
 
 void webInterfaceAPI::begin(EspressoWebServer *s, ESPressoMachine *m)
@@ -212,7 +213,7 @@ void webInterfaceAPI::handleSet(AsyncWebServerRequest *request)
   bool firstarg = true;
   LOGINFO1("API SET with", request->url());
   char message[2048]; // This is sufficiently big to store all key:val combinations
-  if (!server->is_authenticated(request))
+  if (!server->is_authenticated(request) && mustAuthenticate)
   {
     LOGINFO("API not authenticed")
     strcpy(message, "{\"authenticated\": false}");
@@ -501,13 +502,18 @@ void webInterfaceAPI::handleConfigFile(AsyncWebServerRequest *request)
 void webInterfaceAPI::handleIsAuthenticated(AsyncWebServerRequest *request)
 {
   char message[32]; // This is sufficiently for any of the messages below
-  if (server->is_authenticated(request))
-  {
-    strcpy(message, "{\"authenticated\":true}");
-  }
-  else
+  if (!server->is_authenticated(request)&&mustAuthenticate)
   {
     strcpy(message, "{\"authenticated\":false}");
   }
+  else
+  {
+    strcpy(message, "{\"authenticated\":true}");
+  }
   request->send(200, "application/json", message);
+}
+
+void webInterfaceAPI::requireAuthorization(bool require){
+  mustAuthenticate=require;
+  return;
 }

@@ -8,11 +8,13 @@ class webInterfaceAPI
 {
 public:
     void begin(EspressoWebServer *server, ESPressoMachine *);
+    void requireAuthorization(bool);
     webInterfaceAPI();
 
 private:
     EspressoWebServer *server;
     ESPressoMachine *myMachine;
+    bool mustAuthenticate;
     size_t content_len;
     void handleStatus(AsyncWebServerRequest *);
     void handleFirmware(AsyncWebServerRequest *);
