@@ -46,6 +46,7 @@ public:
 #endif
     void loop();
     void setup();
+    void report(String,String);
 
 private:
     bool wasNotConnected = true;

@@ -9,7 +9,7 @@
 
 ESPressoInterface::ESPressoInterface(ESPressoMachine *mach) : WebInterface(mach, WEB_USER, WEB_PASS)
 {
-  wifiMngr = new WiFiManager();
+  wifiMngr = new WiFiManager(this);
 }
 
 void ESPressoInterface::serialStatus()
@@ -19,6 +19,22 @@ void ESPressoInterface::serialStatus()
   Serial.println(myMachine->machineStatus);
 #endif
 };
+
+void ESPressoInterface::report(String firstInput="",String secondInput="")
+{
+  LOGINFO1("Report1: ",firstInput);
+  LOGINFO1("Report2: ",secondInput);
+  #ifdef ENABLE_LIQUID
+  lcd->clear();
+  lcd->setCursor(0,0);
+  lcd->print(firstInput);
+  lcd->setCursor(0,2);
+  lcd->print(secondInput);
+  #endif
+}
+
+
+
 
 void ESPressoInterface::loop()
 {
@@ -58,6 +74,9 @@ void ESPressoInterface::loop()
 #ifdef ENABLE_MQTT
   loopMQTT(myMachine);
 #endif
+#ifdef ENABLE_LIQUID
+  loopLiquid(myMachine);
+#endif
   // This Eventloop invokes
   eventLoop();
 }
@@ -65,9 +84,9 @@ void ESPressoInterface::loop()
 void ESPressoInterface::setup()
 {
 
-  #ifdef ENABLE_LIQUID
-      setupLiquid();
-  #endif
+#ifdef ENABLE_LIQUID
+  setupLiquid();
+#endif
   // We set this for later. Wnen there are no credentials set we want to keep the captive portal open - ad infinitum
   _waitingForClientAction = true;
   for (int i = 0; i < NUM_WIFI_CREDENTIALS; i++)
@@ -88,7 +107,7 @@ void ESPressoInterface::setup()
   server->begin(); /// Webserver is now running....
 
   LOGINFO("Wifi Manager done, following up with WebSrv");
-  wifiMngr->loopPortal(this); /// Wait the configuration to be finished or timed out.
+  wifiMngr->loopPortal(); /// Wait the configuration to be finished or timed out.
   /// Configuration should now be set.
 
   wifiMngr->connectMultiWiFi(myMachine->myConfig);
@@ -104,9 +123,7 @@ void ESPressoInterface::setup()
   setupMQTT(this->myMachine);
 #endif
 
-
-
 #ifdef ENABLE_SWITCH_DETECTION
-      setupSwitch();
+  setupSwitch();
 #endif
 }
