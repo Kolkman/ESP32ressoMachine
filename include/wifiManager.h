@@ -87,9 +87,9 @@ typedef struct
 class WiFiManager : public WiFiMulti
 {
 public:
-       WiFiManager();
+       WiFiManager(ESPressoInterface *);
        void setupWiFiAp(WiFi_AP_IPConfig *);
-       void loopPortal(ESPressoInterface *myInterface);
+       void loopPortal();
        uint8_t connectMultiWiFi(EspressoConfig *);
 #ifdef USE_ASYNC_DNS
        AsyncDNSServer *dnsServer;

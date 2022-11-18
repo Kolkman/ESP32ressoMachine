@@ -5,19 +5,17 @@
 /// I wrote this because I wanted a little different functionality, mainly having configuration available after
 /// connecting to MultiWifi.
 /// I removed a lot of configuration (this is very ESP32 specific now)
-
+#include "ESPressoMachineDefaults.h"
 #include "wifiManager.h"
 #include "WiFiMulti.h"
 #include "EspressoWebServer.h"
 #include "EspressoMachine.h"
 #include "config.h"
 
-WiFiManager::WiFiManager()
+WiFiManager::WiFiManager(ESPressoInterface * _i)
 {
-    myInterface = nullptr;
-    // myConfig = config;
+    myInterface = _i;
     dnsServer = new AsyncDNSServer;
-    //   wifiMulti = new WiFiMulti;
 }
 
 void WiFiManager::setupWiFiAp(WiFi_AP_IPConfig *WifiApIP)
@@ -33,6 +31,7 @@ void WiFiManager::setupWiFiAp(WiFi_AP_IPConfig *WifiApIP)
     LOGERROR1(F("Hostname set to"), RFC952_hostname)
     // Remove this line if you do not want to see WiFi password printed
     LOGERROR3(F("WIFI AP setup SSID/PASSWORD"), ApSSID, F("/"), ApPass);
+    myInterface->report(ApSSID,ApPass);
     // This check is copied from ESPAsync_WifiManager
     // Check cores/esp32/esp_arduino_version.h and cores/esp32/core_version.h
 #if (defined(ESP_ARDUINO_VERSION_MAJOR) && (ESP_ARDUINO_VERSION_MAJOR >= 2))
@@ -99,7 +98,7 @@ void WiFiManager::setupWiFiAp(WiFi_AP_IPConfig *WifiApIP)
 
 
 
-void WiFiManager::loopPortal(ESPressoInterface *myInterface)
+void WiFiManager::loopPortal()
 {
     connect = false;
     bool TimedOut = true;
@@ -153,6 +152,7 @@ uint8_t WiFiManager::connectMultiWiFi(EspressoConfig *myConfig)
     }
 
     LOGERROR(F("Connecting MultiWifi..."));
+    myInterface->report(" Connecting to","    MultiWIFI");
     /*
         #if !USE_DHCP_IP
             // New in v1.4.0
