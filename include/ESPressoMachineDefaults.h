@@ -23,7 +23,11 @@
 #define MAX_POWER 500  // this is the maximum power when the temperature is above COLDSTART (see below) and still more
                       // than S_TBAND below the S_TSET  target temperature 
 #define FAILSAFE_TEMP 112.5 // turn heater off above this temp  should the PID run away.
-//
+
+
+#define TEMP_CORRECTION  4.1// Correction needed for thermocouple callibration, can be a few degrees
+
+
 // Intervals for I/O
 //
 #define HEATER_INTERVAL 100

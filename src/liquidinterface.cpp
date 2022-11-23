@@ -2,6 +2,7 @@
 #ifdef ENABLE_LIQUID
 #include "liquidinterface.h"
 #include "debug.h"
+#include "math.h"
 
 LiquidInterface::LiquidInterface()
 {
@@ -17,7 +18,6 @@ void LiquidInterface::setupLiquid()
         LOGERROR(F("PCF8574 is not connected or lcd pins declaration is wrong. Only pins numbers: 4,5,6,16,11,12,13,14 are legal."));
         delay(5000);
     }
-
 
     lcd->clear();
     lcd->backlight();
@@ -37,8 +37,31 @@ void LiquidInterface::loopLiquid(ESPressoMachine *myMachine)
         backlightIsOn = false;
     }
     lcd->clear();
-    lcd->setCursor(6, 0);
-    lcd->print(String(myMachine->inputTemp, 1));
+    lcd->setCursor(2, 0);
+    lcd->print(String(myMachine->inputTemp, 1) + " / " + String(myMachine->myConfig->targetTemp, 1));
+    lcd->setCursor(0, 1);
+    char powerstring[17];
+    powerstring[0] = '\0';
+    int i;
+    for (i = 0; i < 16; i++)
+    {
+        if (myMachine->outputPwr == 0)
+        {
+            break;
+        }
+
+        if (log10(myMachine->outputPwr)/3*16 >= i )
+        {
+            powerstring[i] = 0xff;
+        }
+        else
+        {
+            powerstring[i] = '\0';
+        }
+    }
+    powerstring[i] = '\0';
+    LOGINFO(String(powerstring) + " " + String(myMachine->outputPwr) + "(" + String(log10(myMachine->outputPwr)) + ")");
+    lcd->print(powerstring);
 }
 
 #endif // ENABLE_LIQUID

@@ -20,7 +20,7 @@ TempSensor::TempSensor() : Adafruit_MAX31855(SENSOR_MAX_CLK, SENSOR_MAX_CS, SENS
   lastI = 0.0;
   SumI = 0.0;
   time_now=millis();
-
+  TempCorrection = TEMP_CORRECTION;
   lastErr = 0.0;
   CntT = 0;
   CntI = 0;
@@ -51,7 +51,7 @@ void TempSensor::setupSensor()
     for (int i = 0; i < 5; i++)
     {
 
-      double c = readCelsius();
+      double c = readCelsius()+TempCorrection;
       if (isnan(c))
       {
         Serial.print("ThermoCouple Error");
@@ -80,7 +80,7 @@ void TempSensor::updateTempSensor(double sensorSampleInterval)
   if ((max(time_now, lastSensTime) - min(time_now, lastSensTime)) >= sensorSampleInterval)
   {
    double i = readInternal();  
-    double c = readCelsius();
+    double c = readCelsius()+TempCorrection;
     if (isnan(c) || isnan(i))
     {
      
