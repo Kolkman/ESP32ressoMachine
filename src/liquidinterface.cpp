@@ -60,7 +60,6 @@ void LiquidInterface::loopLiquid(ESPressoMachine *myMachine)
         }
     }
     powerstring[i] = '\0';
-    LOGINFO(String(powerstring) + " " + String(myMachine->outputPwr) + "(" + String(log10(myMachine->outputPwr)) + ")");
     lcd->print(powerstring);
 }
 
