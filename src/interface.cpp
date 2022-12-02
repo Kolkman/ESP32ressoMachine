@@ -25,6 +25,11 @@ void ESPressoInterface::report(String firstInput = "", String secondInput = "")
   LOGINFO1("Report1: ", firstInput);
   LOGINFO1("Report2: ", secondInput);
 #ifdef ENABLE_LIQUID
+  if (!backlightIsOn)
+  {
+    lcd->displayOn();
+    backlightIsOn=true;
+  }
   lcd->clear();
   lcd->setCursor(0, 0);
   lcd->print(firstInput);
@@ -64,7 +69,7 @@ void ESPressoInterface::loop()
   //  serialStatus(); //bit noisy
 #endif
 #ifdef ENABLE_LIQUID
-loopLiquid(myMachine);
+  loopLiquid(myMachine);
 #endif
 #ifdef ENABLE_TELNET
   loopTelnet(myMachine->machineStatus);
@@ -75,8 +80,6 @@ loopLiquid(myMachine);
 
   // This  invokes the Eventloop that puts info on the websocket
   eventLoop();
-
-
 }
 
 void ESPressoInterface::setup()

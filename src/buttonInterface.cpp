@@ -110,37 +110,37 @@ void ButtonInterface::loopButton(ESPressoMachine *myMachine)
         {
             LOGINFO1("The black: ", now - BlackStartPress);
             BlackLastPress = now;
-            if ((now - BlackStartPress) > LONGPRESS_T)
+            if ((now - BlackStartPress) > SINGLEPRESS_T * 3)
             {
                 if (!myMachine->powerOffMode)
                 {
-                    myMachine->powerOffMode = true;
+                    LOGINFO("Turning PID OFF")
                     String filler = ">";
-                    for (int i; i < 16; i++)
+                    for (int i=0; i < 16; i++)
                     {
-                        myMachine->myInterface->report("Turning PID contol off", filler);
+                        myMachine->myInterface->report("Turning PID off", filler);
                         delay(100);
                         filler = "-" + filler;
                     }
-                    // Give some time to let loose of the button.
-                    BlackStartPress=millis();
-                    BlackLastPress = now;
+                    myMachine->powerOffMode = true;
                 }
                 else
                 {
-                    myMachine->powerOffMode = false;
-                     String filler = ">";
-                    for (int i; i < 16; i++)
+                    LOGINFO("Turning PID ON")
+                    String filler = ">";
+                    for (int i=0; i < 16; i++)
                     {
-                        myMachine->myInterface->report("Starting PID contol", filler);
+                        myMachine->myInterface->report("Turning PID on", filler);
                         delay(100);
                         filler = "+" + filler;
                     }
-                               // Give some time to let loose of the button.
-                    BlackStartPress=millis();
-                    BlackLastPress = now;
-                    changeToBeReported = true;
+                    myMachine->powerOffMode = false;
                 }
+                // Give some time to let loose of the button.
+                BlackStartPress = millis();
+
+                BlackLastPress = now;
+                changeToBeReported = true;
             }
         }
     }

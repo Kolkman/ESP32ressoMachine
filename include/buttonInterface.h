@@ -20,7 +20,7 @@
 
 
 #ifndef SINGLEPRESS_T
-#define SINGLEPRESS_T 200 // miliseconds hold will be seen as a single button press
+#define SINGLEPRESS_T 300 // miliseconds hold will be seen as a single button press
 #endif
 
 #ifndef LONGPRESS_T
