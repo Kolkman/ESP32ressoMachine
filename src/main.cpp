@@ -66,7 +66,7 @@ void setup()
 
   Serial.print("Firmware Version");
   Serial.println(String(CURRENTFIRMWARE) + " " + String(F(__DATE__)) + ":" + String(F(__TIME__)));
-  Serial.println("Settin up PID...");
+  Serial.println("Setting up PID Control...");
 
   // setup the Machine
 
