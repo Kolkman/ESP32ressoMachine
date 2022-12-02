@@ -65,6 +65,10 @@
 #define ENABLE_MQTT
 #define ENABLE_SERIAL
 #define ENABLE_LIQUID
+#ifdef ENABLE_LIQUID
+// BUTTONS for Interfaces rely on the LCD
+#define ENABLE_BUTTON
+#endif //ENABLED_LIQUIDE
 
 
 // SSID password for configuration
@@ -83,3 +87,11 @@
 #define MQTT_TOPIC "Espresso"
 #endif //ENABLE_MQTT
 #endif
+
+
+#ifdef ENABLE_BUTTON
+#define BLUE_BUTTON 16
+#define RED_BUTTON 17
+#define BLACK_BUTTON 18
+
+#endif // ENABLE_BUTTON

@@ -26,6 +26,8 @@ public:
     void loopLiquid(ESPressoMachine *);
 private:
     bool backlightIsOn;
+     unsigned long lastUpdateTime;
+     unsigned long time_now;
 };
 
 #endif

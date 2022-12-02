@@ -7,7 +7,6 @@
 #include <Arduino.h>
 //#include <WiFi.h>
 
-
 // local Includes
 #include "ESPressoMachine.h"
 
@@ -18,12 +17,10 @@
 #include "webinterface.h"
 #ifdef ENABLE_MQTT
 #include "mqttinterface.h"
-#endif //ENABLE_MQTT
+#endif // ENABLE_MQTT
 #include "pidtuner.h"
 
-
-ESPressoMachine  myRancilio;
-
+ESPressoMachine myRancilio;
 
 uint8_t mac[6];
 
@@ -38,8 +35,6 @@ void setup()
     Serial.println(")");
     delay(100);
   }
-
-
 
   Serial.println("Mounting LittleFS...");
   if (!myRancilio.myConfig->prepareFS())
@@ -70,7 +65,7 @@ void setup()
   }
 
   Serial.print("Firmware Version");
-  Serial.println(String(CURRENTFIRMWARE) +" "+ String(F(__DATE__))+":"+String(F(__TIME__)));
+  Serial.println(String(CURRENTFIRMWARE) + " " + String(F(__DATE__)) + ":" + String(F(__TIME__)));
   Serial.println("Settin up PID...");
 
   // setup the Machine
@@ -78,13 +73,17 @@ void setup()
   // start PID
   myRancilio.startMachine();
   myRancilio.manageTemp();
-  
 }
 
 void loop()
 {
-  if (myRancilio.heatLoop()) {
-      // Only send out information when there is something new to report
-      myRancilio.myInterface->loop();
+
+  if (myRancilio.heatLoop())
+  {
+    // Only send out information when there is something new to report
+    myRancilio.myInterface->loop();
   }
+#ifdef ENABLE_BUTTON
+  myRancilio.myInterface->loopButton(&myRancilio);
+#endif // ENABLE_BUTTON
 }

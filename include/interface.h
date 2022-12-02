@@ -11,7 +11,10 @@
 //#endif
 #ifdef ENABLE_LIQUID
 #include "liquidinterface.h"
-#endif
+#ifdef ENABLE_BUTTON
+#include "buttonInterface.h"
+#endif // ENABLE_BUTTON
+#endif // ENABLE_LIQuID
 
 class WiFiManager; // forward declaration
 
@@ -36,7 +39,10 @@ class ESPressoInterface : public WebInterface
 #endif
 #ifdef ENABLE_LIQUID
                           public LiquidInterface
-#endif
+#ifdef ENABLE_BUTTON
+        , public ButtonInterface
+#endif // ENABLE_BUTTON
+#endif // ENABLE_LIQUID
 {
 public:
     ESPressoInterface(ESPressoMachine *);
