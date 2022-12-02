@@ -31,7 +31,7 @@ void WiFiManager::setupWiFiAp(WiFi_AP_IPConfig *WifiApIP)
     LOGERROR1(F("Hostname set to"), RFC952_hostname)
     // Remove this line if you do not want to see WiFi password printed
     LOGERROR3(F("WIFI AP setup SSID/PASSWORD"), ApSSID, F("/"), ApPass);
-    myInterface->report(ApSSID,ApPass);
+    myInterface->report("SSID: "+ ApSSID,"PW: "+ ApPass);
     // This check is copied from ESPAsync_WifiManager
     // Check cores/esp32/esp_arduino_version.h and cores/esp32/core_version.h
 #if (defined(ESP_ARDUINO_VERSION_MAJOR) && (ESP_ARDUINO_VERSION_MAJOR >= 2))

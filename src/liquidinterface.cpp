@@ -12,6 +12,7 @@ LiquidInterface::LiquidInterface()
 
 void LiquidInterface::setupLiquid()
 {
+    time_now = millis();
     LOGINFO("SETTING UP INTERFACE");
     while (lcd->begin(LCD_COLUMS, LCD_ROWS) != 1)
     {
@@ -31,36 +32,47 @@ void LiquidInterface::setupLiquid()
 
 void LiquidInterface::loopLiquid(ESPressoMachine *myMachine)
 {
-    if (myMachine->powerOffMode && backlightIsOn)
-    {
-        lcd->noBacklight();
-        backlightIsOn = false;
-    }
-    lcd->clear();
-    lcd->setCursor(2, 0);
-    lcd->print(String(myMachine->inputTemp, 1) + " / " + String(myMachine->myConfig->targetTemp, 1));
-    lcd->setCursor(0, 1);
-    char powerstring[17];
-    powerstring[0] = '\0';
-    int i;
-    for (i = 0; i < 16; i++)
-    {
-        if (myMachine->outputPwr == 0)
-        {
-            break;
-        }
 
-        if (log10(myMachine->outputPwr)/3*16 >= i )
+    time_now = millis();
+    // only update screen every so often
+
+    if ((max(time_now, lastUpdateTime) - min(time_now, lastUpdateTime)) >= 500)
+    {
+        if (myMachine->powerOffMode && backlightIsOn)
         {
-            powerstring[i] = 0xff;
+            lcd->noBacklight();
+            backlightIsOn = false;
         }
-        else
+        if (!myMachine->powerOffMode && !backlightIsOn){
+             lcd->backlight();
+            backlightIsOn = true;
+        }
+        lcd->clear();
+        lcd->setCursor(2, 0);
+        lcd->print(String(myMachine->inputTemp, 1) + " / " + String(myMachine->myConfig->targetTemp, 1));
+        lcd->setCursor(0, 1);
+        char powerstring[17];
+        powerstring[0] = '\0';
+        int i;
+        for (i = 0; i < 16; i++)
         {
-            powerstring[i] = '\0';
+            if (myMachine->outputPwr == 0)
+            {
+                break;
+            }
+
+            if (log10(myMachine->outputPwr) / 3 * 16 >= i)
+            {
+                powerstring[i] = 0xff;
+            }
+            else
+            {
+                powerstring[i] = '\0';
+            }
         }
+        powerstring[i] = '\0';
+        lcd->print(powerstring);
     }
-    powerstring[i] = '\0';
-    lcd->print(powerstring);
 }
 
 #endif // ENABLE_LIQUID

@@ -20,25 +20,21 @@ void ESPressoInterface::serialStatus()
 #endif
 };
 
-void ESPressoInterface::report(String firstInput="",String secondInput="")
+void ESPressoInterface::report(String firstInput = "", String secondInput = "")
 {
-  LOGINFO1("Report1: ",firstInput);
-  LOGINFO1("Report2: ",secondInput);
-  #ifdef ENABLE_LIQUID
+  LOGINFO1("Report1: ", firstInput);
+  LOGINFO1("Report2: ", secondInput);
+#ifdef ENABLE_LIQUID
   lcd->clear();
-  lcd->setCursor(0,0);
+  lcd->setCursor(0, 0);
   lcd->print(firstInput);
-  lcd->setCursor(0,2);
+  lcd->setCursor(0, 2);
   lcd->print(secondInput);
-  #endif
+#endif
 }
-
-
-
 
 void ESPressoInterface::loop()
 {
-
   if (wifiMngr->run(WIFI_MULTI_CONNECT_WAITING_MS) == WL_CONNECTED)
   {
     if (wasNotConnected)
@@ -65,20 +61,22 @@ void ESPressoInterface::loop()
 
   myMachine->setMachineStatus();
 #ifdef ENABLE_SERIAL
-  // serialStatus(machineStatus); //bit noisy
+  //  serialStatus(); //bit noisy
 #endif
-
+#ifdef ENABLE_LIQUID
+loopLiquid(myMachine);
+#endif
 #ifdef ENABLE_TELNET
   loopTelnet(myMachine->machineStatus);
 #endif
 #ifdef ENABLE_MQTT
   loopMQTT(myMachine);
 #endif
-#ifdef ENABLE_LIQUID
-  loopLiquid(myMachine);
-#endif
-  // This Eventloop invokes
+
+  // This  invokes the Eventloop that puts info on the websocket
   eventLoop();
+
+
 }
 
 void ESPressoInterface::setup()
@@ -86,7 +84,10 @@ void ESPressoInterface::setup()
 
 #ifdef ENABLE_LIQUID
   setupLiquid();
-#endif
+#ifdef ENABLE_BUTTON
+  setupButton();
+#endif // ENABLE_BUTTON
+#endif // ENABLE_LIQUID
   // We set this for later. Wnen there are no credentials set we want to keep the captive portal open - ad infinitum
   _waitingForClientAction = true;
   for (int i = 0; i < NUM_WIFI_CREDENTIALS; i++)
