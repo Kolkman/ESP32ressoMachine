@@ -117,12 +117,12 @@ void ESPressoInterface::setup()
     LOGINFO("Wifi Manager done, following up with WebSrv");
     wifiMngr->loopPortal(); /// Wait the configuration to be finished or timed out.
   }
-  /// Configuration should now be set.
+
   wifiMngr->connectMultiWiFi(myMachine->myConfig);
   server->reset();
 
   setupWebSrv(this->myMachine);
-
+   if (!_initConfig) server->begin(); /// Webserver is now running....
 #ifdef ENABLE_TELNET
   setupTelnet();
 #endif
