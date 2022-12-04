@@ -12,7 +12,7 @@
 
 #undef DEBUG
 
-TempSensor::TempSensor() 
+TempSensor::TempSensor() : Adafruit_MAX31855(SENSOR_MAX_CLK, SENSOR_MAX_CS, SENSOR_MAX_DO)
 {
   
   lastT = 0.0;
@@ -25,8 +25,6 @@ TempSensor::TempSensor()
   CntT = 0;
   CntI = 0;
   lastSensTime = 0;
-
-  thermocouple=new Adafruit_MAX31855(SENSOR_MAX_CLK, SENSOR_MAX_CS, SENSOR_MAX_DO);
 }
 
 void TempSensor::setupSensor()
@@ -39,7 +37,7 @@ void TempSensor::setupSensor()
   // wait for MAX chip to stabilize
   delay(500);
   Serial.println("Initializing sensor...");
-  if (!thermocouple->begin())
+  if (!begin())
   {
     Serial.println("ERROR.");
     while (1)
@@ -59,7 +57,7 @@ void TempSensor::setupSensor()
         Serial.print("Thermocouple fault(s) detected!    @");
         Serial.println(time_now);
 
-        uint8_t e = thermocouple->readError();
+        uint8_t e = readError();
         if (e & MAX31855_FAULT_OPEN)
           Serial.println("FAULT: Thermocouple is open - no connections.");
         if (e & MAX31855_FAULT_SHORT_GND)
