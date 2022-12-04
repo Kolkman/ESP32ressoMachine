@@ -46,6 +46,7 @@ class ESPressoInterface : public WebInterface
 {
 public:
     ESPressoInterface(ESPressoMachine *);
+    ESPressoMachine * myMachine;
 #ifdef ENABLE_SERIAL
     void serialStatus();
     WiFiManager *wifiMngr;

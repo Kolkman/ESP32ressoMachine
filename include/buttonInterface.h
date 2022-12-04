@@ -18,7 +18,6 @@
 #define RED_BUTTON 17
 #endif
 
-
 #ifndef SINGLEPRESS_T
 #define SINGLEPRESS_T 300 // miliseconds hold will be seen as a single button press
 #endif
@@ -27,24 +26,22 @@
 #define LONGPRESS_T 3000 // miliseconds hold will be seen as a long button press
 #endif
 
-
-
-
 #define LCD_PAGE ((LCD_COLUMS) * (LCD_ROWS))
 class ButtonInterface
 {
 public:
     ButtonInterface();
-    void setupButton();
+    bool setupButton(ESPressoMachine *);
     void loopButton(ESPressoMachine *);
 
 private:
+
     unsigned long BlueStartPress;
     unsigned long RedStartPress;
-    unsigned long  BlackStartPress;
-      unsigned long BlueLastPress;
+    unsigned long BlackStartPress;
+    unsigned long BlueLastPress;
     unsigned long RedLastPress;
-    unsigned long  BlackLastPress;
+    unsigned long BlackLastPress;
 };
 
 #endif
