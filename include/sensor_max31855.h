@@ -21,7 +21,7 @@
 #define MAX31855_SMP_TIME 5 // sample time
 
 
-class TempSensor 
+class TempSensor : public Adafruit_MAX31855 
 {
 public:
     TempSensor();
@@ -41,7 +41,6 @@ private:
     int CntI;
     unsigned long lastSensTime;
     unsigned long time_now;
-     Adafruit_MAX31855 * thermocouple;
 };
 
 #endif
