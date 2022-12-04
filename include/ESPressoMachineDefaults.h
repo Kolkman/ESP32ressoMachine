@@ -23,7 +23,11 @@
 #define MAX_POWER 500  // this is the maximum power when the temperature is above COLDSTART (see below) and still more
                       // than S_TBAND below the S_TSET  target temperature 
 #define FAILSAFE_TEMP 112.5 // turn heater off above this temp  should the PID run away.
-//
+
+
+#define TEMP_CORRECTION  4.1// Correction needed for thermocouple callibration, can be a few degrees
+
+
 // Intervals for I/O
 //
 #define HEATER_INTERVAL 100
@@ -60,6 +64,11 @@
 #define ENABLE_TELNET
 #define ENABLE_MQTT
 #define ENABLE_SERIAL
+#define ENABLE_LIQUID
+
+#ifdef ENABLE_LIQUID  // KEEP!  BUTTONS for Interfaces rely on the LCD
+#define ENABLE_BUTTON
+#endif //ENABLED_LIQUIDE
 
 
 // SSID password for configuration
@@ -68,6 +77,7 @@
 #define WEB_USER "admin"
 #define WEB_PASS "silvia"
 
+#define COOKIENAME "ESP32RESSO_ID"
 
 #ifdef ENABLE_MQTT
 #define MQTT_HOST "mqtt.example.net"
@@ -77,3 +87,11 @@
 #define MQTT_TOPIC "Espresso"
 #endif //ENABLE_MQTT
 #endif
+
+
+#ifdef ENABLE_BUTTON
+#define BLUE_BUTTON 16
+#define RED_BUTTON 17
+#define BLACK_BUTTON 18
+
+#endif // ENABLE_BUTTON

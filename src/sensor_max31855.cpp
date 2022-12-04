@@ -19,8 +19,8 @@ TempSensor::TempSensor()
   SumT = 0.0;
   lastI = 0.0;
   SumI = 0.0;
-  time_now = millis();
-
+  time_now=millis();
+  TempCorrection = TEMP_CORRECTION;
   lastErr = 0.0;
   CntT = 0;
   CntI = 0;
@@ -53,7 +53,7 @@ void TempSensor::setupSensor()
     for (int i = 0; i < 5; i++)
     {
 
-      double c = thermocouple->readCelsius();
+      double c = readCelsius()+TempCorrection;
       if (isnan(c))
       {
         Serial.print("Thermocouple fault(s) detected!    @");
@@ -91,8 +91,8 @@ void TempSensor::updateTempSensor(double sensorSampleInterval)
 
   if ((max(time_now, lastSensTime) - min(time_now, lastSensTime)) >= sensorSampleInterval)
   {
-    double i = thermocouple->readInternal();
-    double c = thermocouple->readCelsius();
+   double i = readInternal();  
+    double c = readCelsius()+TempCorrection;
     if (isnan(c) || isnan(i))
     {
 
