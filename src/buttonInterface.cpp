@@ -18,15 +18,32 @@ ButtonInterface::ButtonInterface()
     BlackLastPress = 0;
 }
 
-void ButtonInterface::setupButton()
+bool ButtonInterface::setupButton(ESPressoMachine * myMachine)
 {
+
+    bool initiateConfig=false; // Config only when the magic button is pressed.
     LOGINFO("SETTING UP BUTTON INTERFACE");
     pinMode(BLACK_BUTTON, INPUT_PULLUP); // config GIOP21 as input pin and enable the internal pull-up resistor
     pinMode(BLUE_BUTTON, INPUT_PULLUP);  // config GIOP21 as input pin and enable the internal pull-up resistor
     pinMode(RED_BUTTON, INPUT_PULLUP);   // config GIOP21 as input pin and enable the internal pull-up resistor
+    myMachine->myInterface->report("Press Black button","to enter config");
+    // We enter a small loop now, waiting for the black button to be pressed.
+    unsigned long startTime=millis();
+    
+    while ((millis()-startTime)<10000){ // 10 seconds to press the black button
+        if (digitalRead(BLACK_BUTTON) == LOW)   {
+            initiateConfig=true;
+            break;
+        }
+
+    }
+
+    LOGINFO1("intiateConfig value: ",String(initiateConfig));
+    return (initiateConfig);
+
 }
 
-void ButtonInterface::loopButton(ESPressoMachine *myMachine)
+void ButtonInterface::loopButton(ESPressoMachine * myMachine)
 {
     unsigned long now = millis();
     // read the state of the switch/button:

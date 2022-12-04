@@ -65,8 +65,8 @@
 #define ENABLE_MQTT
 #define ENABLE_SERIAL
 #define ENABLE_LIQUID
-#ifdef ENABLE_LIQUID
-// BUTTONS for Interfaces rely on the LCD
+
+#ifdef ENABLE_LIQUID  // KEEP!  BUTTONS for Interfaces rely on the LCD
 #define ENABLE_BUTTON
 #endif //ENABLED_LIQUIDE
 

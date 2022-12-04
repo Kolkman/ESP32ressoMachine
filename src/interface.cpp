@@ -9,6 +9,7 @@
 
 ESPressoInterface::ESPressoInterface(ESPressoMachine *mach) : WebInterface(mach, WEB_USER, WEB_PASS)
 {
+  myMachine = mach;
   wifiMngr = new WiFiManager(this);
 }
 
@@ -28,7 +29,7 @@ void ESPressoInterface::report(String firstInput = "", String secondInput = "")
   if (!backlightIsOn)
   {
     lcd->displayOn();
-    backlightIsOn=true;
+    backlightIsOn = true;
   }
   lcd->clear();
   lcd->setCursor(0, 0);
@@ -84,13 +85,16 @@ void ESPressoInterface::loop()
 
 void ESPressoInterface::setup()
 {
+  bool _initConfig = true;
 
 #ifdef ENABLE_LIQUID
   setupLiquid();
 #ifdef ENABLE_BUTTON
-  setupButton();
-#endif // ENABLE_BUTTON
-#endif // ENABLE_LIQUID
+  _initConfig = setupButton(this->myMachine); // use the button interface to initiate the stand alone
+                                              // configuration
+#endif                                        // ENABLE_BUTTON
+#endif                                        // ENABLE_LIQUID
+
   // We set this for later. Wnen there are no credentials set we want to keep the captive portal open - ad infinitum
   _waitingForClientAction = true;
   for (int i = 0; i < NUM_WIFI_CREDENTIALS; i++)
@@ -103,17 +107,17 @@ void ESPressoInterface::setup()
   }
   if (_waitingForClientAction)
     LOGINFO("NO WiFi NEtworks set, we'll later keep the captive portal open");
-
-  wifiMngr->setupWiFiAp(&myMachine->myConfig->WM_AP_IPconfig);
-  server->reset();
-  setConfigPortalPages();
-
-  server->begin(); /// Webserver is now running....
-
-  LOGINFO("Wifi Manager done, following up with WebSrv");
-  wifiMngr->loopPortal(); /// Wait the configuration to be finished or timed out.
+  // Config cycle only happens if the button is pressed 
+  if (_initConfig)
+  {
+    wifiMngr->setupWiFiAp(&myMachine->myConfig->WM_AP_IPconfig);
+    server->reset();
+    setConfigPortalPages();
+    server->begin(); /// Webserver is now running....
+    LOGINFO("Wifi Manager done, following up with WebSrv");
+    wifiMngr->loopPortal(); /// Wait the configuration to be finished or timed out.
+  }
   /// Configuration should now be set.
-
   wifiMngr->connectMultiWiFi(myMachine->myConfig);
   server->reset();
 
