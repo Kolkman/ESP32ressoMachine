@@ -24,6 +24,12 @@ _name = p2.sub("_", filename)
 
 
 
+try:
+    scope=sys.argv[3]
+except IndexError:
+    scope="class"
+
+
 
 try:
     _file = open(path, "r")
@@ -46,11 +52,23 @@ print("unsigned char "+_name +
       "[] = {{{}}};".format(",".join(bytes_to_c_arr(_compr))))
 print("unsigned int "+_name+"_len = ", len(_compr), ";")
 
+if scope=="class":
+#  print("\n\n")
+#  print("#define DEF_HANDLE_"+_name + "  " + "server->on(\"/"+filename, end='')
+#  print("\", HTTP_GET, EspressoWebServer::handleFile((AsyncWebServerRequest *) request",  end='')
+#  print(",\"" + sys.argv[2]+"\","+_name+","+_name+"_len));")
 
-print("\n\n")
-print("#define DEF_HANDLE_"+_name + "  server->on(\"/"+filename, end='')
-print("\", HTTP_GET, std::bind (&WebInterface::handleFile, this, std::placeholders::_1", end='')
-print(",\"" + sys.argv[2]+"\","+_name+","+_name+"_len));")
+
+  print("\n\n")
+  print("#define DEF_HANDLE_"+_name + "  " + "server->on(\"/"+filename, end='')
+  print("\", HTTP_GET, std::bind (&EspressoWebServer::handleFile, server, std::placeholders::_1", end='')
+  print(",\"" + sys.argv[2]+"\","+_name+","+_name+"_len));")
+
+else:  ### This is serverscope
 
 
+  print("\n\n")
+  print("#define DEF_HANDLE_"+_name + "  " + "on(\"/"+filename, end='')
+  print("\", HTTP_GET, std::bind (&EspressoWebServer::handleFile, this, std::placeholders::_1", end='')
+  print(",\"" + sys.argv[2]+"\","+_name+","+_name+"_len));")
 print("#endif")

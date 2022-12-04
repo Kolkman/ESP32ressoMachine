@@ -13,6 +13,7 @@ all:include/pages/index.html.h include/pages/update.html.h  \
 	include/pages/captivePortal.html.h \
 	include/pages/configDone.html.h \
 	include/pages/networkConfigPage.js.h \
+	include/pages/WebLogin.html.h \
 	include/pages/redCircleCrossed.svg.h
 	@exec true 
 
@@ -21,7 +22,12 @@ all:include/pages/index.html.h include/pages/update.html.h  \
 
 
 include/pages/test2.html.h: WEBSources/test2.html 
-	@./ProduceDefine.py $< text/html  > $@
+	@./ProduceDefine.py $< text/html this > $@
+
+
+
+include/pages/WebLogin.html.h: WEBSources/WebLogin.html 
+	@./ProduceDefine.py $< text/html serverscope > $@
 
 include/pages/index.html.h: WEBSources/index.html 
 	@./ProduceDefine.py $< text/html\;charset=UTF-8  > $@
@@ -31,10 +37,10 @@ include/pages/configuration.html.h: WEBSources/configuration-min.html
 	@./ProduceDefine.py $< text/html\;charset=UTF-8  > $@
 
 include/pages/switch.css.h: WEBsources/switch-min.css
-	@./ProduceDefine.py $< text/css  > $@
+	@./ProduceDefine.py $< text/css serverscope > $@
 
 include/pages/ESPresso.css.h: WEBsources/ESPresso-min.css
-	@./ProduceDefine.py $< text/css  > $@
+	@./ProduceDefine.py $< text/css serverscope  > $@
 
 
 include/pages/index_helper.js.h: WEBSources/index_helper-min.js 
@@ -56,14 +62,14 @@ include/pages/drawtimeseries.js.h: WEBSources/drawtimeseries-min.js
 	@./ProduceDefine.py $< text/javascript  > $@
 
 include/pages/firmware.js.h: WEBSources/firmware-min.js
-	@./ProduceDefine.py $< text/javascript  > $@
+	@./ProduceDefine.py $< text/javascript serverscope > $@
 
 
 include/pages/EspressoMachine.svg.h: WEBSources/EspressoMachine.svg
-	@./ProduceDefine.py $< image/svg+xml  > $@
+	@./ProduceDefine.py $< image/svg+xml serverscope > $@
 
 include/pages/redCircleCrossed.svg.h: WEBSources/redCircleCrossed.svg
-	@./ProduceDefine.py $< image/svg+xml  > $@
+	@./ProduceDefine.py $< image/svg+xml serverscope > $@
 
 
 include/pages/captivePortal.html.h: WEBSources/captivePortal.html

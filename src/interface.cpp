@@ -9,7 +9,8 @@
 
 ESPressoInterface::ESPressoInterface(ESPressoMachine *mach) : WebInterface(mach, WEB_USER, WEB_PASS)
 {
-  wifiMngr = new WiFiManager();
+  myMachine = mach;
+  wifiMngr = new WiFiManager(this);
 }
 
 void ESPressoInterface::serialStatus()
@@ -20,9 +21,26 @@ void ESPressoInterface::serialStatus()
 #endif
 };
 
+void ESPressoInterface::report(String firstInput = "", String secondInput = "")
+{
+  LOGINFO1("Report1: ", firstInput);
+  LOGINFO1("Report2: ", secondInput);
+#ifdef ENABLE_LIQUID
+  if (!backlightIsOn)
+  {
+    lcd->displayOn();
+    backlightIsOn = true;
+  }
+  lcd->clear();
+  lcd->setCursor(0, 0);
+  lcd->print(firstInput);
+  lcd->setCursor(0, 2);
+  lcd->print(secondInput);
+#endif
+}
+
 void ESPressoInterface::loop()
 {
-
   if (wifiMngr->run(WIFI_MULTI_CONNECT_WAITING_MS) == WL_CONNECTED)
   {
     if (wasNotConnected)
@@ -49,42 +67,57 @@ void ESPressoInterface::loop()
 
   myMachine->setMachineStatus();
 #ifdef ENABLE_SERIAL
-  // serialStatus(machineStatus); //bit noisy
+  //  serialStatus(); //bit noisy
 #endif
-
+#ifdef ENABLE_LIQUID
+  loopLiquid(myMachine);
+#endif
 #ifdef ENABLE_TELNET
   loopTelnet(myMachine->machineStatus);
 #endif
 #ifdef ENABLE_MQTT
   loopMQTT(myMachine);
 #endif
-  // This Eventloop invokes
+
+  // This  invokes the Eventloop that puts info on the websocket
   eventLoop();
 }
 
 void ESPressoInterface::setup()
 {
-// We set this for later. Wnen there are no credentials set we want to keep the captive portal open - ad infinitum
+  bool _initConfig = true;
+
+#ifdef ENABLE_LIQUID
+  setupLiquid();
+#ifdef ENABLE_BUTTON
+  _initConfig = setupButton(this->myMachine); // use the button interface to initiate the stand alone
+                                              // configuration
+#endif                                        // ENABLE_BUTTON
+#endif                                        // ENABLE_LIQUID
+
+  // We set this for later. Wnen there are no credentials set we want to keep the captive portal open - ad infinitum
   _waitingForClientAction = true;
-  for (int i = 0; i < NUM_WIFI_CREDENTIALS; i++){
+  for (int i = 0; i < NUM_WIFI_CREDENTIALS; i++)
+  {
 
-    if (strlen(myMachine->myConfig->WM_config.WiFi_Creds[i].wifi_ssid)>0)
-      {
-        _waitingForClientAction = false;
-      }
+    if (strlen(myMachine->myConfig->WM_config.WiFi_Creds[i].wifi_ssid) > 0)
+    {
+      _waitingForClientAction = false;
+    }
   }
-  if (_waitingForClientAction) LOGINFO("NO WiFi NEtworks set, we'll later keep the captive portal open");
-
-  wifiMngr->setupWiFiAp(&myMachine->myConfig->WM_AP_IPconfig);
-  server->reset();
-  setConfigPortalPages();
-
-  server->begin(); /// Webserver is now running....
-
-  LOGINFO("Wifi Manager done, following up with WebSrv");
-  wifiMngr->loopPortal(this); /// Wait the configuration to be finished or timed out.
+  if (_waitingForClientAction)
+    LOGINFO("NO WiFi NEtworks set, we'll later keep the captive portal open");
+  // Config cycle only happens if the button is pressed 
+  if (_initConfig)
+  {
+    wifiMngr->setupWiFiAp(&myMachine->myConfig->WM_AP_IPconfig);
+    server->reset();
+    setConfigPortalPages();
+    server->begin(); /// Webserver is now running....
+    LOGINFO("Wifi Manager done, following up with WebSrv");
+    wifiMngr->loopPortal(); /// Wait the configuration to be finished or timed out.
+  }
   /// Configuration should now be set.
-
   wifiMngr->connectMultiWiFi(myMachine->myConfig);
   server->reset();
 

@@ -7,20 +7,20 @@
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
     <style>
         #github {
-            position:absolute;
+            position: absolute;
             transform: rotate(45deg);
             width: 15em;
-            padding:2ex;
-            background-color: rgb(171, 41, 41);
+            padding: 2ex;
+            background-color: var(-bgcolorHighlight);
             transform-origin: right;
             text-align: center;
-            right:-30px;
+            right: -30px;
             top: 160px;
 
         }
 
         .anImage {
-            background-color: cornsilk;
+            background-color: var(--baseColor);
             margin: .5%;
             padding: .5%;
         }
@@ -40,7 +40,7 @@
 
         #InterfaceImages {
             float: right;
-            background-color: cornsilk;
+            background-color: var(--baseColor);
             padding: 2ex;
             width: 30%
         }
@@ -53,16 +53,16 @@
 </head>
 
 <body>
-  
+
     <div>
-    <h1>
-        <div>ESP<div class="numberplaceholder">
-                <div id="number32">32</div>
-            </div>resso Machine </div>
-         
-    </h1>
-    <div id="github">Find and fork me on <A href="https://github.com/Kolkman/ESP32ressoMachine">Github</A></div>
-</div>
+        <h1>
+            <div>ESP<div class="numberplaceholder">
+                    <div id="number32">32</div>
+                </div>resso Machine </div>
+
+        </h1>
+        <div id="github">Find and fork me on <A href="https://github.com/Kolkman/ESP32ressoMachine">Github</A></div>
+    </div>
 
 
     <div id="EspressoMachinePNG"><img src="ArtSource/EspressoMachine.png"></div>
@@ -70,19 +70,18 @@
     <div class="main">
         <h2>Overview</h2>
         <p>
-            The project covers somewhat advances features for an espresso machine temperature controller. The basic idea was to have
-            reproducible "espresso results" due to temperature regulation and being able to fine-tune. Especially small
-            machines have a low heat capacity and quality suffers a lot from different heat-up-times and high hysteresis
-            in standard temperature switches. This <i>fork</i> was specifically developed for a Rancilio Silvia (v1)
-            which are known to have fluctuations up to 20 degrees Celcius.
+            The project covers somewhat advances features for an espresso machine temperature controller. The basic idea
+            was to have reproducible "espresso results" due to temperature regulation and being able to fine-tune.
+            Especially small machines have a low heat capacity and quality suffers a lot from different heat-up-times
+            and high hysteresis in standard temperature switches. This <i>fork</i> was specifically developed for a
+            Rancilio Silvia (v1) which are known to have fluctuations up to 20 degrees Celcius.
         </p>
- 
-        
+
+
 
         <p>
             With this project you should be able to install a PID for about 30 Euro of material, some soldering,
-            uploading
-            the firmware, and installling the hardware.
+            uploading the firmware, and installling the hardware.
         </p>
         <h2>Interface</h2>
         <img id="HomePageGif" class="anImage" src="ArtSource/HomePageAnimation.gif">
@@ -90,40 +89,36 @@
 
 
         <p>
-            The homepage presents a simple temperature gauge, a power indicator, and the ability to turn the heater on or
-            off. The configuration page contains all that is needed for setting the various parameters that control
+            The homepage presents a simple temperature gauge, a power indicator, and the ability to turn the heater on
+            or off. The configuration page contains all that is needed for setting the various parameters that control
             the temperature. It contains a graph that presents the last 10 minutes of data so you see what the impact is
-            of
-            your tuning. When the page is loaded it initiates its buffer with a few minutes of data from board. Setting
-            the
-            parameters us done using a username and password (currently a value set at compilation time).
+            of your tuning. When the page is loaded it initiates its buffer with a few minutes of data from board.
+            Setting the parameters us done using a username and password (currently a value set at compilation time).
 
         </p>
         <p>
             Most of the interaction with the ESP32Machine is done via an restful API. All parameters can be set or read
-            through it.
-            In addition there is an MQTT interface that is used to publish the machines's current status.
+            through it. In addition there is an MQTT interface that is used to publish the machines's current status.
         </p>
         <p>
             The screenshoots will give you an idea how things look.
-
+        </p>
 
 
         <h2>Buid Background</h2>
-  
+
         <h3> Software</h3>
         <p>
             This project refactored from the original <a href="https://github.com/Schm1tz1/ESPressIoT">ESPressIoT
-                project by
-                Roman Schmit</a> originally written for an ESP3866 board with a TSIC sensor.
+                project by Roman Schmit</a> which was originally written for an ESP3866 board with a TSIC sensor.
         </p>
         <p>
             This <i>fork</i> ports that code to an ESP32 with a MAX31855 amplified K thermocouple. It has been
             refactored it to be more object oriented and graphically more appealing. It has some small optimisations
-            to deal with measurement noise and ones that allow for marginally faster convergence. Overal the temperature 
+            to deal with measurement noise and ones that allow for marginally faster convergence. Overal the temperature
             stability is about 0.2 degrees centrigrade.
         </p>
-        
+
         <p>
             For development I used platformIO on Visual Studio Code MAX. The toolchain relies on having <A
                 href=https://marketplace.visualstudio.com/items?itemName=josee9988.minifyall">MinifyAll</A> installed.
@@ -151,21 +146,19 @@
         <p>
             For the hardware setup I followed the example from <A
                 href="https://www.instructables.com/PID-Controlled-Thermostat-Using-ESP32-Applied-to-a/"> "Bnayalivne's
-                Instructable page"</A> I used a
-            splitter to solder
-            a USB charger to. And the whole circuit I installed in the space
-            behind the frontplate, in a small plastic bag keep it dry from the drip plate.
+                Instructable page"</A> I used a splitter to solder a USB charger to. And the whole circuit I installed
+            in the space behind the frontplate, in a small plastic bag keep it dry from the drip plate.
         </p>
 
-        <p>Whilst the Fotek should be able to handle the 3.3 V output from the
-            GPIO it failed doing so. The small circuit with the transistor, resistor, and the
-            diode (against flowback) uses the GPIO defined in heater.ino to switch the output from
-            the 5v voltage pin.
+        <p>Whilst the Fotek should be able to handle the 3.3 V output from the GPIO it failed doing so. The small
+            circuit with the transistor, resistor, and the diode (against flowback) uses the GPIO defined in heater.ino
+            to switch the output from the 5v voltage pin.
         </p>
         <img width="30%" src="images/Splitter.jpg" class="anImage" alt="image showing the splitter">
 
 
         <img width="30%" src="images/Board.jpeg" class="anImage" alt="image showing the board">
+
         <img class="anImage" src="images/Espresso_IoT_Pid_scheme.png" alt="electric scheme" width="30%"
             style="vertical-align: top;">
 
@@ -179,10 +172,14 @@
         <p>
             The webpages uses, borrows, or was inspired by <a href="https://canvas-gauges.com/">the gauge.min.js</a>
             library ; button.css by Ashley Watson-Nolan from htps://codepen.io/ashleynolan/pen/wBppKzt;
-            the <a href="https://d3js.org/">D3j library</a> and the many examples from its community such as Brendan
-            Sudol's way to <a href="https://brendansudol.com/writing/responsive-d3">make a graph responsive</a>.
-
+            the <a href="https://d3js.org/">D3j library</a>. It draws from many examples from the community such as
+            Brendan Sudol's way to <a href="https://brendansudol.com/writing/responsive-d3">make a graph responsive</a>
+            and Renzo Mischianti's <A
+                href="https://www.mischianti.org/2020/11/09/web-server-with-esp8266-and-esp32-manage-security-and-authentication-4/#Simple_token_authentication">
+                cookie based authentication</A> webpage.
         </p>
+        <p> Finally thanks to Angelo Moriondo, you all know why.</p>
+
 
     </div>
 </body>

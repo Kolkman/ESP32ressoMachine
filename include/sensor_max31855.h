@@ -14,7 +14,9 @@
 #ifndef SENSOR_MAX_CLK
     #define SENSOR_MAX_CLK 27
 #endif
-
+#ifndef TEMP_CORRECTION
+    #define TEMP_CORRECTION 0
+#endif
 
 #define MAX31855_SMP_TIME 5 // sample time
 
@@ -34,6 +36,7 @@ private:
     double lastI;
     double SumI;
     double lastErr;
+    double TempCorrection;
     int CntT;
     int CntI;
     unsigned long lastSensTime;

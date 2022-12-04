@@ -1,4 +1,4 @@
-
+             
 // Code fragments from
 // https://github.com/lbernstone/asyncUpdate/bb/master/AsyncUpdate.ino
 
@@ -6,7 +6,6 @@
 #include <ESPAsyncWebServer.h>
 #include "debug.h"
 #include "pages/configDone.html.h"
-
 webInterfaceAPI webAPI;
 
 webInterfaceAPI::webInterfaceAPI()
@@ -14,6 +13,7 @@ webInterfaceAPI::webInterfaceAPI()
   server = nullptr;
   myMachine = nullptr;
   content_len = 0;
+  mustAuthenticate=true;
 }
 
 void webInterfaceAPI::begin(EspressoWebServer *s, ESPressoMachine *m)
@@ -25,6 +25,9 @@ void webInterfaceAPI::begin(EspressoWebServer *s, ESPressoMachine *m)
     Serial.println("_Machine is a null pointer");
     throw("webInterfaceAPI::begin ESPresspMachine * is a NULL PTR");
   }
+
+  server->InitPages();
+  server->on("/api/v1/authenticated", HTTP_GET, std::bind(&webInterfaceAPI::handleIsAuthenticated, this, std::placeholders::_1));
   server->on("/api/v1/status", HTTP_GET, std::bind(&webInterfaceAPI::handleStatus, this, std::placeholders::_1));
   server->on("/api/v1/firmware", HTTP_GET, std::bind(&webInterfaceAPI::handleFirmware, this, std::placeholders::_1));
   server->on("/api/v1/get", HTTP_GET, std::bind(&webInterfaceAPI::handleGet, this, std::placeholders::_1));
@@ -210,12 +213,25 @@ void webInterfaceAPI::handleSet(AsyncWebServerRequest *request)
   bool firstarg = true;
   LOGINFO1("API SET with", request->url());
   char message[2048]; // This is sufficiently big to store all key:val combinations
+  if (!server->is_authenticated(request) && mustAuthenticate)
+  {
+    LOGINFO("API not authenticed")
+    strcpy(message, "{\"authenticated\": false}");
+    request->send(200, "application/json", message);
+    return;
+  }
+
   strcpy(message, "{");
+
+  for (int z = 0; z < NUM_WIFI_CREDENTIALS; z++)
+  {
+    myMachine->myConfig->WM_config.WiFi_Creds[z].config_change = false; // initiate
+  }
   for (uint8_t i = 0; i < request->args(); i++)
   {
     if (request->argName(i) == "tset")
     {
-      server->authenticate(request);
+
       double t = (request->arg(i)).toDouble();
       if (t > MAXTEMP)
         t = MAXTEMP; // bit of a safety thing
@@ -352,8 +368,10 @@ void webInterfaceAPI::handleSet(AsyncWebServerRequest *request)
       LOGINFO("wifi_ssid Found");
       for (int z = 0; z < NUM_WIFI_CREDENTIALS; z++)
       {
+
         if (request->argName(i).equals("wifi_ssid" + String(z)) && request->arg(i) != "")
         {
+          myMachine->myConfig->WM_config.WiFi_Creds[z].config_change = true; // administer change has happened.
           LOGINFO("--- wifi_ssid" + String(z));
           addjson(message, firstarg, "wifi_ssid" + String(z), request->arg(i));
           strlcpy(myMachine->myConfig->WM_config.WiFi_Creds[z].wifi_ssid, request->arg(i).c_str(), SSID_MAX_LEN);
@@ -366,8 +384,10 @@ void webInterfaceAPI::handleSet(AsyncWebServerRequest *request)
       LOGINFO("wifi_pw Found");
       for (int z = 0; z < NUM_WIFI_CREDENTIALS; z++)
       {
+
         if (request->argName(i).equals("wifi_pw" + String(z)) && request->arg(i) != "")
         {
+          myMachine->myConfig->WM_config.WiFi_Creds[z].config_change = false; // administer pw has changed
           LOGINFO("--- wifi_pw" + String(z));
           addjson(message, firstarg, "wifi_pw" + String(z), request->arg(i));
           strlcpy(myMachine->myConfig->WM_config.WiFi_Creds[z].wifi_pw, request->arg(i).c_str(), PASS_MAX_LEN);
@@ -408,8 +428,17 @@ void webInterfaceAPI::handleSet(AsyncWebServerRequest *request)
   }
   if (reconf)
   {
+    // if ssid has changed but password didn't then set pw to ""
+    for (int z = 0; z < NUM_WIFI_CREDENTIALS; z++)
+    {
+      if (myMachine->myConfig->WM_config.WiFi_Creds[z].config_change)
+      {
+        myMachine->myConfig->WM_config.WiFi_Creds[z].wifi_pw[0] = '\0'; //
+      }
+    }
     myMachine->reConfig(); // apply all settings
   }
+
   if (safeandrestart)
   {
     myMachine->myConfig->saveConfig();
@@ -468,4 +497,23 @@ void webInterfaceAPI::handleConfigFile(AsyncWebServerRequest *request)
     strcpy(message, "{\"default\":true}");
   }
   request->send(200, "application/json", message);
+}
+
+void webInterfaceAPI::handleIsAuthenticated(AsyncWebServerRequest *request)
+{
+  char message[32]; // This is sufficiently for any of the messages below
+  if (!server->is_authenticated(request)&&mustAuthenticate)
+  {
+    strcpy(message, "{\"authenticated\":false}");
+  }
+  else
+  {
+    strcpy(message, "{\"authenticated\":true}");
+  }
+  request->send(200, "application/json", message);
+}
+
+void webInterfaceAPI::requireAuthorization(bool require){
+  mustAuthenticate=require;
+  return;
 }

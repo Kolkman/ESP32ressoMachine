@@ -121,6 +121,7 @@ void MQTTInterface::loopMQTT(ESPressoMachine *myMachine)
 {
   for (int i = 0; i < MAX_CONNECTION_RETRIES && !client.connected(); i++)
   {
+    myMachine->myInterface->report("Connecting MQTT","   try: "+String(i));
     MQTT_reconnect(myMachine->myConfig);
   }
   if (client.connected())
