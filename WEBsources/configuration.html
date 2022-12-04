@@ -26,12 +26,12 @@ const url = "";  // Setting in production.
   <h1>Configuration</h1>
   <div id="graph" style="margin-left:3%; margin-right:3%"></div>
   <div id="bodyBlock">
-    <div id="LoginRequired" style="display:none">
-      You need to login to change parameters.
+    <div id="LoginRequired" style="display:block">
+      You need to log in to change parameters.
       <div><a href="./WebLogin.html?url=configuration.html"><button class="btn">Login</button></a></div>
 
     </div>
-    <div class="configblock" id="PidConfigParamsForm">
+    <div class="configblock" id="PidConfigParamsForm" style="display:none">
       <form id="configForm">
         <div class="tableTable">
           <div class="tableBody">
@@ -187,7 +187,7 @@ const url = "";  // Setting in production.
 
     <div class="configblock">
       <div class="Management">
-        <div id="configAPI">
+        <div id="configAPI" style="display:none">
           <div>
             <input type="button" value="Load Config" class="btn" onclick="LoadConf(this)">
             <input type="button" value="Save Config" class="btn" onclick="SaveConf(this)">
@@ -210,7 +210,7 @@ const url = "";  // Setting in production.
       </div>
     </div>
 
-    <form id="tuningForm">
+    <form id="tuningForm" style="display:none">
       <div>
         <div class="configblock">
           <div id="StatsReporting"></div>

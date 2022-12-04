@@ -32,6 +32,7 @@ void webInterfaceAPI::begin(EspressoWebServer *s, ESPressoMachine *m)
   server->on("/api/v1/firmware", HTTP_GET, std::bind(&webInterfaceAPI::handleFirmware, this, std::placeholders::_1));
   server->on("/api/v1/get", HTTP_GET, std::bind(&webInterfaceAPI::handleGet, this, std::placeholders::_1));
   server->on("/api/v1/set", HTTP_GET, std::bind(&webInterfaceAPI::handleSet, this, std::placeholders::_1));
+ server->on("/api/v1/pwr", HTTP_GET, std::bind(&webInterfaceAPI::handlePwr, this, std::placeholders::_1));
   server->on("/api/v1/statistics", HTTP_GET, std::bind(&webInterfaceAPI::handleStats, this, std::placeholders::_1));
   server->on("/api/v1/config", HTTP_GET, std::bind(&webInterfaceAPI::handleConfigFile, this, std::placeholders::_1));
 }
@@ -516,4 +517,33 @@ void webInterfaceAPI::handleIsAuthenticated(AsyncWebServerRequest *request)
 void webInterfaceAPI::requireAuthorization(bool require){
   mustAuthenticate=require;
   return;
+}
+
+
+// For Power we do not need authenticated
+void webInterfaceAPI::handlePwr(AsyncWebServerRequest *request)
+{
+  bool safeandrestart = false;
+  bool reconf = false;
+  bool firstarg = true;
+  LOGINFO1("API PWR with", request->url());
+  char message[2048]; // This is sufficiently big to store all key:val combinations
+  strcpy(message, "{");
+for (uint8_t i = 0; i < request->args(); i++)
+  {
+if (request->argName(i) == "powerOffMode")
+    {
+      if (String("true").equalsIgnoreCase(request->arg(i)))
+      {
+        myMachine->powerOffMode = true;
+        addjson(message, firstarg, "powerOffMode", "true");
+      }
+      else
+      {
+        myMachine->powerOffMode = false;
+        addjson(message, firstarg, "powerOffMode", "false");
+      }
+    }
+
+  }
 }
