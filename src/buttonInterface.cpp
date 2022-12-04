@@ -26,7 +26,7 @@ bool ButtonInterface::setupButton(ESPressoMachine * myMachine)
     pinMode(BLACK_BUTTON, INPUT_PULLUP); // config GIOP21 as input pin and enable the internal pull-up resistor
     pinMode(BLUE_BUTTON, INPUT_PULLUP);  // config GIOP21 as input pin and enable the internal pull-up resistor
     pinMode(RED_BUTTON, INPUT_PULLUP);   // config GIOP21 as input pin and enable the internal pull-up resistor
-    myMachine->myInterface->report("Press Black button","to enter config");
+    myMachine->myInterface->report("Press Black btn","to enter config");
     // We enter a small loop now, waiting for the black button to be pressed.
     unsigned long startTime=millis();
     

@@ -18,7 +18,7 @@ window.addEventListener("load", function () {
         })
         .then(function (data) {
             console.log(data);
-                   loginRequired=  document.getElementById("LoginRequired");
+                    loginRequired=  document.getElementById("LoginRequired");
                     PidConfigParamsForm = document.getElementById("PidConfigParamsForm");
                     configAPI = document.getElementById("configAPI");
                     tuningForm = document.getElementById("tuningForm");
@@ -111,10 +111,10 @@ window.addEventListener("load", function () {
 function pwrSwitch() {
     if (document.getElementById("toggle--pwr").checked) {
         // (Heater is OFF)
-        fetch(url + '/api/v1/set?powerOffMode=false');
+        fetch(url + '/api/v1/pwr?powerOffMode=false');
     } else {
         // .(HEATER is ON)
-        fetch(url + '/api/v1/set?powerOffMode=true');
+        fetch(url + '/api/v1/pwr?powerOffMode=true');
 
     }
 }
