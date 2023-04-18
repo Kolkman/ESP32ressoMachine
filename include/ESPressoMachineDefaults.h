@@ -25,7 +25,8 @@
 #define FAILSAFE_TEMP 112.5 // turn heater off above this temp  should the PID run away.
 
 
-#define TEMP_CORRECTION  4.1// Correction needed for thermocouple callibration, can be a few degrees
+#define TEMP_CORRECTION  0
+// Correction needed for thermocouple callibration, can be a few degrees
 
 
 // Intervals for I/O
@@ -39,7 +40,7 @@
 
 // GPIO PINS
 #ifdef ESP_PROG
-#define HEAT_RELAY_PIN 33 
+#define HEAT_RELAY_PIN 23 
 #define SENSOR_MAX_DO 25  
 #define SENSOR_MAX_CS 26
 #define SENSOR_MAX_CLK 27
@@ -51,7 +52,7 @@
 #define SENSOR_MAX_CLK 14
 #endif
 // Compile time - not to be user configured.
-//
+// 
 #define COLDSTART_TEMP_OFFSET 20 // Below  (S_TSET-COLDSTART_TEMP_OFFSET) the PID vallue will be set to {P,I,D}={COLDSTART_P,0,0}
 #define COLDSTART_P 15   // At 20C that is approx full power
 #define COLDSTART_MAX_POWER 1000 // play with these vallues if the coldstart starts to slow or overshoots to easy.
@@ -83,15 +84,15 @@
 #define MQTT_HOST "mqtt.example.net"
 #define MQTT_PORT 1883
 #define MQTT_USER "user"
-#define MQTT_PASS "password"
+#define MQTT_PASS "password"   
 #define MQTT_TOPIC "Espresso"
 #endif //ENABLE_MQTT
 #endif
 
 
 #ifdef ENABLE_BUTTON
-#define BLUE_BUTTON 16
-#define RED_BUTTON 17
+#define RED_BUTTON 16
+#define BLUE_BUTTON 17
 #define BLACK_BUTTON 18
 
 #endif // ENABLE_BUTTON
