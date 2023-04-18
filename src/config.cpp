@@ -264,6 +264,17 @@ bool EspressoConfig::saveConfig()
 
   for (int i = 0; i < NUM_WIFI_CREDENTIALS; i++)
   {
+    // Weed out duplicate credentials
+    bool SSIDhasDuplicate=false;
+    for (int j=0; j<i ; j++){
+      if(strcmp(WM_config.WiFi_Creds[i].wifi_ssid,WM_config.WiFi_Creds[j].wifi_ssid)==0){
+      
+         WM_config.WiFi_Creds[i].wifi_pw[0] = '\0';
+         WM_config.WiFi_Creds[i].wifi_ssid[0] = '\0';
+
+      }
+    }
+  
     ssid.add(WM_config.WiFi_Creds[i].wifi_ssid);
     pw.add(WM_config.WiFi_Creds[i].wifi_pw);
   }
