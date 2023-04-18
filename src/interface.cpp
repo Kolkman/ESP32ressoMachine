@@ -99,8 +99,7 @@ void ESPressoInterface::setup()
   _waitingForClientAction = true;
   for (int i = 0; i < NUM_WIFI_CREDENTIALS; i++)
   {
-
-    if (strlen(myMachine->myConfig->WM_config.WiFi_Creds[i].wifi_ssid) > 0)
+   if (strlen(myMachine->myConfig->WM_config.WiFi_Creds[i].wifi_ssid) > 0)
     {
       _waitingForClientAction = false;
     }
@@ -108,7 +107,7 @@ void ESPressoInterface::setup()
   if (_waitingForClientAction)
     LOGINFO("NO WiFi NEtworks set, we'll later keep the captive portal open");
   // Config cycle only happens if the button is pressed 
-  if (_initConfig)
+  if (_initConfig||_waitingForClientAction)
   {
     wifiMngr->setupWiFiAp(&myMachine->myConfig->WM_AP_IPconfig);
     server->reset();
