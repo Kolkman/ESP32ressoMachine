@@ -1,6 +1,6 @@
 //
 // ESPressIoT Controller for Espresso Machines
-// (c) 2021 Olaf Kolkman
+// (c) 2021, 2023 Olaf Kolkman
 // Replaces senspr_max31855 (c) 2016-2021 by Roman Schmitz
 
 // MAX31855 Sensor Arduino-MAX31855 Library
@@ -8,6 +8,7 @@
 #ifndef SIMULATION_MODE
 #include <Wire.h>
 #include <SPI.h>
+#include "debug.h"
 #include "sensor_max31855.h"
 
 #undef DEBUG
@@ -37,6 +38,11 @@ void TempSensor::setupSensor()
   // wait for MAX chip to stabilize
   delay(500);
   Serial.println("Initializing sensor...");
+ 
+   LOGINFO1("DO PIN ",String(SENSOR_MAX_DO));
+   LOGINFO1("CS PIN ",String(SENSOR_MAX_CS));
+   LOGINFO1("CLK PIN ",String(SENSOR_MAX_CLK));
+
   if (!begin())
   {
     Serial.println("ERROR.");
@@ -111,6 +117,8 @@ void TempSensor::updateTempSensor(double sensorSampleInterval)
         CntT++;
       }
 
+
+  // LOGINFO3("Temnp Meas ",String(curT)," -- Internal Tem: ",String(curI));
       if (abs(curI - lastI) < 15 || lastI < 1)
       {
         SumI += curI;
