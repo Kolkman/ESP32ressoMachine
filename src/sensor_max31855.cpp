@@ -15,12 +15,12 @@
 
 TempSensor::TempSensor() : Adafruit_MAX31855(SENSOR_MAX_CLK, SENSOR_MAX_CS, SENSOR_MAX_DO)
 {
-  
+
   lastT = 0.0;
   SumT = 0.0;
   lastI = 0.0;
   SumI = 0.0;
-  time_now=millis();
+  time_now = millis();
   TempCorrection = TEMP_CORRECTION;
   lastErr = 0.0;
   CntT = 0;
@@ -38,10 +38,10 @@ void TempSensor::setupSensor()
   // wait for MAX chip to stabilize
   delay(500);
   Serial.println("Initializing sensor...");
- 
-   LOGINFO1("DO PIN ",String(SENSOR_MAX_DO));
-   LOGINFO1("CS PIN ",String(SENSOR_MAX_CS));
-   LOGINFO1("CLK PIN ",String(SENSOR_MAX_CLK));
+
+  LOGINFO1("DO PIN ", String(SENSOR_MAX_DO));
+  LOGINFO1("CS PIN ", String(SENSOR_MAX_CS));
+  LOGINFO1("CLK PIN ", String(SENSOR_MAX_CLK));
 
   if (!begin())
   {
@@ -49,7 +49,7 @@ void TempSensor::setupSensor()
     while (1)
       delay(10);
   }
-  Serial.print("Measuring initial temperature");
+  LOGINFO0("Measuring initial temperature");
 
   {
     int x = 0;
@@ -57,34 +57,33 @@ void TempSensor::setupSensor()
     for (int i = 0; i < 5; i++)
     {
 
-      double c = readCelsius()+TempCorrection;
+      double c = readCelsius();
       if (isnan(c))
       {
-        Serial.print("Thermocouple fault(s) detected!    @");
-        Serial.println(time_now);
+        LOGINFO1("Thermocouple fault(s) detected!    @", time_now);
 
         uint8_t e = readError();
         if (e & MAX31855_FAULT_OPEN)
-          Serial.println("FAULT: Thermocouple is open - no connections.");
+          LOGINFO("FAULT: Thermocouple is open - no connections.");
         if (e & MAX31855_FAULT_SHORT_GND)
-          Serial.println("FAULT: Thermocouple is short-circuited to GND.");
+          LOGINFO("FAULT: Thermocouple is short-circuited to GND.");
         if (e & MAX31855_FAULT_SHORT_VCC)
-          Serial.println("FAULT: Thermocouple is short-circuited to VCC.");
-
+          LOGINFO("FAULT: Thermocouple is short-circuited to VCC.");
       }
       else
       {
-        t += c;
+        t += c + TempCorrection;
         x++;
       }
       Serial.print(".");
       delay(100);
     }
     Serial.println();
-    lastT = t / x;
-    Serial.println("Initial temperature: " + String(lastT));
+
     if (x == 0)
       throw("ThermoCoupleFail");
+    lastT = t / x;
+    LOGINFO1("Initial temperature: ", String(lastT));
   }
 }
 
@@ -95,17 +94,26 @@ void TempSensor::updateTempSensor(double sensorSampleInterval)
 
   if ((max(time_now, lastSensTime) - min(time_now, lastSensTime)) >= sensorSampleInterval)
   {
-   double i = readInternal();  
-    double c = readCelsius()+TempCorrection;
+    double i = readInternal();
+    double c = readCelsius();
+
+    uint8_t e = readError();
+    if (e & MAX31855_FAULT_OPEN)
+      LOGINFO("FAULT: Thermocouple is open - no connections.");
+    if (e & MAX31855_FAULT_SHORT_GND)
+      LOGINFO("FAULT: Thermocouple is short-circuited to GND.");
+    if (e & MAX31855_FAULT_SHORT_VCC)
+      LOGINFO("FAULT: Thermocouple is short-circuited to VCC.");
+
+    //  LOGDEBUG1("Sensor Reading",i);
     if (isnan(c) || isnan(i))
     {
 
-      Serial.print("ThermoCouple Error");
-      Serial.println(time_now);
+      LOGINFO1("ThermoCouple Error", time_now);
     }
     else
     {
-      double curT = c;
+      double curT = c + TempCorrection;
       double curI = i;
       // very simple selection of noise hits/invalid values
       // the weed-out vallue is rather high, to low will cause runnaway
@@ -117,8 +125,7 @@ void TempSensor::updateTempSensor(double sensorSampleInterval)
         CntT++;
       }
 
-
-  // LOGINFO3("Temnp Meas ",String(curT)," -- Internal Tem: ",String(curI));
+      // LOGINFO3("Temnp Meas ",String(curT)," -- Internal Tem: ",String(curI));
       if (abs(curI - lastI) < 15 || lastI < 1)
       {
         SumI += curI;
@@ -142,13 +149,9 @@ float TempSensor::getTemp(float temp)
   }
   else
   {
-#ifdef DEBUG
-    Serial.println("No new temp measure");
-#endif
+    LOGDEBUG0("No new temp measure");
   }
-#ifdef DEBUG
-  Serial.println("old/ret: " + String(temp) + "," + String(retVal));
-#endif
+  LOGDEBUG3("old/ret: ", String(temp), ",", String(retVal));
   return retVal;
 }
 
