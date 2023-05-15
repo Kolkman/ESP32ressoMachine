@@ -2,11 +2,18 @@
 #include "ESPressoMachine.h"
 #ifdef ENABLE_BUTTON
 #include "buttonInterface.h"
-#include "liquidinterface.h"
 #include "debug.h"
-#ifndef ENABLE_LIQUID
-#error "ENABLE_BUTTON is defined without ENABLE_LIQUID being defined. The BUtton interface needs the LCD"
+#if !(defined(ENABLE_LIQUID) || defined(ENABLE_OLED))
+#error "ENABLE_BUTTON is defined without ENABLE_LIQUID or ENABLE_OLED being defined. You need an interface to use buttons"
 #endif
+#ifdef ENABLE_LIQUID
+#include "liquidinterface.h"
+#endif
+#ifdef ENABLE_OLED
+#include "oledinterface.h"
+#endif
+
+
 
 ButtonInterface::ButtonInterface()
 {
@@ -18,32 +25,32 @@ ButtonInterface::ButtonInterface()
     BlackLastPress = 0;
 }
 
-bool ButtonInterface::setupButton(ESPressoMachine * myMachine)
+bool ButtonInterface::setupButton(ESPressoMachine *myMachine)
 {
 
-    bool initiateConfig=false; // Config only when the magic button is pressed.
+    bool initiateConfig = false; // Config only when the magic button is pressed.
     LOGINFO("SETTING UP BUTTON INTERFACE");
     pinMode(BLACK_BUTTON, INPUT_PULLUP); // config GIOPXX as input pin and enable the internal pull-up resistor
     pinMode(BLUE_BUTTON, INPUT_PULLUP);  // config GIOPYY  as input pin and enable the internal pull-up resistor
     pinMode(RED_BUTTON, INPUT_PULLUP);   // config GIOPZZ as input pin and enable the internal pull-up resistor
-    myMachine->myInterface->report("Press Black btn","to enter config");
+    myMachine->myInterface->report("Press Black btn", "to enter config");
     // We enter a small loop now, waiting for the black button to be pressed.
-    unsigned long startTime=millis();
-    
-    while ((millis()-startTime)<10000){ // 10 seconds to press the black button
-        if (digitalRead(BLACK_BUTTON) == LOW)   {
-            initiateConfig=true;
+    unsigned long startTime = millis();
+
+    while ((millis() - startTime) < 10000)
+    { // 10 seconds to press the black button
+        if (digitalRead(BLACK_BUTTON) == LOW)
+        {
+            initiateConfig = true;
             break;
         }
-
     }
 
-    LOGINFO1("intiateConfig value: ",String(initiateConfig));
+    LOGINFO1("intiateConfig value: ", String(initiateConfig));
     return (initiateConfig);
-
 }
 
-void ButtonInterface::loopButton(ESPressoMachine * myMachine)
+void ButtonInterface::loopButton(ESPressoMachine *myMachine)
 {
     unsigned long now = millis();
     // read the state of the switch/button:
@@ -133,7 +140,7 @@ void ButtonInterface::loopButton(ESPressoMachine * myMachine)
                 {
                     LOGINFO("Turning PID OFF")
                     String filler = ">";
-                    for (int i=0; i < 16; i++)
+                    for (int i = 0; i < 16; i++)
                     {
                         myMachine->myInterface->report("Turning PID off", filler);
                         delay(100);
@@ -145,7 +152,7 @@ void ButtonInterface::loopButton(ESPressoMachine * myMachine)
                 {
                     LOGINFO("Turning PID ON")
                     String filler = ">";
-                    for (int i=0; i < 16; i++)
+                    for (int i = 0; i < 16; i++)
                     {
                         myMachine->myInterface->report("Turning PID on", filler);
                         delay(100);
@@ -163,8 +170,12 @@ void ButtonInterface::loopButton(ESPressoMachine * myMachine)
     }
     if (changeToBeReported)
     {
-
+#ifdef ENABLE_LIQUID
         myMachine->myInterface->loopLiquid(myMachine);
+#endif
+#ifdef ENABLE_OLED
+        myMachine->myInterface->loopOled(myMachine);
+#endif
     }
 }
 

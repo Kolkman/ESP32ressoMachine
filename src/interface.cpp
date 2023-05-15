@@ -37,6 +37,13 @@ void ESPressoInterface::report(String firstInput = "", String secondInput = "")
   lcd->setCursor(0, 2);
   lcd->print(secondInput);
 #endif
+#ifdef ENABLE_OLED
+  oled->clearBuffer();
+  oled->setFont(u8g2_font_t0_14b_tf);
+  oled->drawStr(0, 20, firstInput.c_str());
+  oled->drawStr(0, 45, secondInput.c_str());
+  oled->sendBuffer();
+#endif
 }
 
 void ESPressoInterface::loop()
@@ -72,6 +79,10 @@ void ESPressoInterface::loop()
 #ifdef ENABLE_LIQUID
   loopLiquid(myMachine);
 #endif
+#ifdef ENABLE_OLED
+  loopOled(myMachine);
+#endif
+
 #ifdef ENABLE_TELNET
   loopTelnet(myMachine->machineStatus);
 #endif
@@ -87,8 +98,13 @@ void ESPressoInterface::setup()
 {
   bool _initConfig = true;
 
+#if defined(ENABLE_LIDUID) || defined(ENABLE_OLED)
 #ifdef ENABLE_LIQUID
   setupLiquid();
+#endif
+#ifdef ENABLE_OLED
+  setupOled();
+#endif
 #ifdef ENABLE_BUTTON
   _initConfig = setupButton(this->myMachine); // use the button interface to initiate the stand alone
                                               // configuration
@@ -99,15 +115,15 @@ void ESPressoInterface::setup()
   _waitingForClientAction = true;
   for (int i = 0; i < NUM_WIFI_CREDENTIALS; i++)
   {
-   if (strlen(myMachine->myConfig->WM_config.WiFi_Creds[i].wifi_ssid) > 0)
+    if (strlen(myMachine->myConfig->WM_config.WiFi_Creds[i].wifi_ssid) > 0)
     {
       _waitingForClientAction = false;
     }
   }
   if (_waitingForClientAction)
     LOGINFO("NO WiFi NEtworks set, we'll later keep the captive portal open");
-  // Config cycle only happens if the button is pressed 
-  if (_initConfig||_waitingForClientAction)
+  // Config cycle only happens if the button is pressed
+  if (_initConfig || _waitingForClientAction)
   {
     wifiMngr->setupWiFiAp(&myMachine->myConfig->WM_AP_IPconfig);
     server->reset();
@@ -121,7 +137,8 @@ void ESPressoInterface::setup()
   server->reset();
 
   setupWebSrv(this->myMachine);
-   if (!_initConfig) server->begin(); /// Webserver is now running....
+  if (!_initConfig)
+    server->begin(); /// Webserver is now running....
 #ifdef ENABLE_TELNET
   setupTelnet();
 #endif
