@@ -65,10 +65,19 @@
 #define ENABLE_TELNET
 #define ENABLE_MQTT
 #define ENABLE_SERIAL
-#define ENABLE_LIQUID
+//#define ENABLE_LIQUID
+#define ENABLE_OLED
+// If using OLED define one of the following displays
+// OLED_SSD1306_I2C  a 0.9 inch version
+// OLDED_SH1106_I2C a 1.3 inch version
+#define OLED_SH1106_I2C 
 
-#ifdef ENABLE_LIQUID  // KEEP!  BUTTONS for Interfaces rely on the LCD
-#define ENABLE_BUTTON
+#if defined(ENABLE_LIQUID) || defined(ENABLE_OLED)  // KEEP!  BUTTONS for Interfaces rely on the LCD
+    #define ENABLE_BUTTON
+    #if defined(ENABLE_LIQUID)&& defined(ENABLE_OLED)
+        #error Choose either a Liquid or an OLED interface
+    #endif
+
 #endif //ENABLED_LIQUIDE
 
 
@@ -96,3 +105,4 @@
 #define BLACK_BUTTON 18
 
 #endif // ENABLE_BUTTON
+

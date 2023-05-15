@@ -18,6 +18,11 @@
 #ifdef ENABLE_MQTT
 #include "mqttinterface.h"
 #endif // ENABLE_MQTT
+
+#ifdef ENABLE_BUTTON
+#include "buttonInterface.h"
+#endif
+
 #include "pidtuner.h"
 
 ESPressoMachine myRancilio;

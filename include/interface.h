@@ -11,10 +11,18 @@
 //#endif
 #ifdef ENABLE_LIQUID
 #include "liquidinterface.h"
+#endif
+#ifdef ENABLE_OLED
+#include "oledinterface.h"
+#endif
+#if  defined(ENABLE_OLED) && defined (ENABLE_LIQUID)
+#error "Both OLED and LIQUID Interfaces defined"
+#endif
+#if defined(ENABLE_OLED) || defined (ENABLE_LIQUID)
 #ifdef ENABLE_BUTTON
 #include "buttonInterface.h"
 #endif // ENABLE_BUTTON
-#endif // ENABLE_LIQuID
+#endif // ENABLE_LIQuID or OLED
 
 class WiFiManager; // forward declaration
 
@@ -34,15 +42,21 @@ class ESPressoInterface : public WebInterface
 #ifdef ENABLE_MQTT
                           public MQTTInterface
 #endif
-#if defined(ENABLE_MQTT) && defined(ENABLE_LIQUID)
+#if defined(ENABLE_MQTT) && (defined(ENABLE_LIQUID) || defined(ENABLE_OLED))
     ,
 #endif
+
 #ifdef ENABLE_LIQUID
                           public LiquidInterface
+#endif // ENABLE_LIQUID
+#ifdef ENABLE_OLED
+                          public OledInterface           
+#endif //ENABLE_OLED
+#if defined(ENABLE_OLED) || defined(ENABLE_LIQUID)
 #ifdef ENABLE_BUTTON
         , public ButtonInterface
 #endif // ENABLE_BUTTON
-#endif // ENABLE_LIQUID
+#endif // One of the interfaces defined
 {
 public:
     ESPressoInterface(ESPressoMachine *);
