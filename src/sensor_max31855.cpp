@@ -151,7 +151,7 @@ float TempSensor::getTemp(float temp)
   {
     LOGDEBUG0("No new temp measure");
   }
-  LOGDEBUG3("old/ret: ", String(temp), ",", String(retVal));
+  // LOGDEBUG3("old/ret: ", String(temp), ",", String(retVal));
   return retVal;
 }
 
