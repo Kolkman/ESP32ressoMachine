@@ -2,7 +2,7 @@
 // Global Variables.
 const configNames = ["tset", "tband", "eqPwr", "pgain", "igain", "dgain",
     "apgain", "aigain", "adgain", "PidInterval", "HeaterInterval",
-    "sensorSampleInterval", "maxCool", "powerOffMode"];
+    "sensorSampleInterval", "maxCool", "powersafeTimeout", "powerOffMode"];
 
 const tuningNames = ["tunethres", "tunestep", "tuningOn"]
 let configuration = {};
@@ -248,6 +248,7 @@ function setFormValues() {
         getapi += value + "&";
     }
     getapi = getapi.slice(0, -1); //strim extraneous &
+    console.log("fetching: "+getapi);
     fetch(getapi)
         .then(function (response) {
             return response.json()

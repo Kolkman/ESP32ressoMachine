@@ -1,4 +1,4 @@
-             
+
 // Code fragments from
 // https://github.com/lbernstone/asyncUpdate/bb/master/AsyncUpdate.ino
 
@@ -13,7 +13,7 @@ webInterfaceAPI::webInterfaceAPI()
   server = nullptr;
   myMachine = nullptr;
   content_len = 0;
-  mustAuthenticate=true;
+  mustAuthenticate = true;
 }
 
 void webInterfaceAPI::begin(EspressoWebServer *s, ESPressoMachine *m)
@@ -32,7 +32,7 @@ void webInterfaceAPI::begin(EspressoWebServer *s, ESPressoMachine *m)
   server->on("/api/v1/firmware", HTTP_GET, std::bind(&webInterfaceAPI::handleFirmware, this, std::placeholders::_1));
   server->on("/api/v1/get", HTTP_GET, std::bind(&webInterfaceAPI::handleGet, this, std::placeholders::_1));
   server->on("/api/v1/set", HTTP_GET, std::bind(&webInterfaceAPI::handleSet, this, std::placeholders::_1));
- server->on("/api/v1/pwr", HTTP_GET, std::bind(&webInterfaceAPI::handlePwr, this, std::placeholders::_1));
+  server->on("/api/v1/pwr", HTTP_GET, std::bind(&webInterfaceAPI::handlePwr, this, std::placeholders::_1));
   server->on("/api/v1/statistics", HTTP_GET, std::bind(&webInterfaceAPI::handleStats, this, std::placeholders::_1));
   server->on("/api/v1/config", HTTP_GET, std::bind(&webInterfaceAPI::handleConfigFile, this, std::placeholders::_1));
 }
@@ -159,6 +159,12 @@ void webInterfaceAPI::handleGet(AsyncWebServerRequest *request)
       addjson(message, firstarg, "maxCool",
               String(myMachine->myConfig->maxCool));
     }
+    else if (request->argName(i) == "powersafeTimeout")
+    {
+      addjson(message, firstarg, "powersafeTimeout",
+              String(myMachine->myConfig->powersafeTimeout));
+    }
+
     else if (request->argName(i) == "tunethres")
     {
       addjson(message, firstarg, "tunethres",
@@ -336,6 +342,11 @@ void webInterfaceAPI::handleSet(AsyncWebServerRequest *request)
       addjson(message, firstarg, "maxCool", request->arg(i));
       myMachine->myConfig->maxCool = ((request->arg(i)).toDouble());
     }
+    else if (request->argName(i) == "powersafeTimeout")
+    {
+      addjson(message, firstarg, "powersafeTimeout", request->arg(i));
+      myMachine->myConfig->powersafeTimeout = ((request->arg(i)).toInt());
+    }
     else if (request->argName(i) == "tunethres")
     {
       addjson(message, firstarg, "tunethres", request->arg(i));
@@ -459,51 +470,61 @@ void webInterfaceAPI::handleSet(AsyncWebServerRequest *request)
 
 void webInterfaceAPI::handleConfigFile(AsyncWebServerRequest *request)
 {
-  Serial.println(request->argName(0));
-  char message[32]; // This is sufficiently for any of the messages below
+  char message[32] = ""; // This is sufficiently for any of the messages below
 
-  if (request->argName(0) == "load")
+  if (request->args())
   {
+    LOGDEBUG1("config?", request->argName(0));
 
-    if (myMachine->myConfig->loadConfig())
+    if (request->argName(0) == "load")
     {
+      if (myMachine->myConfig->loadConfig())
+      {
+        myMachine->reConfig();
+        strcpy(message, "{\"load\":true}");
+      }
+      else
+      {
+        strcpy(message, "{\"load\":false}");
+      }
+    }
+    else if (request->argName(0) == "save")
+    {
+
+      if (myMachine->myConfig->saveConfig())
+      {
+        strcpy(message, "{\"save\":true}");
+      }
+      else
+      {
+        strcpy(message, "{\"save\":false}");
+      }
+    }
+
+    else if (request->argName(0) == "default")
+    {
+
+      myMachine->myConfig->resetConfig();
+
       myMachine->reConfig();
-      strcpy(message, "{\"load\":true}");
-    }
-    else
-    {
-      strcpy(message, "{\"load\":false}");
+      strcpy(message, "{\"default\":true}");
     }
   }
-
-  if (request->argName(0) == "save")
+  else
   {
-
-    if (myMachine->myConfig->saveConfig())
-    {
-      strcpy(message, "{\"save\":true}");
-    }
-    else
-    {
-      strcpy(message, "{\"save\":false}");
-    }
+    strcpy(message, "{\"config\":false}");
   }
 
-  if (request->argName(0) == "default")
-  {
+  LOGDEBUG("HIEROO4");
 
-    myMachine->myConfig->resetConfig();
-
-    myMachine->reConfig();
-    strcpy(message, "{\"default\":true}");
-  }
   request->send(200, "application/json", message);
+  LOGDEBUG("HIEROO4");
 }
 
 void webInterfaceAPI::handleIsAuthenticated(AsyncWebServerRequest *request)
 {
   char message[32]; // This is sufficiently for any of the messages below
-  if (!server->is_authenticated(request)&&mustAuthenticate)
+  if (!server->is_authenticated(request) && mustAuthenticate)
   {
     strcpy(message, "{\"authenticated\":false}");
   }
@@ -514,11 +535,11 @@ void webInterfaceAPI::handleIsAuthenticated(AsyncWebServerRequest *request)
   request->send(200, "application/json", message);
 }
 
-void webInterfaceAPI::requireAuthorization(bool require){
-  mustAuthenticate=require;
+void webInterfaceAPI::requireAuthorization(bool require)
+{
+  mustAuthenticate = require;
   return;
 }
-
 
 // For Power we do not need authenticated
 void webInterfaceAPI::handlePwr(AsyncWebServerRequest *request)
@@ -529,9 +550,9 @@ void webInterfaceAPI::handlePwr(AsyncWebServerRequest *request)
   LOGINFO1("API PWR with", request->url());
   char message[2048]; // This is sufficiently big to store all key:val combinations
   strcpy(message, "{");
-for (uint8_t i = 0; i < request->args(); i++)
+  for (uint8_t i = 0; i < request->args(); i++)
   {
-if (request->argName(i) == "powerOffMode")
+    if (request->argName(i) == "powerOffMode")
     {
       if (String("true").equalsIgnoreCase(request->arg(i)))
       {
@@ -544,6 +565,5 @@ if (request->argName(i) == "powerOffMode")
         addjson(message, firstarg, "powerOffMode", "false");
       }
     }
-
   }
 }
