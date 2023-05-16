@@ -20,7 +20,7 @@
 // 4: DEBUG: errors, warnings, informational and debug
 
 #ifndef _ESP32RESSO_LOGLEVEL_
-  #define _ESP32RESSO_LOGLEVEL_       2
+  #define _ESP32RESSO_LOGLEVEL_       4
 #endif
 
 /////////////////////////////////////////////////////////
