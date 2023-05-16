@@ -35,6 +35,8 @@
 #define DISPLAY_INTERVAL 1500
 #define PID_INTERVAL 500
 
+#define TEMPERATURE_VAR 2 // The amount of temperature variateion the internal floating avarage-> indicates a brew 
+#define POWERSAFE_TIMEOUT 120   // Turn power of when not brewed for this many minutes
 
 #define ESP_PROG 1 // Old pin layout does not work with ESP prog
 
@@ -99,10 +101,10 @@
 #endif
 
 
+
 #ifdef ENABLE_BUTTON
 #define RED_BUTTON 16
 #define BLUE_BUTTON 17
 #define BLACK_BUTTON 18
-
 #endif // ENABLE_BUTTON
 

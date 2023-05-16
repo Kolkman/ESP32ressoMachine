@@ -25,15 +25,16 @@ ESPressoMachine::ESPressoMachine()
     myInterface = new ESPressoInterface(this);
     time_last = millis();
     time_now = millis();
+    pwrSafeTimer = millis();
     osmode = false;
     outputPwr = 0.0;
     oldTemp = 0.0;
     oldPwr = 0;
     externalControlMode = false;
     buttonState = false;
-    powerOffMode=false;
-    externalControlMode=false;
-    coldstart=true;
+    powerOffMode = false;
+    externalControlMode = false;
+    coldstart = true;
 }
 
 void ESPressoMachine::startMachine()
@@ -100,6 +101,8 @@ void ESPressoMachine::setMachineStatus()
     statusObject["tuning"] = myTuner->tuningOn;
     statusObject["heap"] = ESP.getFreeHeap();
     statusObject["heapMaxAl"] = ESP.getMaxAllocHeap();
+    statusObject["FloatingAvg"]=getAverage();
+
     serializeJson(statusObject, machineStatus);
 }
 
@@ -117,6 +120,19 @@ bool ESPressoMachine::heatLoop()
     {
         manageTemp();
 
+        // Powersafe mode Check if the temperature has been stable: then turn off, reset timer if average out of bound.
+        if (!powerOffMode)
+        {
+            if (abs(myConfig->targetTemp - getAverage()) > TEMPERATURE_VAR)
+            {
+                pwrSafeTimer = time_now;
+                LOGDEBUG ("Resetting PowerSafeTimer");
+            }
+            if ((time_now - pwrSafeTimer) > 1000 * 60 * POWERSAFE_TIMEOUT)
+            {
+                powerOffMode = true;
+            }
+        }
         updatePIDSettings();
         if (powerOffMode)
         {
@@ -142,7 +158,9 @@ bool ESPressoMachine::heatLoop()
             myHeater->setHeatPowerPercentage(outputPwr);
         }
         time_last = time_now;
+
         stats entry = {time_now, inputTemp, outputPwr};
+
         addStatistic(entry);
         returnval = true;
     }
@@ -235,6 +253,12 @@ void ESPressoMachine::reConfig()
 StatsStore::StatsStore()
 {
     skip = 0;
+    for (int i = 0; i < AVERAGE_TEMP_ENTRIES; i++)
+    {
+        AverageTempBuffer[i] = 0;
+    }
+    AverageTempBufferEntry = 0;
+
     storage[0] = '[';
     for (int i = 1; i < (STATS_SIZE - 1); i++)
     {
@@ -249,8 +273,27 @@ char *StatsStore::getStatistics()
     return storage;
 }
 
+double StatsStore::getAverage()
+{
+    double sum;
+    for (int i = 0; i < AVERAGE_TEMP_ENTRIES; i++)
+    {
+        sum += AverageTempBuffer[i];
+    }
+
+    return (sum / AVERAGE_TEMP_ENTRIES);
+}
+
 void StatsStore::addStatistic(stats s)
 {
+
+    AverageTempBuffer[AverageTempBufferEntry] = s.temp;
+    AverageTempBufferEntry++;
+    if (AverageTempBufferEntry == AVERAGE_TEMP_ENTRIES)
+    {
+        AverageTempBufferEntry = 0;
+    }
+
 
     char statline[STAT_LINELENGTH + 1];
 

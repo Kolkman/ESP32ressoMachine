@@ -47,17 +47,25 @@ struct stats
 // adds commas between entries, and a leading and a training {} - NO trailing \0
 #define STATS_SIZE STAT_ENTRIES *(STAT_LINELENGTH + 1) + 1 //
 
+#define AVERAGE_TEMP_ENTRIES 30 // Size of the floating buffer used to detect temperature
+                                // variations for powersave mode
+
+
 class StatsStore
 {
   // class to store stats - all static assigned
 public:
   StatsStore();
   void addStatistic(stats);
-  char *getStatistics();
+  char * getStatistics();
+  double getAverage();
+
 
 private:
   char storage[STATS_SIZE + 1]; // add trailing \0
   int skip;
+  double AverageTempBuffer[AVERAGE_TEMP_ENTRIES];
+  int AverageTempBufferEntry;
 };
 
 class ESPressoInterface; // forward declaratin
@@ -103,6 +111,7 @@ private:
   bool osmode;
   ESPressoMachine(const ESPressoMachine &);            // non construction-copyable
   ESPressoMachine &operator=(const ESPressoMachine &); // non copyable
+   unsigned long pwrSafeTimer;
 };
 
 #endif
