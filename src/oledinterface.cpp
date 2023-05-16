@@ -173,7 +173,7 @@ void OledInterface::loopOled(ESPressoMachine *myMachine)
             int xOffset = oled->getStrWidth(TempReport.c_str()) / 2;
             oled->drawStr(64 - xOffset, 60, TempReport.c_str());
             u8g2_uint_t pwrX = (u8g2_uint_t)(log10(myMachine->outputPwr) / 3 * oled->getDisplayWidth());
-            LOGINFO1("pwrX: ", pwrX);
+            //    LOGDEBUG1("pwrX: ", pwrX);
 
             oled->drawBox(0, 62, pwrX, 3);
 
