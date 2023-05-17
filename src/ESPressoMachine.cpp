@@ -35,6 +35,9 @@ ESPressoMachine::ESPressoMachine()
     powerOffMode = false;
     externalControlMode = false;
     coldstart = true;
+#ifdef ENABLE_NTPCLOCK
+    clock = new ntpClock();
+#endif
 }
 
 void ESPressoMachine::startMachine()
@@ -58,6 +61,11 @@ void ESPressoMachine::startMachine()
     myPID->SetOutputLimits(0, 1000);
     myPID->SetMode(AUTOMATIC);
     myInterface->setup();
+
+#ifdef ENABLE_NTPCLOCK
+    clock->setup();
+#endif // ENABLE_NTPCLOCK
+
     outputPwr = myConfig->eqPwr;
     time_now = millis();
     time_last = time_now;
@@ -101,7 +109,7 @@ void ESPressoMachine::setMachineStatus()
     statusObject["tuning"] = myTuner->tuningOn;
     statusObject["heap"] = ESP.getFreeHeap();
     statusObject["heapMaxAl"] = ESP.getMaxAllocHeap();
-    statusObject["FloatingAvg"]=getAverage();
+    statusObject["FloatingAvg"] = getAverage();
 
     serializeJson(statusObject, machineStatus);
 }
@@ -126,7 +134,7 @@ bool ESPressoMachine::heatLoop()
             if (abs(myConfig->targetTemp - getAverage()) > TEMPERATURE_VAR)
             {
                 pwrSafeTimer = time_now;
-                LOGDEBUG ("Resetting PowerSafeTimer");
+                LOGDEBUG("Resetting PowerSafeTimer");
             }
             if ((time_now - pwrSafeTimer) > 1000 * 60 * POWERSAFE_TIMEOUT)
             {
@@ -165,6 +173,10 @@ bool ESPressoMachine::heatLoop()
         returnval = true;
     }
     myHeater->updateHeater();
+#ifdef ENABLE_NTPCLOCK
+    clock->loop();
+#endif // ENABLE_NTPCLOCK
+
     return (returnval);
 }
 
@@ -293,7 +305,6 @@ void StatsStore::addStatistic(stats s)
     {
         AverageTempBufferEntry = 0;
     }
-
 
     char statline[STAT_LINELENGTH + 1];
 

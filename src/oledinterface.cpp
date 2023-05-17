@@ -97,9 +97,7 @@ void OledInterface::DrawGauge(int x, byte y, byte r, byte p, int v, float target
             int tickXend = x + (sin(angle) * r * 1);
             int tickYend = y - (cos(angle) * r * 1);
             oled->drawLine(tickXstart, tickYstart, tickXend, tickYend);
-
             oled->setFont(u8g2_font_t0_11_tf);
-
             float xOffset = oled->getStrWidth(String(targetTemp, 1).c_str()) / 2;
             oled->drawStr(x - xOffset, y - r * 1.1, String(targetTemp, 1).c_str());
             xOffset = oled->getStrWidth(String(-maxOffset, 1).c_str());
@@ -152,10 +150,15 @@ void OledInterface::loopOled(ESPressoMachine *myMachine)
         if (myMachine->powerOffMode)
         {
             oled->clearBuffer();
-
+            int xOffset;
+#ifdef ENABLE_NTPCLOCK
+            String timeString = myMachine->clock->getTimeString();
+            xOffset = oled->getStrWidth(timeString.c_str()) / 2;
+            oled->drawStr(64 - xOffset, 10, timeString.c_str());
+#endif
             String tmpOutput = String(myMachine->inputTemp, 1);
-            int xOffset = oled->getStrWidth(tmpOutput.c_str()) / 2;
-            oled->drawStr(64 - xOffset, 20, tmpOutput.c_str());
+            xOffset = oled->getStrWidth(tmpOutput.c_str()) / 2;
+            oled->drawStr(64 - xOffset, 35, tmpOutput.c_str());
             tmpOutput = String("Off");
             xOffset = oled->getStrWidth(tmpOutput.c_str()) / 2;
             oled->drawStr(64 - xOffset, 60, tmpOutput.c_str());
@@ -167,6 +170,14 @@ void OledInterface::loopOled(ESPressoMachine *myMachine)
 
             oled->clearBuffer();
             DrawGauge(cx, cy, radius, percent, (int)myMachine->inputTemp, myMachine->myConfig->targetTemp, 7.5);
+#ifdef ENABLE_NTPCLOCK
+            oled->setFont(u8g2_font_ncenB08_tr);
+
+            String timeString = myMachine->clock->getTimeString();
+            LOGDEBUG1("oLED Display", timeString);
+            oled->drawStr(2, 9, timeString.c_str());
+#endif // ENABLE_NTPCLOCK
+
             oled->setFont(u8g2_font_ncenB10_tr);
             //        String TempReport = String(myMachine->inputTemp, 1) + " / " + String(myMachine->myConfig->targetTemp, 1);
             String TempReport = String(myMachine->inputTemp, 1);
@@ -174,9 +185,7 @@ void OledInterface::loopOled(ESPressoMachine *myMachine)
             oled->drawStr(64 - xOffset, 60, TempReport.c_str());
             u8g2_uint_t pwrX = (u8g2_uint_t)(log10(myMachine->outputPwr) / 3 * oled->getDisplayWidth());
             //    LOGDEBUG1("pwrX: ", pwrX);
-
             oled->drawBox(0, 62, pwrX, 3);
-
             oled->sendBuffer();
         }
     }
