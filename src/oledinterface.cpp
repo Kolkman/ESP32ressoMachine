@@ -150,18 +150,21 @@ void OledInterface::loopOled(ESPressoMachine *myMachine)
         if (myMachine->powerOffMode)
         {
             oled->clearBuffer();
+            oled->setFont(u8g2_font_10x20_tr);
             int xOffset;
 #ifdef ENABLE_NTPCLOCK
             String timeString = myMachine->clock->getTimeString();
             xOffset = oled->getStrWidth(timeString.c_str()) / 2;
-            oled->drawStr(64 - xOffset, 10, timeString.c_str());
+            oled->drawStr(64 - xOffset, 15, timeString.c_str());
 #endif
+            oled->setFont(u8g2_font_ncenB08_tr);
             String tmpOutput = String(myMachine->inputTemp, 1);
             xOffset = oled->getStrWidth(tmpOutput.c_str()) / 2;
-            oled->drawStr(64 - xOffset, 35, tmpOutput.c_str());
+            oled->drawStr(64 - xOffset, 60, tmpOutput.c_str());
+              oled->setFont(u8g2_font_10x20_tr);
             tmpOutput = String("Off");
             xOffset = oled->getStrWidth(tmpOutput.c_str()) / 2;
-            oled->drawStr(64 - xOffset, 60, tmpOutput.c_str());
+            oled->drawStr(64 - xOffset, 40, tmpOutput.c_str());
 
             oled->sendBuffer();
         }
@@ -171,7 +174,7 @@ void OledInterface::loopOled(ESPressoMachine *myMachine)
             oled->clearBuffer();
             DrawGauge(cx, cy, radius, percent, (int)myMachine->inputTemp, myMachine->myConfig->targetTemp, 7.5);
 #ifdef ENABLE_NTPCLOCK
-            oled->setFont(u8g2_font_ncenB08_tr);
+            oled->setFont(u8g2_font_courR08_tf);
 
             String timeString = myMachine->clock->getTimeString();
             LOGDEBUG1("oLED Display", timeString);
