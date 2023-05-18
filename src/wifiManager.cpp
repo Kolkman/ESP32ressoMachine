@@ -152,7 +152,7 @@ uint8_t WiFiManager::connectMultiWiFi(EspressoConfig *myConfig)
     }
 
     LOGERROR(F("Connecting MultiWifi..."));
-    myInterface->report(" Connecting to","    MultiWIFI");
+    myInterface->report(" Connecting to","      WIFI");
     /*
         #if !USE_DHCP_IP
             // New in v1.4.0
