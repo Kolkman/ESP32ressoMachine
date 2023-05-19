@@ -33,7 +33,7 @@
 #define DISPLAY_INTERVAL 1500
 #define PID_INTERVAL 500
 
-#define TEMPERATURE_VAR 2     // The amount of temperature variateion the internal floating avarage-> indicates a brew
+#define TEMPERATURE_VAR 5     // The amount of temperature variateion the internal floating avarage-> indicates a brew
 #define POWERSAFE_TIMEOUT 120 // Turn power of when not brewed for this many minutes
 
 #define ESP_PROG 1 // Old pin layout does not work with ESP prog
@@ -94,7 +94,7 @@
 
 #define WEB_USER "admin"
 #define WEB_PASS "silvia"
-
+#define HOSTNAME "silvia" // Hostname during normal operation (not during initial config)
 #define COOKIENAME "ESP32RESSO_ID"
 
 #ifdef ENABLE_MQTT
