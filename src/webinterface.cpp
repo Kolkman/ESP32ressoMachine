@@ -7,7 +7,7 @@
 // Contains code fragments from  ESPAsync_WiFiManager by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
 // Contains code fragments from https://www.mischianti.org/2020/11/09/web-server-with-esp8266-and-esp32-manage-security-and-authentication-4/#Simple_token_authentication
 
-//#define ELEGANT_OTA
+// #define ELEGANT_OTA
 
 #include "ESPressoMachine.h"
 #include <PID_v1.h>
@@ -25,7 +25,7 @@
 #endif
 
 // Various WebSources:
-//#include "pages/test.html.h"
+// #include "pages/test.html.h"
 
 #include "pages/configuration.html.h"
 #include "pages/configuration_helper.js.h"
@@ -63,7 +63,7 @@ void WebInterface::handleRoot(AsyncWebServerRequest *request)
 void WebInterface::handleRestart(AsyncWebServerRequest *request)
 {
   String message = "<head><meta http-equiv=\"refresh\" content=\"2;url=/\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><title>EspressIoT</title></head>";
-  message += "<h1> Reseting Device ! </h1>";
+  message += "<h1> Restarting Device ! </h1>";
   request->send(200, "text/html", message);
   delay(1000);
   ESP.restart();
@@ -171,7 +171,7 @@ void WebInterface::setConfigPortalPages()
   DEF_HANDLE_networkConfigPage_js;
   DEF_HANDLE_captivePortal_html;
   webAPI.begin(server, myMachine);
-  webAPI.requireAuthorization(false);  // The API is wide open during the configportal phase
+  webAPI.requireAuthorization(false); // The API is wide open during the configportal phase
   return;
 }
 
