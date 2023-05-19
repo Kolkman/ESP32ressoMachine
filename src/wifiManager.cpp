@@ -12,7 +12,7 @@
 #include "EspressoMachine.h"
 #include "config.h"
 
-WiFiManager::WiFiManager(ESPressoInterface * _i)
+WiFiManager::WiFiManager(ESPressoInterface *_i)
 {
     myInterface = _i;
     dnsServer = new AsyncDNSServer;
@@ -31,7 +31,7 @@ void WiFiManager::setupWiFiAp(WiFi_AP_IPConfig *WifiApIP)
     LOGERROR1(F("Hostname set to"), RFC952_hostname)
     // Remove this line if you do not want to see WiFi password printed
     LOGERROR3(F("WIFI AP setup SSID/PASSWORD"), ApSSID, F("/"), ApPass);
-    myInterface->report("SSID: "+ ApSSID,"PW: "+ ApPass);
+    myInterface->report("SSID: " + ApSSID, "PW: " + ApPass);
     // This check is copied from ESPAsync_WifiManager
     // Check cores/esp32/esp_arduino_version.h and cores/esp32/core_version.h
 #if (defined(ESP_ARDUINO_VERSION_MAJOR) && (ESP_ARDUINO_VERSION_MAJOR >= 2))
@@ -96,8 +96,6 @@ void WiFiManager::setupWiFiAp(WiFi_AP_IPConfig *WifiApIP)
     return;
 }
 
-
-
 void WiFiManager::loopPortal()
 {
     connect = false;
@@ -112,8 +110,8 @@ void WiFiManager::loopPortal()
     }
 
     LOGINFO("startConfigPortal : Enter loop");
-    
-    while ( myInterface->_waitingForClientAction || millis() < _configPortalStart + CONFIGPORTAL_TIMEOUT)
+
+    while (myInterface->_waitingForClientAction || millis() < _configPortalStart + CONFIGPORTAL_TIMEOUT)
     {
 #ifdef USE_ASYNC_DNS
         // left blank
@@ -131,14 +129,29 @@ uint8_t WiFiManager::connectMultiWiFi(EspressoConfig *myConfig)
 {
 
     uint8_t status;
+#ifdef HOSTNAME
+    getRFC952_hostname(HOSTNAME);
 
+#if (defined(ESP_ARDUINO_VERSION_MAJOR) && (ESP_ARDUINO_VERSION_MAJOR >= 2))
+    WiFi.setHostname(RFC952_hostname);
+#else
+    // Still have bug in ESP32_S2 for old core. If using WiFi.setHostname() => WiFi.localIP() always = 255.255.255.255
+    if (String(ARDUINO_BOARD) != "ESP32S2_DEV")
+    {
+        // See https://github.com/espressif/arduino-esp32/issues/2537
+        WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
+        WiFi.setHostname(RFC952_hostname);
+    }
+#endif
+
+#endif
     LOGERROR(F("ConnectMultiWiFi with :"));
     bool MultiWifiEntrySet = false;
     for (uint8_t i = 0; i < NUM_WIFI_CREDENTIALS; i++)
     {
         // Don't permit NULL SSID and password len < MIN_AP_PASSWORD_SIZE (8)
-        if ((String(myConfig->WM_config.WiFi_Creds[i].wifi_ssid) != "") && 
-        (strlen(myConfig->WM_config.WiFi_Creds[i].wifi_pw)==0  || strlen(myConfig->WM_config.WiFi_Creds[i].wifi_pw) >= MIN_AP_PASSWORD_SIZE))
+        if ((String(myConfig->WM_config.WiFi_Creds[i].wifi_ssid) != "") &&
+            (strlen(myConfig->WM_config.WiFi_Creds[i].wifi_pw) == 0 || strlen(myConfig->WM_config.WiFi_Creds[i].wifi_pw) >= MIN_AP_PASSWORD_SIZE))
         {
             LOGERROR3(F("* Additional SSID = "), myConfig->WM_config.WiFi_Creds[i].wifi_ssid, F(", PW = "), myConfig->WM_config.WiFi_Creds[i].wifi_pw);
             addAP(myConfig->WM_config.WiFi_Creds[i].wifi_ssid, myConfig->WM_config.WiFi_Creds[i].wifi_pw);
@@ -152,7 +165,7 @@ uint8_t WiFiManager::connectMultiWiFi(EspressoConfig *myConfig)
     }
 
     LOGERROR(F("Connecting MultiWifi..."));
-    myInterface->report(" Connecting to","      WIFI");
+    myInterface->report(" Connecting to", "      WIFI");
     /*
         #if !USE_DHCP_IP
             // New in v1.4.0
@@ -192,8 +205,6 @@ uint8_t WiFiManager::connectMultiWiFi(EspressoConfig *myConfig)
 
     return status;
 }
-
-
 
 char *WiFiManager::getRFC952_hostname(const char *iHostname)
 // From https://github.com/khoih-prog/ESPAsync_WiFiManager/blob/master/src/ESPAsync_WiFiManager-Impl.h
