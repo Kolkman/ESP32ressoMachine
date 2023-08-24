@@ -446,5 +446,6 @@ void webInterfaceAPI::handlePwr(AsyncWebServerRequest *request) {
       }
     }
   }
+  strcat(message, "}");
   request->send(200, "application/json", message);
 }
