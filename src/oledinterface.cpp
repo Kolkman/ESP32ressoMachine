@@ -19,6 +19,9 @@ void OledInterface::DrawGauge(int x, byte y, byte r, byte p, int v, float target
     float gs_rad = -PI / 2;
     float ge_rad = PI / 2;
     bool farFromTargetTemp = false;
+
+    oled->setFont(u8g2_font_t0_11_tf);
+
     if ((v < minOfScale) || (v > maxOfScale))
         farFromTargetTemp = true;
 
@@ -36,6 +39,7 @@ void OledInterface::DrawGauge(int x, byte y, byte r, byte p, int v, float target
 
     if (farFromTargetTemp)
     {
+
         LOGINFO3("MinOfScale", minOfScale, "MaxScale", maxOfScale);
         float ticklengthfraction;
         float ticks[] = {minOfScale,
@@ -60,7 +64,6 @@ void OledInterface::DrawGauge(int x, byte y, byte r, byte p, int v, float target
             oled->drawLine(tickXstart, tickYstart, tickXend, tickYend);
         }
 
-        oled->setFont(u8g2_font_t0_11_tf);
         float xOffset;
         //            float xOffset = oled->getStrWidth(String(targetTemp, 1).c_str()) / 2;
         //            oled->drawStr(x - xOffset, y - r * 1.1, String(targetTemp, 1).c_str());
@@ -97,7 +100,7 @@ void OledInterface::DrawGauge(int x, byte y, byte r, byte p, int v, float target
             int tickXend = x + (sin(angle) * r * 1);
             int tickYend = y - (cos(angle) * r * 1);
             oled->drawLine(tickXstart, tickYstart, tickXend, tickYend);
-            oled->setFont(u8g2_font_t0_11_tf);
+
             float xOffset = oled->getStrWidth(String(targetTemp, 1).c_str()) / 2;
             oled->drawStr(x - xOffset, y - r * 1.1, String(targetTemp, 1).c_str());
             xOffset = oled->getStrWidth(String(-maxOffset, 1).c_str());
@@ -161,7 +164,7 @@ void OledInterface::loopOled(ESPressoMachine *myMachine)
             String tmpOutput = String(myMachine->inputTemp, 1);
             xOffset = oled->getStrWidth(tmpOutput.c_str()) / 2;
             oled->drawStr(64 - xOffset, 60, tmpOutput.c_str());
-              oled->setFont(u8g2_font_10x20_tr);
+            oled->setFont(u8g2_font_10x20_tr);
             tmpOutput = String("Off");
             xOffset = oled->getStrWidth(tmpOutput.c_str()) / 2;
             oled->drawStr(64 - xOffset, 40, tmpOutput.c_str());
@@ -172,10 +175,9 @@ void OledInterface::loopOled(ESPressoMachine *myMachine)
         {
 
             oled->clearBuffer();
-            DrawGauge(cx, cy, radius, percent, (int)myMachine->inputTemp, myMachine->myConfig->targetTemp, 7.5);
+            DrawGauge(cx, cy, radius, percent, (int)myMachine->inputTemp, myMachine->myConfig->targetTemp, 5);
 #ifdef ENABLE_NTPCLOCK
             oled->setFont(u8g2_font_courR08_tf);
-
             String timeString = myMachine->clock->getTimeString();
             LOGDEBUG1("oLED Display", timeString);
             oled->drawStr(2, 9, timeString.c_str());
