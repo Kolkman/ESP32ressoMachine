@@ -105,14 +105,15 @@ public:
        double maxCool;
        unsigned int sensorSampleInterval;
        unsigned int heaterInterval;
+       unsigned int powersafeTimeout;
        int pidInt;
 
 #ifdef ENABLE_MQTT
-       char mqttHost[MQTTFIELDS_LENGTH+1];
-       char mqttTopic[MQTTFIELDS_LENGTH+1];
+       char mqttHost[MQTTFIELDS_LENGTH + 1];
+       char mqttTopic[MQTTFIELDS_LENGTH + 1];
        unsigned int mqttPort;
-       char mqttUser[MQTTUSERFIELDS_LENGTH+1];
-       char mqttPass[MQTTUSERFIELDS_LENGTH+1];
+       char mqttUser[MQTTUSERFIELDS_LENGTH + 1];
+       char mqttPass[MQTTUSERFIELDS_LENGTH + 1];
        char webUser[65];
        char webPass[65];
 #endif                                  // ENABLE_MQTT

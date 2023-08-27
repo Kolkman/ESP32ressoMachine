@@ -26,14 +26,14 @@ EspressoConfig::EspressoConfig()
 
   ptargetTemp = &targetTemp;
 
-for (int i = 0; i < NUM_WIFI_CREDENTIALS; i++)
+  for (int i = 0; i < NUM_WIFI_CREDENTIALS; i++)
   {
     *WM_config.WiFi_Creds[i].wifi_ssid = '\0';
     *WM_config.WiFi_Creds[i].wifi_pw = '\0';
   }
-  WM_AP_IPconfig._ap_static_ip= {192, 168, 100, 1};
-  WM_AP_IPconfig._ap_static_gw= {192, 168, 100, 1};
-  WM_AP_IPconfig._ap_static_sn= {255, 255, 255, 0};
+  WM_AP_IPconfig._ap_static_ip = {192, 168, 100, 1};
+  WM_AP_IPconfig._ap_static_gw = {192, 168, 100, 1};
+  WM_AP_IPconfig._ap_static_sn = {255, 255, 255, 0};
 }
 
 
@@ -93,6 +93,15 @@ bool EspressoConfig::loadConfig()
   else
   {
     targetTemp = S_TSET;
+  }
+
+  if (jsonDocument["powersafeTimeout"])
+  {
+    powersafeTimeout = jsonDocument["powersafeTimeout"];
+  }
+  else
+  {
+    powersafeTimeout = POWERSAFE_TIMEOUT;
   }
 
   temperatureBand = jsonDocument["tband"];
@@ -200,6 +209,7 @@ bool EspressoConfig::saveConfig()
   jsonDocument["Ep"] = eqPwr, jsonDocument["hi"] = heaterInterval, jsonDocument["pidi"] = pidInt,
   jsonDocument["ssi"] = sensorSampleInterval;
   jsonDocument["maxcool"] = maxCool;
+  jsonDocument["powersafeTimeout"] = powersafeTimeout;
 #ifdef ENABLE_MQTT
   if (mqttHost)
     jsonDocument["mqttHost"] = mqttHost;
@@ -264,6 +274,18 @@ bool EspressoConfig::saveConfig()
 
   for (int i = 0; i < NUM_WIFI_CREDENTIALS; i++)
   {
+    // Weed out duplicate credentials
+    bool SSIDhasDuplicate = false;
+    for (int j = 0; j < i; j++)
+    {
+      if (strcmp(WM_config.WiFi_Creds[i].wifi_ssid, WM_config.WiFi_Creds[j].wifi_ssid) == 0)
+      {
+
+        WM_config.WiFi_Creds[i].wifi_pw[0] = '\0';
+        WM_config.WiFi_Creds[i].wifi_ssid[0] = '\0';
+      }
+    }
+
     ssid.add(WM_config.WiFi_Creds[i].wifi_ssid);
     pw.add(WM_config.WiFi_Creds[i].wifi_pw);
   }
@@ -304,17 +326,19 @@ void EspressoConfig::resetConfig()
   heaterInterval = HEATER_INTERVAL;
   maxCool = MAX_COOL;
   sensorSampleInterval = MAX31855_SMP_TIME; ///<=== TODO
+  powersafeTimeout = POWERSAFE_TIMEOUT;
 }
 
-String EspressoConfig::passForSSID(String _SSID){
+String EspressoConfig::passForSSID(String _SSID)
+{
   String pass;
-  pass="";
-for (int i = 0; i < NUM_WIFI_CREDENTIALS; i++)
+  pass = "";
+  for (int i = 0; i < NUM_WIFI_CREDENTIALS; i++)
   {
-    if (String(WM_config.WiFi_Creds[i].wifi_ssid) == _SSID){
-pass=String(WM_config.WiFi_Creds[i].wifi_pw); 
-    }
-   ;
+    if (String(WM_config.WiFi_Creds[i].wifi_ssid) == _SSID)
+    {
+      pass = String(WM_config.WiFi_Creds[i].wifi_pw);
+    };
   }
-  return(pass);
+  return (pass);
 }

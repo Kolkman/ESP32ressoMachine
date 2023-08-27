@@ -260,10 +260,10 @@ function parseFirmware(data) {
 function pwrSwitch() {
     if (document.getElementById("toggle--pwr").checked) {
         // (Heater is OFF)
-        fetch('/api/v1/set?powerOffMode=false');
+        fetch('/api/v1/pwr?powerOffMode=false');
     } else {
         // .(HEATER is ON)
-        fetch('/api/v1/set?powerOffMode=true');
+        fetch('/api/v1/pwr?powerOffMode=true');
     }
 }
 

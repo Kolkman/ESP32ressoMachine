@@ -13,6 +13,9 @@
 */
   const url = "";  // Setting in production.
 
+//const url = "http://192.168.179.123";  // This is for development purposes only
+
+
 </script>
 
 <script src='https://d3js.org/d3.v7.min.js'> // D3 library needed for the graph </script>
@@ -24,8 +27,12 @@
   <h1>Configuration</h1>
   <div id="graph" style="margin-left:3%; margin-right:3%"></div>
   <div id="bodyBlock">
+    <div id="LoginRequired" style="display:block">
+      You need to log in to change parameters.
+      <div><a href="./WebLogin.html?url=configuration.html"><button class="btn">Login</button></a></div>
 
-    <div class="configblock">
+    </div>
+    <div class="configblock" id="PidConfigParamsForm" style="display:none">
       <form id="configForm">
         <div class="tableTable">
           <div class="tableBody">
@@ -85,6 +92,14 @@
                 <input type="text" name="maxCool" value="">
               </div>
             </div>
+            <div class="formParameterValuePair tableRow">
+              <div class="formParameter tableField">
+                Powersafe Timeout (in minutes)
+              </div>
+              <div class="formValue tableField">
+                <input type="text" name="powersafeTimeout" value="">
+              </div>
+            </div>
           </div>
         </div>
 
@@ -93,7 +108,7 @@
           <div class="tableBody">
             <div class="formParameterValuePair tableRow PID">
               <div class="formParameter tableField">
-                PID within <span id="trangemin"></span> to <span id="trangemax"></span> band
+                PID within <span id="trangemin"></span>&nbsp;to <span id="trangemax"></span>&nbsp; band
               </div>
               <div class="formValue tableField">
                 <div class="tableTable">
@@ -174,14 +189,15 @@
           <input type="submit" value="Submit" class="btn">
           <span id="confform-errormessage"></span>
         </div>
+
     </div>
     </form>
 
 
     <div class="configblock">
       <div class="Management">
-        <div>
-          <div id='configAPI'>
+        <div id="configAPI" style="display:none">
+          <div>
             <input type="button" value="Load Config" class="btn" onclick="LoadConf(this)">
             <input type="button" value="Save Config" class="btn" onclick="SaveConf(this)">
             <input type="button" value="Default Config" class="btn" onclick="DefaultConf(this)">
@@ -203,7 +219,7 @@
       </div>
     </div>
 
-    <form id="tuningForm">
+    <form id="tuningForm" style="display:none">
       <div>
         <div class="configblock">
           <div id="StatsReporting"></div>

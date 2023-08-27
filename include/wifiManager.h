@@ -27,7 +27,7 @@ class ESPressoInterface; /// forward declaration
 #define DNS_PORT 53
 #define RFC952_HOSTNAME_MAXLEN 63 // HOSTNAME can be up to 255 chars, but we'll take DNS label length. (longer than  in original code)
 #define MAX_WIFI_CHANNEL 13
-#define CONFIGPORTAL_TIMEOUT 80 * 1000
+#define CONFIGPORTAL_TIMEOUT 60 * 1000
 #define WIFI_MULTI_CONNECT_WAITING_MS 10 * 1000 // MultiWifi reconnects after 10 seconds.
 #define WIFI_MULTI_1ST_CONNECT_WAITING_MS 3 * 1000
 
@@ -68,6 +68,7 @@ typedef struct
 {
        char wifi_ssid[SSID_MAX_LEN];
        char wifi_pw[PASS_MAX_LEN];
+       bool config_change;  // used to see if during configuration the wifi changes without a password (it should then be deleted)
 } WiFi_Credentials;
 
 typedef struct
@@ -86,9 +87,9 @@ typedef struct
 class WiFiManager : public WiFiMulti
 {
 public:
-       WiFiManager();
+       WiFiManager(ESPressoInterface *);
        void setupWiFiAp(WiFi_AP_IPConfig *);
-       void loopPortal(ESPressoInterface *myInterface);
+       void loopPortal();
        uint8_t connectMultiWiFi(EspressoConfig *);
 #ifdef USE_ASYNC_DNS
        AsyncDNSServer *dnsServer;

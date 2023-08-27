@@ -2,7 +2,7 @@
 // Global Variables.
 const configNames = ["tset", "tband", "eqPwr", "pgain", "igain", "dgain",
     "apgain", "aigain", "adgain", "PidInterval", "HeaterInterval",
-    "sensorSampleInterval", "maxCool", "powerOffMode"];
+    "sensorSampleInterval", "maxCool", "powersafeTimeout", "powerOffMode"];
 
 const tuningNames = ["tunethres", "tunestep", "tuningOn"]
 let configuration = {};
@@ -11,30 +11,75 @@ let configerror = false;
 // The Eventlistner that populates
 // the configuration page after load
 window.addEventListener("load", function () {
+    fetch(url + '/api/v1/authenticated')
+        .then(function (response) {
+
+            return response.json()
+        })
+        .then(function (data) {
+            console.log(data);
+                    loginRequired=  document.getElementById("LoginRequired");
+                    PidConfigParamsForm = document.getElementById("PidConfigParamsForm");
+                    configAPI = document.getElementById("configAPI");
+                    tuningForm = document.getElementById("tuningForm");
+                    console.log(data["authenticated"]);
+                    if (data["authenticated"]){
+                        loginRequired.style.display="none";
+                        configAPI.style.display="block";
+                        PidConfigParamsForm.style.display="inline-block";
+                        tuningForm.style.display="block";
+                    }else{
+                        loginRequired.style.display="block";
+                        configAPI.style.display="none";
+                        PidConfigParamsForm.style.display="none";
+                        tuningForm.style.display="none";
+                    }
+        
+        })
+        .catch(function (err) {
+            console.log('error' + err);
+        });
+
+
     setFormValues();
     configForm.addEventListener('submit', (event) => {
+
+        console.log("setFormValues")
         event.preventDefault(); //stop form submission
         // chec on all input
         configerror = false;
         let argObj = { form: configForm, errordiv: 'confform-errormessage' };
         configNames.forEach(GetFormValues, argObj);
-
+        Errordiv = document.getElementById("confform-errormessage");
+     
         if (!configerror) {
             param = new URLSearchParams(configuration);
             let setapi = url + "/api/v1/set?" + param.toString();
-
-            fetch(setapi)
+            console.log(setapi);
+                fetch(setapi)
                 .then(function (response) {
                     return response.json()
                 })
                 .then(function (data) {
-                    setFormDefaults(data, configForm, configNames);
+                    console.log(data["authenticated"]);
+                    if (data['authenticated']==false) {
+                        console.log("We were not authorized");
+                        Errordiv.textContent = "Not Authorized";
+                       
+                    } else {
+                        console.log("We are authorized");
+                        setFormDefaults(data, configForm, configNames);
+                        Errordiv.textContent = "New Values Set"
+                    }
                 })
                 .catch(function (err) {
-                    console.log('error' + err);
+                    console.log(err);
                 });
-            Errordiv = document.getElementById("confform-errormessage");
-            Errordiv.textContent = "New Values Set"
+
+            setTimeout(function () {
+                Errordiv = document.getElementById("confform-errormessage");
+                Errordiv.textContent = ""
+            }, 3000);
         }
     }, false);
     tuningForm.addEventListener('submit', (event) => {
@@ -53,10 +98,10 @@ window.addEventListener("load", function () {
                     setFormDefaults(data, tuningForm, tuningNames);
                 })
                 .catch(function (err) {
-                    console.log('error' + err);
+                    console.log(err);
                 });
             Errordiv = document.getElementById("tuneform-errormessage");
-            Errordiv.textContent = "New Values Set"
+            Errordiv.textContent = "New Values Set[2]"
         }
     }, false);
 }); // End of window.addEventListener
@@ -66,10 +111,10 @@ window.addEventListener("load", function () {
 function pwrSwitch() {
     if (document.getElementById("toggle--pwr").checked) {
         // (Heater is OFF)
-        fetch(url + '/api/v1/set?powerOffMode=false');
+        fetch(url + '/api/v1/pwr?powerOffMode=false');
     } else {
         // .(HEATER is ON)
-        fetch(url + '/api/v1/set?powerOffMode=true');
+        fetch(url + '/api/v1/pwr?powerOffMode=true');
 
     }
 }
@@ -203,6 +248,7 @@ function setFormValues() {
         getapi += value + "&";
     }
     getapi = getapi.slice(0, -1); //strim extraneous &
+    console.log("fetching: "+getapi);
     fetch(getapi)
         .then(function (response) {
             return response.json()

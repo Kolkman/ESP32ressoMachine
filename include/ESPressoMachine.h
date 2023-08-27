@@ -9,6 +9,9 @@
 #include "ESPressoMachineDefaults.h"
 #include "sensor_max31855.h"
 #include "interface.h"
+#ifdef ENABLE_NTPCLOCK
+#include "ntpclock.h"
+#endif // ENABLE_NTPCLOCK
 
 #define CURRENTFIRMWARE "ESPressoMachine-PlatFormIO"
 #define MQTT_DEBUG
@@ -47,6 +50,9 @@ struct stats
 // adds commas between entries, and a leading and a training {} - NO trailing \0
 #define STATS_SIZE STAT_ENTRIES *(STAT_LINELENGTH + 1) + 1 //
 
+#define AVERAGE_TEMP_ENTRIES 30 // Size of the floating buffer used to detect temperature
+                                // variations for powersave mode
+
 class StatsStore
 {
   // class to store stats - all static assigned
@@ -54,10 +60,13 @@ public:
   StatsStore();
   void addStatistic(stats);
   char *getStatistics();
+  double getAverage();
 
 private:
   char storage[STATS_SIZE + 1]; // add trailing \0
   int skip;
+  double AverageTempBuffer[AVERAGE_TEMP_ENTRIES];
+  int AverageTempBufferEntry;
 };
 
 class ESPressoInterface; // forward declaratin
@@ -95,6 +104,9 @@ public:
   bool powerOffMode;
   bool externalControlMode;
   int buttonState;
+#ifdef ENABLE_NTPCLOCK
+  ntpClock *clock;
+#endif
   String machineStatus;
 
 private:
@@ -103,6 +115,7 @@ private:
   bool osmode;
   ESPressoMachine(const ESPressoMachine &);            // non construction-copyable
   ESPressoMachine &operator=(const ESPressoMachine &); // non copyable
+  unsigned long pwrSafeTimer;
 };
 
 #endif
