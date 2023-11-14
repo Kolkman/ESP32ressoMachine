@@ -101,6 +101,7 @@ public:
   double oldPwr;
   double inputTemp;
   double outputTemp;
+  double internalTemp;
   bool powerOffMode;
   bool externalControlMode;
   int buttonState;
