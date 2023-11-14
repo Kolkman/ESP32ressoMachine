@@ -155,4 +155,22 @@ float TempSensor::getTemp(float temp)
   return retVal;
 }
 
+
+float TempSensor::getITemp(float temp)
+{
+  float retVal = temp; // default to return
+  if (CntI >= 1)
+  {
+    retVal = (SumI / CntI);
+    SumI = 0.;
+    CntI = 0;
+  }
+  else
+  {
+    LOGDEBUG0("No new Internal temp measure");
+  }
+  // LOGDEBUG3("old/ret: ", String(temp), ",", String(retVal));
+  return retVal;
+}
+
 #endif

@@ -17,6 +17,7 @@ ESPressoMachine::ESPressoMachine()
 {
     outputTemp = 0;
     inputTemp = 0;
+    internalTemp=0;
     myHeater = new Heater();
     myConfig = new EspressoConfig;
     mySensor = new TempSensor;
@@ -76,6 +77,8 @@ void ESPressoMachine::manageTemp()
 {
 
     inputTemp = mySensor->getTemp(oldTemp);
+    internalTemp = mySensor->getITemp(0.0);
+
 
     if (!(abs(myConfig->targetTemp - inputTemp) >= myConfig->temperatureBand) &&
         ((oldTemp - inputTemp) > (myConfig->maxCool * myConfig->pidInt / 1000)))
@@ -98,9 +101,10 @@ void ESPressoMachine::manageTemp()
 void ESPressoMachine::setMachineStatus()
 {
     machineStatus = "";
-    StaticJsonDocument<1024> statusObject;
+    StaticJsonDocument<512> statusObject;
     statusObject["time"] = time_now;
     statusObject["measuredTemperature"] = inputTemp;
+    statusObject["intTemperature"] = internalTemp;
     statusObject["targetTemperature"] = myConfig->targetTemp;
     statusObject["heaterPower"] = outputPwr;
     statusObject["externalControlMode"] = externalControlMode;
