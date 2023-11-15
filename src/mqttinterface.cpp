@@ -3,7 +3,7 @@
 //
 // MQTT integration
 //
-#include "ESPressoMachineDefaults.h"
+#include "ESPressoMachine.h"
 
 #ifdef ENABLE_MQTT
 #define MQTT_DEBUG
@@ -19,11 +19,13 @@
 #include "ExponentialFallback.h"
 #include "mqttinterface.h"
 #include <PubSubClient.h>
-// PubSubClient::setBufferSize(512)
+
 
 MQTTInterface::MQTTInterface() : espClient(), client() {
   //  myMachine = nullptr; // inherited attribute
+  client.setBufferSize(512);
   client.setClient(espClient);
+  
 }
 
 void MQTTInterface::MQTT_reconnect(EspressoConfig *myConfig) {
