@@ -274,8 +274,8 @@ void webInterfaceAPI::handleSet(AsyncWebServerRequest *request) {
     } else if (request->argName(i) == "tunethres") {
       addjson(message, firstarg, "tunethres", request->arg(i));
       myMachine->myTuner->setTuneThres((request->arg(i)).toDouble());
-            if ((request->arg(i)).toDouble() > 100) { // failsafe
-        myMachine->myTuner->setTuneThres(100);
+            if ((request->arg(i)).toDouble() > 10) { // failsafe
+        myMachine->myTuner->setTuneThres(10);
       }
     } else if (request->argName(i) == "tunestep") {
       addjson(message, firstarg, "tunestep", request->arg(i));
