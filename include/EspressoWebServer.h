@@ -14,7 +14,7 @@ const char htmlFooter[] = "</body></html>";
 #endif
 
 #ifndef COOKIEMAXAGE
-#define COOKIEMAXAGE 60
+#define COOKIEMAXAGE 7200
 #endif
 
 class EspressoWebServer : public AsyncWebServer
