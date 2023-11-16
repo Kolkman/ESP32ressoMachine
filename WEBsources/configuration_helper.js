@@ -101,7 +101,7 @@ window.addEventListener("load", function () {
                     console.log(err);
                 });
             Errordiv = document.getElementById("tuneform-errormessage");
-            Errordiv.textContent = "New Values Set[2]"
+            Errordiv.textContent = "New Tuning Vaues Set"
         }
     }, false);
 }); // End of window.addEventListener
