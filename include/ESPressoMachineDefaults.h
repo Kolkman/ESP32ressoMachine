@@ -110,4 +110,5 @@
 #define RED_BUTTON 16
 #define BLUE_BUTTON 17
 #define BLACK_BUTTON 18
+#define ONLY_BLACK_BUTTON true // Disable temperature only on/off - to work around a hardware issue
 #endif // ENABLE_BUTTON
