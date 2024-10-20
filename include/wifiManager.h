@@ -38,7 +38,7 @@ class ESPressoMachine; // Foraward declaration
 #define ESP_getChipId() ((uint32_t)ESP.getEfuseMac())
 
 #ifndef CONFIG_NETWORK_PASSWORD
-CONFIG_NETWORK_PASSWORD "ESP32ressoMachine"
+#define CONFIG_NETWORK_PASSWORD "ESP32ressoMachine"
 #endif
 // Anything Wifi Goes into this class - however the configuration bits are in the config class.
 
