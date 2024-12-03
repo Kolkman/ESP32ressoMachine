@@ -28,7 +28,7 @@ void webInterfaceOTAUpdate::begin(EspressoWebServer *server)
     _server->on("/update.html", HTTP_GET, [&](AsyncWebServerRequest *request)
                 {
         _server->authenticate(request);
-        AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", update_html, update_html_len);
+        AsyncWebServerResponse *response = request->beginResponse(200, "text/html", update_html, update_html_len);
         response->addHeader("Content-Encoding", "gzip");
         request->send(response); });
 

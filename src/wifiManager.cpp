@@ -30,7 +30,7 @@ void WiFiManager::setupWiFiAp(WiFi_AP_IPConfig *WifiApIP)
 
     LOGERROR1(F("Hostname set to"), RFC952_hostname)
     // Remove this line if you do not want to see WiFi password printed
-    LOGERROR3(F("WIFI AP setup SSID/PASSWORD"), ApSSID, F("/"), ApPass);
+    LOGINFO1(F("WIFI AP setup SSID"), ApSSID);
     myInterface->report("SSID: " + ApSSID, "PW: " + ApPass);
     // This check is copied from ESPAsync_WifiManager
     // Check cores/esp32/esp_arduino_version.h and cores/esp32/core_version.h
@@ -66,7 +66,7 @@ void WiFiManager::setupWiFiAp(WiFi_AP_IPConfig *WifiApIP)
     }
 
     // Strating the Access Point
-    WiFi.softAP(ApSSID.c_str(), ApPass.c_str(), channel);
+    WiFi.softAP(ApSSID.c_str()); 
     delay(100);
 
     // Future configurable AP IP stuff could go here.

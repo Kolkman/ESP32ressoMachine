@@ -101,7 +101,7 @@ void ESPressoMachine::manageTemp()
 void ESPressoMachine::setMachineStatus()
 {
     machineStatus = "";
-    StaticJsonDocument<512> statusObject;
+    JsonDocument statusObject;
     statusObject["time"] = time_now;
     statusObject["measuredTemperature"] = inputTemp;
     statusObject["intTemperature"] = internalTemp;
@@ -138,7 +138,7 @@ bool ESPressoMachine::heatLoop()
             if (abs(myConfig->targetTemp - getAverage()) > TEMPERATURE_VAR)
             {
                 pwrSafeTimer = time_now;
-                LOGDEBUG("Resetting PowerSafeTimer");
+                //LOGDEBUG0("Resetting PowerSafeTimer");
             }
             if ((time_now - pwrSafeTimer) > 1000 * 60 * POWERSAFE_TIMEOUT)
             {

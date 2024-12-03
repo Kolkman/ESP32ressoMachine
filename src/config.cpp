@@ -75,20 +75,21 @@ bool EspressoConfig::loadConfig()
     return false;
   }
 
-  StaticJsonDocument<CONFIG_BUF_SIZE> jsonDocument;
+  JsonDocument jsonDocument;
   ReadLoggingStream loggingStream(configFile, Serial);
 
   DeserializationError parsingError = deserializeJson(jsonDocument, loggingStream);
   if (parsingError)
   {
-    Serial.println("Failed to deserialize json config file");
-    Serial.println(parsingError.c_str());
+    LOGERROR1("Failed to deserialize json config file", parsingError.c_str());
+
     return false;
   }
 
   if (jsonDocument["tset"])
   {
     targetTemp = jsonDocument["tset"];
+    LOGDEBUG1("targetTemp", targetTemp);
   }
   else
   {
@@ -173,9 +174,11 @@ bool EspressoConfig::loadConfig()
   {
     int i = 0;
     JsonArray j_ssid = jsonDocument["WifiCredential_ssid"];
+
     // using C++11 syntax (preferred):
     for (JsonVariant value : j_ssid)
     {
+ 
       strcpy(WM_config.WiFi_Creds[i].wifi_ssid, value.as<const char *>());
       i++;
       if (i == NUM_WIFI_CREDENTIALS)
@@ -201,7 +204,7 @@ bool EspressoConfig::loadConfig()
 
 bool EspressoConfig::saveConfig()
 {
-  DynamicJsonDocument jsonDocument(CONFIG_BUF_SIZE);
+  JsonDocument jsonDocument;
   jsonDocument["tset"] = targetTemp;
   jsonDocument["tband"] = temperatureBand;
   jsonDocument["P"] = nearTarget.P, jsonDocument["I"] = nearTarget.I, jsonDocument["D"] = nearTarget.D;
@@ -269,8 +272,8 @@ bool EspressoConfig::saveConfig()
   //  data.add(48.756080);
   //  data.add(2.302038);
 
-  JsonArray ssid = jsonDocument.createNestedArray("WifiCredential_ssid");
-  JsonArray pw = jsonDocument.createNestedArray("WifiCredential_pw");
+  JsonArray ssid = jsonDocument["WifiCredential_ssid"].to<JsonArray>();
+  JsonArray pw = jsonDocument["WifiCredential_pw"].to<JsonArray>();
 
   for (int i = 0; i < NUM_WIFI_CREDENTIALS; i++)
   {
@@ -289,6 +292,8 @@ bool EspressoConfig::saveConfig()
     ssid.add(WM_config.WiFi_Creds[i].wifi_ssid);
     pw.add(WM_config.WiFi_Creds[i].wifi_pw);
   }
+
+
 
   File configFile = LittleFS.open("/config.json", "w", true);
   if (!configFile)
