@@ -221,7 +221,7 @@ void EspressoWebServer::InitPages()
 
 void EspressoWebServer::handleFile(AsyncWebServerRequest *request, const char *mimetype, const unsigned char *compressedData, const size_t compressedDataLen)
 {
-    AsyncWebServerResponse *response = request->beginResponse_P(200, mimetype, compressedData, compressedDataLen);
+    AsyncWebServerResponse *response = request->beginResponse(200, mimetype, compressedData, compressedDataLen);
     response->addHeader("Server", "ESP Async Web Server");
     response->addHeader("Content-Encoding", "gzip");
     request->send(response);

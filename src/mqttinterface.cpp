@@ -68,7 +68,7 @@ void MQTTInterface::MQTT_callback(char *topic, byte *payload,
   Serial.println("'");
 #endif // MQTT_DEBUG
 
-  DynamicJsonDocument jsonDocument(CONFIG_BUF_SIZE);
+  JsonDocument jsonDocument;
   DeserializationError parsingError = deserializeJson(jsonDocument, msg);
   if (parsingError) {
     Serial.println("Failed to deserialize json message from MQTT");

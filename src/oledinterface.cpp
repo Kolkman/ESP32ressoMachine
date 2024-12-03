@@ -40,7 +40,7 @@ void OledInterface::DrawGauge(int x, byte y, byte r, byte p, int v, float target
     if (farFromTargetTemp)
     {
 
-        LOGINFO3("MinOfScale", minOfScale, "MaxScale", maxOfScale);
+        //LOGINFO3("MinOfScale", minOfScale, "MaxScale", maxOfScale);
         float ticklengthfraction;
         float ticks[] = {minOfScale,
                          targetTemp,
@@ -179,7 +179,7 @@ void OledInterface::loopOled(ESPressoMachine *myMachine)
 #ifdef ENABLE_NTPCLOCK
             oled->setFont(u8g2_font_courR08_tf);
             String timeString = myMachine->clock->getTimeString();
-            LOGDEBUG1("oLED Display", timeString);
+            //LOGDEBUG1("oLED Display", timeString);
             oled->drawStr(2, 9, timeString.c_str());
 #endif // ENABLE_NTPCLOCK
 

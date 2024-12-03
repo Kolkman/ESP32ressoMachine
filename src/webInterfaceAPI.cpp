@@ -358,7 +358,7 @@ void webInterfaceAPI::handleSet(AsyncWebServerRequest *request) {
   if (safeandrestart) {
     myMachine->myConfig->saveConfig();
 
-    AsyncWebServerResponse *response = request->beginResponse_P(
+    AsyncWebServerResponse *response = request->beginResponse(
         200, "text/html;charset=UTF-8", configDone_html, configDone_html_len);
     response->addHeader("Content-Encoding", "gzip");
     response->addHeader("Access-Control-Allow-Origin",
