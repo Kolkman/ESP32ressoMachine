@@ -225,6 +225,7 @@ void ESPressoMachine::updatePIDSettings()
         myPID->SetTunings(myConfig->awayTarget.P, myConfig->awayTarget.I, myConfig->awayTarget.D, P_ON_E);
         if (inputTemp < myConfig->targetTemp)
             myPID->SetOutputLimits(0, myConfig->mxPwr); // We want to be able to get to the target fast
+
         if (inputTemp > myConfig->targetTemp)
             myPID->SetOutputLimits(0, myConfig->eqPwr); // We don't want noise to
         osmode = true;

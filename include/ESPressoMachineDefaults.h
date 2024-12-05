@@ -53,8 +53,8 @@
 #endif
 // Compile time - not to be user configured.
 //
-#define COLDSTART_TEMP_OFFSET 20 // Below  (S_TSET-COLDSTART_TEMP_OFFSET) the PID vallue will be set to {P,I,D}={COLDSTART_P,0,0}
-#define COLDSTART_P 15           // At 20C that is approx full power
+#define COLDSTART_TEMP_OFFSET 15 // Below  (S_TSET-COLDSTART_TEMP_OFFSET) the PID vallue will be set to {P,I,D}={COLDSTART_P,0,0}
+#define COLDSTART_P 20           // At 20C that is approx full power
 #define COLDSTART_MAX_POWER 1000 // play with these vallues if the coldstart starts to slow or overshoots to easy.
 
 #define MAX_COOL 0.025 // 1.5 deg/min
@@ -94,7 +94,10 @@
 
 #define WEB_USER "admin"
 #define WEB_PASS "silvia"
+
+#ifndef HOSTNAME
 #define HOSTNAME "silvia" // Hostname during normal operation (not during initial config)
+#endif
 #define COOKIENAME "ESP32RESSO_ID"
 
 #ifdef ENABLE_MQTT
@@ -110,5 +113,5 @@
 #define RED_BUTTON 16
 #define BLUE_BUTTON 17
 #define BLACK_BUTTON 18
-#define ONLY_BLACK_BUTTON true // Disable temperature only on/off - to work around a hardware issue
+
 #endif // ENABLE_BUTTON

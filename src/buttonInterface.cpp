@@ -20,6 +20,8 @@ ButtonInterface::ButtonInterface() {
   RedStartPress = 0;
   BlueLastPress = 0;
   RedLastPress = 0;
+#else
+#warning "Only Black Button is used undifine ONLY_BLACK_BUTTON if you want all buttons to work"
 #endif
   BlackStartPress = 0;
   BlackLastPress = 0;
