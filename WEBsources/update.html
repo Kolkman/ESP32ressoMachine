@@ -33,7 +33,6 @@
             padding: 10px;
 
         }
-
         #updateForm #EspressoSVG {
             margin: auto;
         }
@@ -49,9 +48,7 @@
         function EspressoMachine(ele) {
             this.ele = ele;
             if (this.progress = ele.getAttribute("data-rel-percent")) {
-                //console.log(this.progress)
             } else {
-                //console.log("Setting Progress")
                 ele.setAttribute("data-rel-percent", 0);
                 this.progress = 0;
             }
@@ -111,7 +108,6 @@
         // EspressoMachine prototype
         EspressoMachine.prototype = {
             reset: function (empty) {
-                console.log(empty);
                 var obj = this,
                     ovs = obj.originalValues;
                 for (var i = 0, j = ovs.length; i < j; i++) {
@@ -123,7 +119,6 @@
                     obj.fraction = obj.progress / 100;
                     obj.fillable = true;
                 }
-                if (obj.fraction < obj.cp) obj.cp = 0;
                 if (empty) {
                     obj.ele.style.display = "none";
                 }
@@ -131,7 +126,6 @@
             fillErUp: function () {
                 var obj = this;
                 obj.cp += obj.fraction * obj.fillrate;
-                console.log(obj);
                 var rp = obj.cp;
                 if (obj.fraction < obj.cp) {
                     rp = obj.fraction;
@@ -198,7 +192,7 @@
 
             request.upload.addEventListener('progress', function (e) {
                 var file1Size = document.getElementById('file1').files[0].size;
-                console.log(file1Size);
+
 
                 if (e.loaded <= file1Size) {
                     var percent = Math.round(e.loaded / file1Size * 100);
@@ -208,13 +202,12 @@
                     theMachine.fillErUp()
                 }
                 if (e.loaded == e.total) {
-                    console.log("File Uploaded");
 
                     theMachine.ele.setAttribute('data-rel-percent', 100);
                     theMachine.reset(empty);
                     theMachine.fillErUp();
-                    setTimeout(() => { document.getElementById('done').innerHTML = "DONE! - Preparing for reboot"; },2000);
-                    setTimeout(() => { document.getElementById('done').innerHTML = "DONE! - Rebooting in 10"; },10000);
+                    setTimeout(() => { document.getElementById('done').innerHTML = "DONE! - Preparing for reboot"; }, 2000);
+                    setTimeout(() => { document.getElementById('done').innerHTML = "DONE! - Rebooting in 10"; }, 10000);
                     setTimeout(() => { document.getElementById('done').innerHTML = "DONE! - Rebooting in 9"; }, 11000);
                     setTimeout(() => { document.getElementById('done').innerHTML = "DONE! - Rebooting in 8"; }, 12000);
                     setTimeout(() => { document.getElementById('done').innerHTML = "DONE! - Rebooting in 7"; }, 13000);
@@ -224,7 +217,7 @@
                     setTimeout(() => { document.getElementById('done').innerHTML = "DONE! - Rebooting in 3"; }, 17000);
                     setTimeout(() => { document.getElementById('done').innerHTML = "DONE! - Rebooting in 2"; }, 18000);
                     setTimeout(() => { document.getElementById('done').innerHTML = "DONE! - Rebooting in 1"; }, 19000);
-                    setTimeout(() => { window.location = "/"; }, 20000);
+                    setTimeout(() => { window.location = "/"; }, 25000);
 
                 }
 
