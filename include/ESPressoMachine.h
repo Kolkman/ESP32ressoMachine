@@ -105,6 +105,7 @@ public:
   bool powerOffMode;
   bool externalControlMode;
   int buttonState;
+  unsigned long pwrSafeTimer;
 #ifdef ENABLE_NTPCLOCK
   ntpClock *clock;
 #endif
@@ -116,7 +117,7 @@ private:
   bool osmode;
   ESPressoMachine(const ESPressoMachine &);            // non construction-copyable
   ESPressoMachine &operator=(const ESPressoMachine &); // non copyable
-  unsigned long pwrSafeTimer;
+  
 };
 
 #endif

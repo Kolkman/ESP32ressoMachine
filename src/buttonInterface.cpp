@@ -144,6 +144,7 @@ void ButtonInterface::loopButton(ESPressoMachine *myMachine) {
           myMachine->powerOffMode = true;
         } else {
           LOGINFO("Turning PID ON")
+          myMachine->pwrSafeTimer = millis();
           String filler = ">";
           for (int i = 0; i < 16; i++) {
             myMachine->myInterface->report("Turning PID on", filler);

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-#
 
 import sys
 import re
@@ -15,10 +14,10 @@ print("//Generated from "+path)
 
 _inputname = os.path.basename(path)
 
-p1 = re.compile('-min\.')
+p1 = re.compile('-min\\.')
 filename = p1.sub(".",_inputname)
 
-p2 = re.compile('\.')
+p2 = re.compile('\\.')
 _name = p2.sub("_", filename)
 
 
