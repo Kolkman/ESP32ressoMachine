@@ -4,8 +4,7 @@
 #include "buttonInterface.h"
 #include "debug.h"
 #if !(defined(ENABLE_LIQUID) || defined(ENABLE_OLED))
-#error                                                                         \
-    "ENABLE_BUTTON is defined without ENABLE_LIQUID or ENABLE_OLED being defined. You need an interface to use buttons"
+#error "ENABLE_BUTTON is defined without ENABLE_LIQUID or ENABLE_OLED being defined. You need an interface to use buttons"
 #endif
 #ifdef ENABLE_LIQUID
 #include "liquidinterface.h"
@@ -29,22 +28,21 @@ ButtonInterface::ButtonInterface() {
 
 bool ButtonInterface::setupButton(ESPressoMachine *myMachine) {
 
-  bool initiateConfig = false; // Config only when the magic button is pressed.
+  bool initiateConfig = false;  // Config only when the magic button is pressed.
   LOGINFO("SETTING UP BUTTON INTERFACE");
-  pinMode(BLACK_BUTTON, INPUT_PULLUP); // config GIOPXX as input pin and enable
-                                       // the internal pull-up resistor
+  pinMode(BLACK_BUTTON, INPUT_PULLUP);  // config GIOPXX as input pin and enable
+                                        // the internal pull-up resistor
 #ifndef ONLY_BLACK_BUTTON
-  pinMode(BLUE_BUTTON, INPUT_PULLUP); // config GIOPYY  as input pin and enable
-                                      // the internal pull-up resistor
-  pinMode(RED_BUTTON, INPUT_PULLUP);  // config GIOPZZ as input pin and enable
-                                      // the internal pull-up resistor
+  pinMode(BLUE_BUTTON, INPUT_PULLUP);  // config GIOPYY  as input pin and enable
+                                       // the internal pull-up resistor
+  pinMode(RED_BUTTON, INPUT_PULLUP);   // config GIOPZZ as input pin and enable
+                                       // the internal pull-up resistor
 #endif
   myMachine->myInterface->report("Press Black btn", "to enter config");
   // We enter a small loop now, waiting for the black button to be pressed.
   unsigned long startTime = millis();
 
-  while ((millis() - startTime) <
-         10000) { // 10 seconds to press the black button
+  while ((millis() - startTime) < 10000) {  // 10 seconds to press the black button
     if (digitalRead(BLACK_BUTTON) == LOW) {
       initiateConfig = true;
       break;
@@ -57,14 +55,14 @@ bool ButtonInterface::setupButton(ESPressoMachine *myMachine) {
 
 void ButtonInterface::loopButton(ESPressoMachine *myMachine) {
   unsigned long now = millis();
-  // read the state of the switch/button:
-  #ifndef ONLY_BLACK_BUTTON
+// read the state of the switch/button:
+#ifndef ONLY_BLACK_BUTTON
   bool currentBlueState = digitalRead(BLUE_BUTTON);
   bool currentRedState = digitalRead(RED_BUTTON);
-  #endif
+#endif
   bool currentBlackState = digitalRead(BLACK_BUTTON);
   bool changeToBeReported = false;
-  #ifndef ONLY_BLACK_BUTTON
+#ifndef ONLY_BLACK_BUTTON
   if (BlueStartPress && currentBlueState == HIGH) {
     LOGINFO("The blue state changed from LOW to HIGH");
     BlueStartPress = 0;
@@ -73,7 +71,7 @@ void ButtonInterface::loopButton(ESPressoMachine *myMachine) {
     LOGINFO("The red state changed from LOW to HIGH");
     RedStartPress = 0;
   }
-  #endif
+#endif
   if (BlackStartPress && currentBlackState == HIGH) {
     LOGINFO("The black state changed from LOW to HIGH");
     BlackStartPress = 0;
@@ -107,10 +105,11 @@ void ButtonInterface::loopButton(ESPressoMachine *myMachine) {
     if ((now - BlueLastPress) > SINGLEPRESS_T) {
       LOGINFO1("The blue: ", now - BlueStartPress);
       BlueLastPress = now;
-      if ((now - BlueStartPress) > LONGPRESS_T)
+      if ((now - BlueStartPress) > LONGPRESS_T) {
         myMachine->myConfig->targetTemp += -1;
-      else
+      } else {
         myMachine->myConfig->targetTemp += -0.1;
+      }
       changeToBeReported = true;
     }
   }
@@ -119,14 +118,15 @@ void ButtonInterface::loopButton(ESPressoMachine *myMachine) {
     if ((now - RedLastPress) > SINGLEPRESS_T) {
       LOGINFO1("The red state: ", now - RedStartPress);
       RedLastPress = now;
-      if ((now - RedStartPress) > LONGPRESS_T)
+      if ((now - RedStartPress) > LONGPRESS_T) {
         myMachine->myConfig->targetTemp += 1;
-      else
+      } else {
         myMachine->myConfig->targetTemp += 0.1;
+      }
       changeToBeReported = true;
     }
   }
-  #endif
+#endif
   if (BlackStartPress && currentBlackState == LOW) {
 
     if ((now - BlackLastPress) > SINGLEPRESS_T) {
@@ -171,4 +171,4 @@ void ButtonInterface::loopButton(ESPressoMachine *myMachine) {
   }
 }
 
-#endif // ENABLE_Button
+#endif  // ENABLE_Button
