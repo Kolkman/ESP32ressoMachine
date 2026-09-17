@@ -1,46 +1,38 @@
 #include "ExponentialFallback.h"
 #include "Arduino.h"
 
-ExpFallback::ExpFallback(unsigned int _maxval)
+ExpFallback::ExpFallback(unsigned long _maxInterval, unsigned long _baseInterval)
 {
-  itterator = 0;
-  maxval = _maxval;
-  fallback = 1;
+  lastAttemptMillis = 0;
+  maxInterval = _maxInterval;
+  baseInterval = _baseInterval;
+  interval = baseInterval;
+  everAttempted = false;
 }
 
 void ExpFallback::hadSuccess(bool reset)
 {
   if (reset)
   {
-    itterator = 0;
-    fallback = 1;
-    return;
-  } // else
-    // else
+    interval = baseInterval;
+  }
   return;
+}
+
+void ExpFallback::hadFailure()
+{
+  lastAttemptMillis = millis();
+  interval *= 2;
+  if (interval > maxInterval)
+    interval = maxInterval;
 }
 
 bool ExpFallback::mustAttempt()
 {
-  if (itterator)
+  if (!everAttempted)
   {
-    increment();
-    return false;
+    everAttempted = true;
+    return true;
   }
-  increment();
-  return true;
-}
-
-void ExpFallback::increment()
-{
-  itterator++;
-  if (itterator > fallback)
-  {
-
-    fallback = fallback * 2;
-    if (fallback > maxval)
-      fallback = maxval;
-    itterator = 0;
-    return;
-  }
+  return (millis() - lastAttemptMillis) >= interval;
 }
