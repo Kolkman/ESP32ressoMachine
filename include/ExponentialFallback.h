@@ -1,12 +1,17 @@
 #ifndef EXPOFALLBACK_H
 #define EXPOFALLBACK_H
 
-#define DEFAULT_MAXVAL 0x800
+// Default cap on the retry interval: 5 minutes.
+#define DEFAULT_MAXINTERVAL 300000UL
+// Interval used for the first retry after a failure.
+#define DEFAULT_BASEINTERVAL 5000UL
 
 
 /**
- * @brief Class that keeps state for exponential fallback.
+ * @brief Class that keeps time based state for exponential fallback.
  *
+ * Tracks the time of the last attempt and a retry interval that doubles
+ * on every failure (capped at maxInterval) and resets on success.
  */
 class ExpFallback
 
@@ -15,30 +20,35 @@ public:
     /**
      * @brief Construct a new Exp Fallback object
      *
-     * @param maxval exponential fallback not bigger than this value (default 0xFFF)
+     * @param maxInterval retry interval will never grow beyond this value, in milliseconds (default 5 minutes)
+     * @param baseInterval retry interval used right after the first failure, in milliseconds (default 5 seconds)
      */
-    ExpFallback(unsigned int maxval=DEFAULT_MAXVAL);
+    ExpFallback(unsigned long maxInterval = DEFAULT_MAXINTERVAL,
+               unsigned long baseInterval = DEFAULT_BASEINTERVAL);
     /**
-     * @brief Indicates if the internal state is in fallback mode.
+     * @brief Call after a successful attempt, resets the backoff interval.
      *
-     * @param reset  If true: resets all counters and the function returns true,
-     *            if false the output will reflect the internal state.
-     * @return true
-     * @return false
+     * @param reset If true, resets the backoff interval to baseInterval.
      */
     void hadSuccess(bool reset);
     /**
-     * @brief suggest whether a function in exp fall back should attempt of wait
-     * 
+     * @brief Call after a failed attempt, doubles the backoff interval (capped at maxInterval)
+     * and records the time of the failure.
+     */
+    void hadFailure();
+    /**
+     * @brief Indicates whether enough time has elapsed since the last attempt
+     * to allow a new attempt.
      */
     bool mustAttempt();
 
 
 private:
-    unsigned int itterator;
-    unsigned int fallback;
-    unsigned int maxval;
-    void increment();
+    unsigned long lastAttemptMillis;
+    unsigned long interval;
+    unsigned long maxInterval;
+    unsigned long baseInterval;
+    bool everAttempted;
 };
 
 #endif

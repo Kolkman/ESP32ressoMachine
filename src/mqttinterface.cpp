@@ -29,23 +29,20 @@ MQTTInterface::MQTTInterface() : espClient(), client() {
 }
 
 void MQTTInterface::MQTT_reconnect(EspressoConfig *myConfig) {
-  if (!client.connected()) {
-    if (connectionAttempts.mustAttempt()) {
-      Serial.print("Attempting MQTT connection...");
+  Serial.print("Attempting MQTT connection...");
 
-      String clientId = "ESP32esso_" + String(ESP_getChipId(), HEX);
-      // clientId += String(random(0xffff), HEX);
-      if (client.connect(clientId.c_str(), myConfig->mqttUser,
-                         myConfig->mqttPass)) {
-        Serial.println("connected");
-        client.subscribe(mqttConfigTopic, 1); // We should be OK with QOS 0
-        Serial.println("Subscribed to " + String(mqttConfigTopic));
-        connectionAttempts.hadSuccess(true);
-      } else {
-        Serial.print("failed, rc=");
-        Serial.println(client.state());
-      }
-    }
+  String clientId = "ESP32esso_" + String(ESP_getChipId(), HEX);
+  // clientId += String(random(0xffff), HEX);
+  if (client.connect(clientId.c_str(), myConfig->mqttUser,
+                     myConfig->mqttPass)) {
+    Serial.println("connected");
+    client.subscribe(mqttConfigTopic, 1); // We should be OK with QOS 0
+    Serial.println("Subscribed to " + String(mqttConfigTopic));
+    connectionAttempts.hadSuccess(true);
+  } else {
+    Serial.print("failed, rc=");
+    Serial.println(client.state());
+    connectionAttempts.hadFailure();
   }
 }
 
@@ -113,9 +110,14 @@ void MQTTInterface::setupMQTT(ESPressoMachine *myMachine) {
 }
 
 void MQTTInterface::loopMQTT(ESPressoMachine *myMachine) {
-  for (int i = 0; i < MAX_CONNECTION_RETRIES && !client.connected(); i++) {
-    myMachine->myInterface->report("Connecting MQTT", "    try: " + String(i));
-    MQTT_reconnect(myMachine->myConfig);
+  // Only attempt reconnects when the backoff timer allows it, so a
+  // disconnected broker never blocks the main loop for long: at most
+  // MQTT_IMMEDIATE_RETRIES blocking connect() calls per loopMQTT().
+  if (!client.connected() && connectionAttempts.mustAttempt()) {
+    for (int i = 0; i < MQTT_IMMEDIATE_RETRIES && !client.connected(); i++) {
+      myMachine->myInterface->report("Connecting MQTT", "    try: " + String(i));
+      MQTT_reconnect(myMachine->myConfig);
+    }
   }
   if (client.connected()) {
     client.loop();

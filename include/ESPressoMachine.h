@@ -16,8 +16,6 @@
 #define CURRENTFIRMWARE "ESPressoMachine-PlatFormIO"
 #define MQTT_DEBUG
 
-#define MAX_CONNECTION_RETRIES 60
-
 // should not be needed
 #define MAX_ERROR 2
 

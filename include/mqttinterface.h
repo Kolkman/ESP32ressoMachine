@@ -10,6 +10,10 @@
 #include "ExponentialFallback.h"
 #ifdef ENABLE_MQTT
 
+// Number of blocking connect() attempts made per loopMQTT() call while
+// the backoff timer allows a retry.
+#define MQTT_IMMEDIATE_RETRIES 2
+
 class MQTTInterface
 {
 public:
