@@ -338,7 +338,7 @@ void webInterfaceAPI::handleSet(AsyncWebServerRequest *request) {
               MQTTUSERFIELDS_LENGTH);
     } else if (request->argName(i) == "mqttPort") {
 
-      myMachine->myConfig->mqttPort, request->arg(i).toInt();
+      myMachine->myConfig->mqttPort = request->arg(i).toInt();
     }
 
     else if (request->argName(i) == "safeandrestart" || request->arg(i)) {

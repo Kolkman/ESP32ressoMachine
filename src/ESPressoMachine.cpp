@@ -140,7 +140,7 @@ bool ESPressoMachine::heatLoop()
                 pwrSafeTimer = time_now;
                 //LOGDEBUG0("Resetting PowerSafeTimer");
             }
-            if ((time_now - pwrSafeTimer) > 1000 * 60 * POWERSAFE_TIMEOUT)
+            if ((time_now - pwrSafeTimer) > 1000UL * 60UL * myConfig->powersafeTimeout)
             {
                 powerOffMode = true;
             }
