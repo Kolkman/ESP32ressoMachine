@@ -110,6 +110,7 @@
 #endif
 
 #ifdef ENABLE_BUTTON
+// NB - These values do not correspond to the physical button in the schematic.
 #define RED_BUTTON 16
 #define BLUE_BUTTON 17
 #define BLACK_BUTTON 18

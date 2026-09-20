@@ -26,6 +26,10 @@
 #define LONGPRESS_T 3000 // miliseconds hold will be seen as a long button press
 #endif
 
+#ifndef REBOOT_CONFIRM_T
+#define REBOOT_CONFIRM_T 4500 // additional hold time after PID toggle before rebooting
+#endif
+
 #define LCD_PAGE ((LCD_COLUMS) * (LCD_ROWS))
 class ButtonInterface
 {
@@ -42,6 +46,8 @@ private:
     unsigned long BlueLastPress;
     unsigned long RedLastPress;
     unsigned long BlackLastPress;
+    unsigned long BlackToggleTime;
+    bool blackToggleHandled;
 };
 
 #endif

@@ -24,6 +24,8 @@ ButtonInterface::ButtonInterface() {
 #endif
   BlackStartPress = 0;
   BlackLastPress = 0;
+  BlackToggleTime = 0;
+  blackToggleHandled = false;
 }
 
 bool ButtonInterface::setupButton(ESPressoMachine *myMachine) {
@@ -37,6 +39,11 @@ bool ButtonInterface::setupButton(ESPressoMachine *myMachine) {
                                        // the internal pull-up resistor
   pinMode(RED_BUTTON, INPUT_PULLUP);   // config GIOPZZ as input pin and enable
                                        // the internal pull-up resistor
+#endif
+  LOGINFO1("BLACK_BUTTON", String(BLACK_BUTTON));
+#ifndef ONLY_BLACK_BUTTON
+  LOGINFO1("BLUE_BUTTON", String(BLUE_BUTTON));
+  LOGINFO1("RED_BUTTON", String(RED_BUTTON));
 #endif
   myMachine->myInterface->report("Press Black btn", "to enter config");
   // We enter a small loop now, waiting for the black button to be pressed.
@@ -75,7 +82,11 @@ void ButtonInterface::loopButton(ESPressoMachine *myMachine) {
   if (BlackStartPress && currentBlackState == HIGH) {
     LOGINFO("The black state changed from LOW to HIGH");
     BlackStartPress = 0;
+    BlackLastPress = 0;
+    blackToggleHandled = false;
+    BlackToggleTime = 0;
   }
+
 #ifndef ONLY_BLACK_BUTTON
   if (!BlueStartPress && currentBlueState == LOW) {
 
@@ -132,7 +143,7 @@ void ButtonInterface::loopButton(ESPressoMachine *myMachine) {
     if ((now - BlackLastPress) > SINGLEPRESS_T) {
       LOGINFO1("The black: ", now - BlackStartPress);
       BlackLastPress = now;
-      if ((now - BlackStartPress) > SINGLEPRESS_T * 3) {
+      if (!blackToggleHandled && (now - BlackStartPress) > SINGLEPRESS_T * 3) {
         if (!myMachine->powerOffMode) {
           LOGINFO("Turning PID OFF")
           String filler = ">";
@@ -153,11 +164,18 @@ void ButtonInterface::loopButton(ESPressoMachine *myMachine) {
           }
           myMachine->powerOffMode = false;
         }
-        // Give some time to let loose of the button.
-        BlackStartPress = millis();
-
-        BlackLastPress = now;
+        myMachine->myInterface->report("PID toggled", "continue holding to reboot,");
+        delay(1500);
+        blackToggleHandled = true;
+        BlackToggleTime = now;
         changeToBeReported = true;
+      }
+      else if (blackToggleHandled && (now - BlackToggleTime) > REBOOT_CONFIRM_T) {
+        LOGINFO("Rebooting after very long black-button hold");
+        myMachine->myInterface->report("rebooting", "");
+        delay(2000);
+        ESP.restart();
+        return;
       }
     }
   }

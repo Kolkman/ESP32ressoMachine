@@ -73,12 +73,16 @@ The page updates live through server-sent events from the controller.
 
 ### Heater power switch
 
-The `Heater Powerswitch` toggles between:
+Holding the `Heater Powerswitch` (black) for a few seconds toggles between: 
 
 - `ON`: PID control is allowed to drive the heater
 - `OFF`: heater output is forced off
 
-This switch is available directly from the dashboard and does not require logging in.
+When held a few seconds longer the system will be forst to reboot this allow you to enter the 
+control portal by pressing the black button after the reboot happened.
+
+This switch is available directly from the dashboard and does not require logging in. 
+
 
 ## Logging In
 

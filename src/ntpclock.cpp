@@ -7,6 +7,11 @@
 
 ntpClock::ntpClock()
 {
+    ntpUDP = nullptr;
+    timeClient = nullptr;
+    currentTimeZone = nullptr;
+    initialized = false;
+    lastNTPUpdate = 0;
 }
 /**
  * Input time in epoch format and return tm time format
@@ -45,6 +50,13 @@ String ntpClock::getEpochStringByParams(long time, char *pattern = (char *)"%d/%
 
 void ntpClock::setup()
 {
+    if (WiFi.status() != WL_CONNECTED)
+    {
+        LOGINFO("Skipping NTP setup: WiFi not connected");
+        initialized = false;
+        return;
+    }
+
     ntpUDP = new WiFiUDP();
     timeClient = new NTPClient(*ntpUDP, ntpServerName.c_str(), (int)GMT_OFFSET * 60 * 60, 60 * 60 * 1000);
     currentTimeZone = new Timezone(CEST, CET);
@@ -69,15 +81,22 @@ void ntpClock::setup()
         LOGINFO("Adjust local clock");
         unsigned long epoch = timeClient->getEpochTime();
         setTime(epoch);
+        initialized = true;
         LOGINFO1("Time initalized to: ", getEpochStringByParams(currentTimeZone->toLocal(now()), (char *)"%H:%M"));
     }
     else
     {
+        initialized = false;
         LOGINFO("NTP Update Failed!!");
     }
 }
 void ntpClock::loop()
 {
+    if (!initialized || timeClient == nullptr)
+    {
+        return;
+    }
+
     unsigned long time_now = millis();
 
     if ((max(time_now, lastNTPUpdate) - min(time_now, lastNTPUpdate)) >= (1000 * CLOCKUPDATE))
@@ -95,8 +114,19 @@ void ntpClock::loop()
         }
     }
 }
+
+bool ntpClock::hasTime()
+{
+    return initialized && currentTimeZone != nullptr;
+}
+
 String ntpClock::getTimeString()
 {
+    if (!hasTime())
+    {
+        return "--:--";
+    }
+
     String timeString = getEpochStringByParams(currentTimeZone->toLocal(now()), (char *)"%H:%M");
     return timeString;
 }

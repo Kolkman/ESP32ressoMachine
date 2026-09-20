@@ -28,6 +28,7 @@ public:
     ntpClock();
     void setup();
     void loop();
+    bool hasTime();
     String getTimeString();
 
 private:
@@ -37,6 +38,7 @@ private:
     TimeChangeRule CEST = DAYLIGHTSAFE_TIMEZONEPARAMS; // Central European Summer Time
     TimeChangeRule CET = TIMEZONEPARAMS;               // Central European Standard Time
     Timezone *currentTimeZone;
+    bool initialized;
     // Central European Time (Frankfurt, Paris)
     unsigned long lastNTPUpdate;
     unsigned int localPort = UDPPORT; // local port to listen for UDP packets
