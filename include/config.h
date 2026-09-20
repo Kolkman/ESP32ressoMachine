@@ -109,6 +109,7 @@ public:
        int pidInt;
 
 #ifdef ENABLE_MQTT
+       bool mqttEnable;
        char mqttHost[MQTTFIELDS_LENGTH + 1];
        char mqttTopic[MQTTFIELDS_LENGTH + 1];
        unsigned int mqttPort;

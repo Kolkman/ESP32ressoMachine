@@ -3,6 +3,11 @@
 const configNames = ["tset", "tband", "eqPwr", "pgain", "igain", "dgain",
     "apgain", "aigain", "adgain", "PidInterval", "HeaterInterval",
     "sensorSampleInterval", "maxCool", "powersafeTimeout", "powerOffMode"];
+const mqttNames = ["mqtt", "mqttEnable", "mqttHost", "mqttPort", "mqttTopic", "mqttUser", "mqttPass"];
+const mqttInputNames = ["mqttEnable", "mqttHost", "mqttPort", "mqttTopic", "mqttUser", "mqttPass"];
+const numericConfigNames = ["tset", "tband", "eqPwr", "pgain", "igain", "dgain",
+    "apgain", "aigain", "adgain", "PidInterval", "HeaterInterval",
+    "sensorSampleInterval", "maxCool", "powersafeTimeout", "mqttPort"];
 
 const tuningNames = ["tunethres", "tunestep", "tuningOn"]
 let configuration = {};
@@ -242,8 +247,8 @@ function setFormValues() {
     const configForm = document.getElementById('configForm');
     const tuningForm = document.getElementById('tuningForm');
     let getapi = url + "/api/v1/get?"
-    fieldnames = configNames.concat(tuningNames);
-    configNames.concat(tuningNames).forEach(ConstructGetAPI);
+    fieldnames = configNames.concat(mqttNames, tuningNames);
+    fieldnames.forEach(ConstructGetAPI);
     function ConstructGetAPI(value) {
         getapi += value + "&";
     }
@@ -267,12 +272,22 @@ function setFormDefaults(data, form, fieldnames) {
     fieldnames.forEach(setFormValues);
     function setFormValues(value) {
         // First handle special values
-        if (value == "powerOffMode") {
+        if (value == "mqtt") {
+            let mqttSettings = document.getElementById("mqttSettings");
+            if (mqttSettings) {
+                mqttSettings.style.display = data.mqtt ? "block" : "none";
+            }
+        } else if (value == "powerOffMode") {
             let pidModeSwitch = document.getElementById("toggle--pwr");
             if (data.powerOffMode) {
                 pidModeSwitch.checked = false;
             } else {
                 pidModeSwitch.checked = true;
+            }
+        } else if (value == "mqttEnable") {
+            if (typeof data.mqttEnable !== 'undefined' && form.elements[value]) {
+                form.elements[value].checked = data.mqttEnable;
+                toggleRegularMqttFields(data.mqttEnable);
             }
         } else if (value == "tuningOn") {
             let tunerSwitch = document.getElementById("toggle--tuner");
@@ -316,6 +331,15 @@ function GetFormValues(value) { // NB thisArg sets this with the forEach() funct
     if (value == "powerOffMode") return;
     if (value == "tuningOn") return;
     const e = this['form'].elements[value];
+    if (value == "mqtt") return;
+    if (value == "mqttEnable") {
+        configuration[value] = e.checked;
+        return;
+    }
+    if (numericConfigNames.indexOf(value) === -1) {
+        configuration[value] = e.value;
+        return;
+    }
     let n = parseFloat(e.value);
     if (isNaN(n)) {
         Errordiv.textContent = "Error " + value + " should be a number (" + n + ")";
@@ -338,3 +362,24 @@ function GetFormValues(value) { // NB thisArg sets this with the forEach() funct
     }
     configuration[value] = n;
 };
+
+function toggleRegularMqttFields(enabled) {
+    mqttInputNames.forEach(function (value) {
+        if (value === "mqttEnable") {
+            return;
+        }
+        const input = document.forms.configForm.elements[value];
+        if (input) {
+            input.disabled = !enabled;
+        }
+    });
+}
+
+window.addEventListener("load", function () {
+    const mqttToggle = document.forms.configForm.elements["mqttEnable"];
+    if (mqttToggle) {
+        mqttToggle.addEventListener("change", function () {
+            toggleRegularMqttFields(mqttToggle.checked);
+        });
+    }
+});

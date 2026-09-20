@@ -141,6 +141,33 @@ void webInterfaceAPI::handleGet(AsyncWebServerRequest *request) {
       addjson(message, firstarg, "powersafeTimeout",
               String(myMachine->myConfig->powersafeTimeout));
     }
+#ifdef ENABLE_MQTT
+    else if (request->argName(i) == "mqtt") {
+      addjson(message, firstarg, "mqtt", "true");
+    } else if (request->argName(i) == "mqttEnable") {
+      addjson(message, firstarg, "mqttEnable",
+              myMachine->myConfig->mqttEnable ? "true" : "false");
+    } else if (request->argName(i) == "mqttHost") {
+      addjson(message, firstarg, "mqttHost",
+              "\"" + String(myMachine->myConfig->mqttHost) + "\"");
+    } else if (request->argName(i) == "mqttPort") {
+      addjson(message, firstarg, "mqttPort",
+              String(myMachine->myConfig->mqttPort));
+    } else if (request->argName(i) == "mqttTopic") {
+      addjson(message, firstarg, "mqttTopic",
+              "\"" + String(myMachine->myConfig->mqttTopic) + "\"");
+    } else if (request->argName(i) == "mqttUser") {
+      addjson(message, firstarg, "mqttUser",
+              "\"" + String(myMachine->myConfig->mqttUser) + "\"");
+    } else if (request->argName(i) == "mqttPass") {
+      addjson(message, firstarg, "mqttPass",
+              "\"" + String(myMachine->myConfig->mqttPass) + "\"");
+    }
+#else
+    else if (request->argName(i) == "mqtt") {
+      addjson(message, firstarg, "mqtt", "false");
+    }
+#endif
 
     else if (request->argName(i) == "tunethres") {
       addjson(message, firstarg, "tunethres",
@@ -324,6 +351,9 @@ void webInterfaceAPI::handleSet(AsyncWebServerRequest *request) {
 
       strlcpy(myMachine->myConfig->mqttHost, request->arg(i).c_str(),
               MQTTFIELDS_LENGTH);
+    } else if (request->argName(i) == "mqttEnable") {
+      myMachine->myConfig->mqttEnable =
+          String("true").equalsIgnoreCase(request->arg(i));
     } else if (request->argName(i) == "mqttTopic") {
 
       strlcpy(myMachine->myConfig->mqttTopic, request->arg(i).c_str(),

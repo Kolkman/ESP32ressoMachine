@@ -17,6 +17,7 @@ EspressoConfig::EspressoConfig()
 
 #ifdef ENABLE_MQTT
   // These values we want to initialize but not reset:
+  mqttEnable = false;
   strcpy(mqttHost, MQTT_HOST);
   strcpy(mqttPass, MQTT_PASS);
   strcpy(mqttUser, MQTT_USER);
@@ -113,6 +114,15 @@ bool EspressoConfig::loadConfig()
   maxCool = jsonDocument["maxcool"];
 
 #ifdef ENABLE_MQTT
+  if (jsonDocument["mqttEnable"].is<bool>())
+  {
+    mqttEnable = jsonDocument["mqttEnable"];
+  }
+  else
+  {
+    mqttEnable = false;
+  }
+
   if (nullptr == jsonDocument["mqttHost"])
   {
     Serial.println("mqqTHost is a NULLPTR");
@@ -214,6 +224,7 @@ bool EspressoConfig::saveConfig()
   jsonDocument["maxcool"] = maxCool;
   jsonDocument["powersafeTimeout"] = powersafeTimeout;
 #ifdef ENABLE_MQTT
+  jsonDocument["mqttEnable"] = mqttEnable;
   if (mqttHost)
     jsonDocument["mqttHost"] = mqttHost;
   if (mqttTopic)
@@ -332,6 +343,9 @@ void EspressoConfig::resetConfig()
   maxCool = MAX_COOL;
   sensorSampleInterval = MAX31855_SMP_TIME; ///<=== TODO
   powersafeTimeout = POWERSAFE_TIMEOUT;
+#ifdef ENABLE_MQTT
+  mqttEnable = false;
+#endif
 }
 
 String EspressoConfig::passForSSID(String _SSID)

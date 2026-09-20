@@ -312,6 +312,7 @@ void WebInterface::handleConfigConfig(AsyncWebServerRequest *request)
   json += ",\"maxNets\":" + String(NUM_WIFI_CREDENTIALS);
   json += ",\"mqtt\":" + String(MQTT);
 #ifdef ENABLE_MQTT
+  json += ",\"mqttEnabled\":" + String(myMachine->myConfig->mqttEnable);
   json += ",\"mqttHost\":\"" + String(myMachine->myConfig->mqttHost) + "\"";
   json += ",\"mqttPort\":" + String(myMachine->myConfig->mqttPort);
   json += ",\"mqttUser\":\"" + String(myMachine->myConfig->mqttUser) + "\"";

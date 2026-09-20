@@ -274,6 +274,16 @@ function resetSSID(i) {
 
 }
 
+function toggleMqttFields(enabled) {
+    const mqttInputs = document.querySelectorAll("#mqttTable input");
+
+    mqttInputs.forEach(function (input) {
+        if (input.id !== "mqttEnable") {
+            input.disabled = !enabled;
+        }
+    });
+}
+
 
 function updatePage() {
     let nets;
@@ -290,14 +300,19 @@ function updatePage() {
                     mqtt.removeChild(mqtt.firstChild);
                 }
             } else {
+                mqttEnable = document.getElementById("mqttEnable");
+                mqttEnable.checked = Boolean(data.mqttEnabled);
                 mqttHost = document.getElementById("mqttHost");
                 mqttHost.setAttribute("value", data.mqttHost);
                 mqttPort = document.getElementById("mqttPort");
                 mqttPort.setAttribute("value", data.mqttPort);
+                mqttTopic = document.getElementById("mqttTopic");
+                mqttTopic.setAttribute("value", data.mqttTopic);
                 mqttUser = document.getElementById("mqttUser");
                 mqttUser.setAttribute("value", data.mqttUser);
                 mqttPass = document.getElementById("mqttPass");
                 mqttPass.setAttribute("value", data.mqttPass);
+                toggleMqttFields(mqttEnable.checked);
             }
             // Creates a the form in which we put the wifi networs.
             selecteNetworks = document.getElementById("selectedNetworks");

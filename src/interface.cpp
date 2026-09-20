@@ -87,7 +87,10 @@ void ESPressoInterface::loop()
   loopTelnet(myMachine->machineStatus);
 #endif
 #ifdef ENABLE_MQTT
-  loopMQTT(myMachine);
+  if (myMachine->myConfig->mqttEnable)
+  {
+    loopMQTT(myMachine);
+  }
 #endif
 
   // This  invokes the Eventloop that puts info on the websocket
@@ -144,7 +147,10 @@ void ESPressoInterface::setup()
 #endif
 
 #ifdef ENABLE_MQTT
-  setupMQTT(this->myMachine);
+  if (myMachine->myConfig->mqttEnable)
+  {
+    setupMQTT(this->myMachine);
+  }
 #endif
 
 #ifdef ENABLE_SWITCH_DETECTION
