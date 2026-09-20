@@ -3,6 +3,7 @@
 const configNames = ["tset", "tband", "eqPwr", "pgain", "igain", "dgain",
     "apgain", "aigain", "adgain", "PidInterval", "HeaterInterval",
     "sensorSampleInterval", "maxCool", "powersafeTimeout", "powerOffMode"];
+const wifiNames = ["wifiCanDisable", "wifiEnable"];
 const mqttNames = ["mqtt", "mqttEnable", "mqttHost", "mqttPort", "mqttTopic", "mqttUser", "mqttPass"];
 const mqttInputNames = ["mqttEnable", "mqttHost", "mqttPort", "mqttTopic", "mqttUser", "mqttPass"];
 const numericConfigNames = ["tset", "tband", "eqPwr", "pgain", "igain", "dgain",
@@ -53,8 +54,10 @@ window.addEventListener("load", function () {
         event.preventDefault(); //stop form submission
         // chec on all input
         configerror = false;
+        configuration = {};
         let argObj = { form: configForm, errordiv: 'confform-errormessage' };
         configNames.forEach(GetFormValues, argObj);
+        GetWifiFormValue(configForm);
         Errordiv = document.getElementById("confform-errormessage");
      
         if (!configerror) {
@@ -247,7 +250,7 @@ function setFormValues() {
     const configForm = document.getElementById('configForm');
     const tuningForm = document.getElementById('tuningForm');
     let getapi = url + "/api/v1/get?"
-    fieldnames = configNames.concat(mqttNames, tuningNames);
+    fieldnames = configNames.concat(wifiNames, mqttNames, tuningNames);
     fieldnames.forEach(ConstructGetAPI);
     function ConstructGetAPI(value) {
         getapi += value + "&";
@@ -277,6 +280,15 @@ function setFormDefaults(data, form, fieldnames) {
             if (mqttSettings) {
                 mqttSettings.style.display = data.mqtt ? "block" : "none";
             }
+        } else if (value == "wifiCanDisable") {
+            let wifiEnableRow = document.getElementById("wifiEnableRow");
+            if (wifiEnableRow) {
+                wifiEnableRow.style.display = data.wifiCanDisable ? "table-row" : "none";
+            }
+        } else if (value == "wifiEnable") {
+            if (typeof data.wifiEnable !== 'undefined' && form.elements[value]) {
+                form.elements[value].checked = data.wifiEnable;
+            }
         } else if (value == "powerOffMode") {
             let pidModeSwitch = document.getElementById("toggle--pwr");
             if (data.powerOffMode) {
@@ -299,6 +311,10 @@ function setFormDefaults(data, form, fieldnames) {
             }
         }
         else {
+            if (!form.elements[value]) {
+                return;
+            }
+
             if (typeof data[value] !== 'undefined') {
 
                 form.elements[value].value = data[value];
@@ -331,6 +347,7 @@ function GetFormValues(value) { // NB thisArg sets this with the forEach() funct
     if (value == "powerOffMode") return;
     if (value == "tuningOn") return;
     const e = this['form'].elements[value];
+    if (!e) return;
     if (value == "mqtt") return;
     if (value == "mqttEnable") {
         configuration[value] = e.checked;
@@ -362,6 +379,15 @@ function GetFormValues(value) { // NB thisArg sets this with the forEach() funct
     }
     configuration[value] = n;
 };
+
+function GetWifiFormValue(form) {
+    const wifiEnable = form.elements["wifiEnable"];
+    const wifiEnableRow = document.getElementById("wifiEnableRow");
+    if (!wifiEnable || !wifiEnableRow || wifiEnableRow.style.display === "none") {
+        return;
+    }
+    configuration["wifiEnable"] = wifiEnable.checked;
+}
 
 function toggleRegularMqttFields(enabled) {
     mqttInputNames.forEach(function (value) {

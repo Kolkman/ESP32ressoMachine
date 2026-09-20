@@ -118,6 +118,7 @@ public:
        char webUser[65];
        char webPass[65];
 #endif                                  // ENABLE_MQTT
+       bool wifiEnable;
        WiFi_AP_IPConfig WM_AP_IPconfig; // WifiManager Configuration
        WiFi_STA_IPConfig WM_STA_IPconfig;
        WM_Config WM_config;

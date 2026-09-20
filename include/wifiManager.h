@@ -20,9 +20,6 @@ class ESPressoInterface; /// forward declaration
 #define TIMEZONE_MAX_LEN 50
 #define SSID_MAX_LEN 32
 #define PASS_MAX_LEN 64
-
-#define AP_PASSWORD "E32" // HEX will be added
-
 #define MIN_AP_PASSWORD_SIZE 8
 #define DNS_PORT 53
 #define RFC952_HOSTNAME_MAXLEN 63 // HOSTNAME can be up to 255 chars, but we'll take DNS label length. (longer than  in original code)

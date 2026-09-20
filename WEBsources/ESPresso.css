@@ -295,6 +295,21 @@ input {
     margin: 5ex;
 }
 
+.networkSetupFooter {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.networkSetupFooter .footerRightAction {
+    margin-left: auto;
+}
+
+.networkSetupFooter hr {
+    flex-basis: 100%;
+    width: 100%;
+}
+
 #StatsReporting {
     background-color: lightgray;
     color: black;

@@ -48,28 +48,31 @@ void ESPressoInterface::report(String firstInput = "", String secondInput = "")
 
 void ESPressoInterface::loop()
 {
-  if (wifiMngr->run(WIFI_MULTI_CONNECT_WAITING_MS) == WL_CONNECTED)
+  if (myMachine->myConfig->wifiEnable)
   {
-    if (wasNotConnected)
+    if (wifiMngr->run(WIFI_MULTI_CONNECT_WAITING_MS) == WL_CONNECTED)
     {
-      LOGERROR(F("WiFi (re)connected"));
-      LOGERROR3(F("SSID:"), WiFi.SSID(), F(",RSSI="), WiFi.RSSI());
-      LOGERROR3(F("Channel:"), WiFi.channel(), F(",IP address:"), WiFi.localIP());
-      wasNotConnected = false;
-      int n = WiFi.scanComplete();
-      if (n == -2)
+      if (wasNotConnected)
       {
-        WiFi.scanDelete();
-        // Just to have some resuls when needed.
-        LOGERROR("Scanning started");
-        WiFi.scanNetworks(true);
+        LOGERROR(F("WiFi (re)connected"));
+        LOGERROR3(F("SSID:"), WiFi.SSID(), F(",RSSI="), WiFi.RSSI());
+        LOGERROR3(F("Channel:"), WiFi.channel(), F(",IP address:"), WiFi.localIP());
+        wasNotConnected = false;
+        int n = WiFi.scanComplete();
+        if (n == -2)
+        {
+          WiFi.scanDelete();
+          // Just to have some resuls when needed.
+          LOGERROR("Scanning started");
+          WiFi.scanNetworks(true);
+        }
       }
     }
-  }
-  else
-  {
-    Serial.println("WiFi not connected!");
-    wasNotConnected = true;
+    else
+    {
+      Serial.println("WiFi not connected!");
+      wasNotConnected = true;
+    }
   }
 
   myMachine->setMachineStatus();
@@ -84,22 +87,29 @@ void ESPressoInterface::loop()
 #endif
 
 #ifdef ENABLE_TELNET
-  loopTelnet(myMachine->machineStatus);
+  if (myMachine->myConfig->wifiEnable)
+  {
+    loopTelnet(myMachine->machineStatus);
+  }
 #endif
 #ifdef ENABLE_MQTT
-  if (myMachine->myConfig->mqttEnable)
+  if (myMachine->myConfig->wifiEnable && myMachine->myConfig->mqttEnable)
   {
     loopMQTT(myMachine);
   }
 #endif
 
   // This  invokes the Eventloop that puts info on the websocket
-  eventLoop();
+  if (myMachine->myConfig->wifiEnable)
+  {
+    eventLoop();
+  }
 }
 
 void ESPressoInterface::setup()
 {
   bool _initConfig = true;
+  bool wifiEnabled = myMachine->myConfig->wifiEnable;
 
 #if defined(ENABLE_LIDUID) || defined(ENABLE_OLED)
 #ifdef ENABLE_LIQUID
@@ -115,18 +125,22 @@ void ESPressoInterface::setup()
 #endif                                        // ENABLE_LIQUID
 
   // We set this for later. Wnen there are no credentials set we want to keep the captive portal open - ad infinitum
-  _waitingForClientAction = true;
-  for (int i = 0; i < NUM_WIFI_CREDENTIALS; i++)
+  _waitingForClientAction = !wifiEnabled;
+  if (wifiEnabled)
   {
-    if (strlen(myMachine->myConfig->WM_config.WiFi_Creds[i].wifi_ssid) > 0)
+    _waitingForClientAction = true;
+    for (int i = 0; i < NUM_WIFI_CREDENTIALS; i++)
     {
-      _waitingForClientAction = false;
+      if (strlen(myMachine->myConfig->WM_config.WiFi_Creds[i].wifi_ssid) > 0)
+      {
+        _waitingForClientAction = false;
+      }
     }
   }
   if (_waitingForClientAction)
     LOGINFO("NO WiFi NEtworks set, we'll later keep the captive portal open");
-  // Config cycle only happens if the button is pressed
-  if (_initConfig || _waitingForClientAction)
+  // Config cycle only happens if the button is pressed or WiFi is enabled but unconfigured.
+  if (_initConfig || (wifiEnabled && _waitingForClientAction))
   {
     wifiMngr->setupWiFiAp(&myMachine->myConfig->WM_AP_IPconfig);
     server->reset();
@@ -134,24 +148,28 @@ void ESPressoInterface::setup()
     server->begin(); /// Webserver is now running....
     LOGINFO("Wifi Manager done, following up with WebSrv");
     wifiMngr->loopPortal(); /// Wait the configuration to be finished or timed out.
+    wifiEnabled = myMachine->myConfig->wifiEnable;
   }
 
-  wifiMngr->connectMultiWiFi(myMachine->myConfig);
-  server->reset();
+  if (wifiEnabled)
+  {
+    wifiMngr->connectMultiWiFi(myMachine->myConfig);
+    server->reset();
 
-  setupWebSrv(this->myMachine);
-  if (!_initConfig)
-    server->begin(); /// Webserver is now running....
+    setupWebSrv(this->myMachine);
+    if (!_initConfig)
+      server->begin(); /// Webserver is now running....
 #ifdef ENABLE_TELNET
-  setupTelnet();
+    setupTelnet();
 #endif
 
 #ifdef ENABLE_MQTT
-  if (myMachine->myConfig->mqttEnable)
-  {
-    setupMQTT(this->myMachine);
-  }
+    if (myMachine->myConfig->mqttEnable)
+    {
+      setupMQTT(this->myMachine);
+    }
 #endif
+  }
 
 #ifdef ENABLE_SWITCH_DETECTION
   setupSwitch();

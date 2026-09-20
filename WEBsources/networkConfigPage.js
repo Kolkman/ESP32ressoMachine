@@ -285,6 +285,15 @@ function toggleMqttFields(enabled) {
 }
 
 
+function toggleWifiSections(enabled) {
+    const networkSetupDetails = document.getElementById("networkSetupDetails");
+
+    if (networkSetupDetails) {
+        networkSetupDetails.style.display = enabled ? "" : "none";
+    }
+}
+
+
 function updatePage() {
     let nets;
     fetch(url + "configConfig")
@@ -293,6 +302,20 @@ function updatePage() {
         })
         .then(function (data) {
             nets = data.maxNets;
+            const wifiEnableBlock = document.getElementById("wifiEnableBlock");
+            const wifiEnableRow = document.getElementById("wifiEnablePortalRow");
+            const wifiEnable = document.getElementById("wifiEnable");
+            if (wifiEnableRow && wifiEnable) {
+                const wifiCanDisable = Boolean(data.wifiCanDisable);
+                const wifiEnabled = wifiCanDisable ? Boolean(data.wifiEnabled) : true;
+
+                if (wifiEnableBlock) {
+                    wifiEnableBlock.style.display = wifiCanDisable ? "" : "none";
+                }
+                wifiEnableRow.style.display = wifiCanDisable ? "" : "none";
+                wifiEnable.checked = wifiEnabled;
+                toggleWifiSections(wifiEnabled);
+            }
             if (!data.mqtt) {
                 // define ENABLE_MQTT is false in the main code.
                 const mqtt = document.getElementById("MQTTSettings");

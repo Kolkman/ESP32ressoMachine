@@ -113,6 +113,15 @@ bool EspressoConfig::loadConfig()
   sensorSampleInterval = jsonDocument["ssi"];
   maxCool = jsonDocument["maxcool"];
 
+  if (jsonDocument["wifiEnable"].is<bool>())
+  {
+    wifiEnable = jsonDocument["wifiEnable"];
+  }
+  else
+  {
+    wifiEnable = true;
+  }
+
 #ifdef ENABLE_MQTT
   if (jsonDocument["mqttEnable"].is<bool>())
   {
@@ -223,6 +232,7 @@ bool EspressoConfig::saveConfig()
   jsonDocument["ssi"] = sensorSampleInterval;
   jsonDocument["maxcool"] = maxCool;
   jsonDocument["powersafeTimeout"] = powersafeTimeout;
+  jsonDocument["wifiEnable"] = wifiEnable;
 #ifdef ENABLE_MQTT
   jsonDocument["mqttEnable"] = mqttEnable;
   if (mqttHost)
@@ -343,6 +353,7 @@ void EspressoConfig::resetConfig()
   maxCool = MAX_COOL;
   sensorSampleInterval = MAX31855_SMP_TIME; ///<=== TODO
   powersafeTimeout = POWERSAFE_TIMEOUT;
+  wifiEnable = true;
 #ifdef ENABLE_MQTT
   mqttEnable = false;
 #endif

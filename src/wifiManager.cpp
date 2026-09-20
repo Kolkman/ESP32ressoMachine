@@ -24,7 +24,7 @@ void WiFiManager::setupWiFiAp(WiFi_AP_IPConfig *WifiApIP)
 
     // Initiation of all.
     ApSSID = "ESP32Mach";
-    ApPass = AP_PASSWORD + String(ESP_getChipId(), HEX); // TODO make configurable
+    ApPass = CONFIG_NETWORK_PASSWORD; // TODO make configurable
     String iHostname = "ESP32Mach" + String(ESP_getChipId(), HEX);
     getRFC952_hostname(iHostname.c_str()); // Sets RFC952_hostname attribute
 

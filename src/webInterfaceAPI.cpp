@@ -140,6 +140,13 @@ void webInterfaceAPI::handleGet(AsyncWebServerRequest *request) {
     } else if (request->argName(i) == "powersafeTimeout") {
       addjson(message, firstarg, "powersafeTimeout",
               String(myMachine->myConfig->powersafeTimeout));
+#if (defined(ENABLE_OLED) || defined(ENABLE_LIQUID)) && defined(ENABLE_BUTTON)
+    } else if (request->argName(i) == "wifiEnable") {
+      addjson(message, firstarg, "wifiEnable",
+              myMachine->myConfig->wifiEnable ? "true" : "false");
+    } else if (request->argName(i) == "wifiCanDisable") {
+      addjson(message, firstarg, "wifiCanDisable", "true");
+#endif
     }
 #ifdef ENABLE_MQTT
     else if (request->argName(i) == "mqtt") {
@@ -298,6 +305,13 @@ void webInterfaceAPI::handleSet(AsyncWebServerRequest *request) {
     } else if (request->argName(i) == "powersafeTimeout") {
       addjson(message, firstarg, "powersafeTimeout", request->arg(i));
       myMachine->myConfig->powersafeTimeout = ((request->arg(i)).toInt());
+#if (defined(ENABLE_OLED) || defined(ENABLE_LIQUID)) && defined(ENABLE_BUTTON)
+    } else if (request->argName(i) == "wifiEnable") {
+      myMachine->myConfig->wifiEnable =
+          String("true").equalsIgnoreCase(request->arg(i));
+      addjson(message, firstarg, "wifiEnable",
+              myMachine->myConfig->wifiEnable ? "true" : "false");
+#endif
     } else if (request->argName(i) == "tunethres") {
       addjson(message, firstarg, "tunethres", request->arg(i));
       myMachine->myTuner->setTuneThres((request->arg(i)).toDouble());

@@ -311,6 +311,12 @@ void WebInterface::handleConfigConfig(AsyncWebServerRequest *request)
   json += "\"timeout\":" + String(remainingPortaltime());
   json += ",\"maxNets\":" + String(NUM_WIFI_CREDENTIALS);
   json += ",\"mqtt\":" + String(MQTT);
+#if (defined(ENABLE_OLED) || defined(ENABLE_LIQUID)) && defined(ENABLE_BUTTON)
+  json += ",\"wifiCanDisable\":true";
+  json += ",\"wifiEnabled\":" + String(myMachine->myConfig->wifiEnable);
+#else
+  json += ",\"wifiCanDisable\":false";
+#endif
 #ifdef ENABLE_MQTT
   json += ",\"mqttEnabled\":" + String(myMachine->myConfig->mqttEnable);
   json += ",\"mqttHost\":\"" + String(myMachine->myConfig->mqttHost) + "\"";

@@ -7,6 +7,22 @@
 
   <link rel="stylesheet" type="text/css" href="ESPresso.css" media="all" />
   <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+  <style>
+    .networkSetupFooter {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .networkSetupFooter .footerRightAction {
+      margin-left: auto;
+    }
+
+    .networkSetupFooter hr {
+      flex-basis: 100%;
+      width: 100%;
+    }
+  </style>
   <script>
     const url = "";  // Setting in production.
     //const url = "http://192.168.179.109/";  // This is for development purposes only
@@ -22,6 +38,21 @@
   <h1>Network Configuration</h1>
 
   <div id="bodyBlock">
+    <div id="wifiEnableBlock" class="configblock" style="display:none">
+      <div class="tableTable">
+        <div class="tableBody">
+          <div id="wifiEnablePortalRow" class="tableRow" style="display:none">
+            <div class="mqttLabel tableField"><label for="wifiEnable">Enable WiFi</label></div>
+            <div class="tableField mqttInput">
+              <input type="hidden" name="wifiEnable" value="false" form="networkSetupForm">
+              <input id="wifiEnable" name="wifiEnable" type="checkbox" value="true" onchange="toggleWifiSections(this.checked)" form="networkSetupForm">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="networkSetupDetails">
     <div class="configblock">
       <div id="loadingblock">
         <div id="loading"></div>
@@ -33,7 +64,7 @@
       </div>
     </div>
     <div class="configblock">
-      <form method="get" action="api/v1/set">
+      <form id="networkSetupForm" method="get" action="api/v1/set">
         <div id="wifiSettings">
           <div class="tableTable">
             <div id="selectedNetworks" class="tableBody"></div>
@@ -84,16 +115,15 @@
               </div>
             </div>
           </div>
-
-          <button class="btn" type="submit">Save</button>
         </div>
         <input type="hiden" style="display:none;" name="safeandrestart" value="true" >
       </form>
     </div>
+    </div>
   </div>
-  <div class="footermaterial">
-
+  <div class="footermaterial networkSetupFooter">
     <a href="./exitconfig"><button class="btn">Exit</button></a>
+    <button class="btn footerRightAction" type="submit" form="networkSetupForm">Save</button>
     <hr />
 </div>
 </body>

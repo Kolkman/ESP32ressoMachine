@@ -15,16 +15,22 @@ You need:
 - the powered controller
 - a phone or computer with Wi-Fi
 - a web browser
+
+You may additionally need
 - access to your home Wi-Fi details
+- an account on an MQTT server, for automation.
 
 ## First-Time Setup
 
 ### 1. Power the controller
 
-After boot, a new Wi-Fi network named `ESP32Mach` should appear.
+After boot, a new Wi-Fi network named `ESP32Mach` should appear. The password of this network is: "ESP32ressoMachine". Connecting to this network gives you access to the configuration portal.
 
 - The configuration portal uses the controller's AP address `192.168.100.1`.
-- If no Wi-Fi credentials are stored, the portal stays available until you explicitly leave it.
+- If Wi-Fi is enabled and Wi-Fi credentials are stored, the portal stays available until you explicitly leave it.
+
+If your machine has a physical interafce with buttons then pressing the black button during the start-up will start the configuration portal and you can change settings. 
+
 
 ### 2. Connect to the setup access point
 
@@ -112,6 +118,87 @@ If you use the tuning controls, supervise the machine while tuning is active.
 ## Saving Changes
 
 Use `Save Config` after changing settings you want to keep. Without that step, the controller reverts to the previously saved configuration on the next reboot.
+
+## MQTT Integration
+
+If MQTT is enabled in your build and configured on the Network Configuration page, the controller connects to the broker using the configured host, port, username, password, and topic prefix.
+
+The configured MQTT topic acts as a base path. By default this base topic is `Espresso` in the setup page, while the firmware fallback default is `EspressoMach` if no saved value exists.
+
+The controller uses two MQTT topics:
+
+- Read-only status topic: `<mqttTopic>/status`
+- Read/write control topic: `<mqttTopic>/config`
+
+### Read-only status topic
+
+The controller publishes JSON status messages to `<mqttTopic>/status` while it is connected to the broker.
+
+Available fields in the published JSON are:
+
+- `time`: controller uptime counter used internally by the firmware
+- `measuredTemperature`: current measured boiler temperature
+- `intTemperature`: internal MCU temperature reading
+- `targetTemperature`: active target temperature setpoint
+- `heaterPower`: current heater output value
+- `externalControlMode`: whether external control mode is active
+- `externalButtonState`: current external button state reported by the firmware
+- `powerOffMode`: whether the machine is in power-off mode
+- `tuning`: whether PID autotuning is currently active
+- `heap`: free heap in bytes
+- `heapMaxAl`: largest allocatable heap block in bytes
+- `FloatingAvg`: floating average temperature used by the control logic
+
+Example status payload:
+
+```json
+{
+	"time": 123456,
+	"measuredTemperature": 96.8,
+	"intTemperature": 32.1,
+	"targetTemperature": 98.5,
+	"heaterPower": 41.2,
+	"externalControlMode": false,
+	"externalButtonState": 0,
+	"powerOffMode": false,
+	"tuning": false,
+	"heap": 201344,
+	"heapMaxAl": 110580,
+	"FloatingAvg": 96.5
+}
+```
+
+### Read/write control topic
+
+The controller subscribes to `<mqttTopic>/config` and accepts JSON payloads.
+
+Supported writable fields are:
+
+- `targetTemp`: updates the target temperature immediately
+- `powerOffMode`: intended to switch power-off mode on or off
+
+Example payload to change the target temperature:
+
+```json
+{
+	"targetTemp": 99.0
+}
+```
+
+Example payload intended to change power-off mode:
+
+```json
+{
+	"powerOffMode": "true"
+}
+```
+
+### MQTT write caveats
+
+- MQTT changes affect the running controller immediately.
+- MQTT changes are runtime control inputs. They do not save configuration to flash.
+- The current firmware implementation clearly supports `targetTemp` updates.
+- The current `powerOffMode` MQTT handling in this revision is inconsistent with the rest of the API, so treat it as experimental and verify behavior on your device before relying on it for automation.
 
 ## Firmware Update
 
