@@ -164,8 +164,22 @@ void ButtonInterface::loopButton(ESPressoMachine *myMachine) {
           }
           myMachine->powerOffMode = false;
         }
-        myMachine->myInterface->report("PID toggled", "continue holding to reboot,");
+        String reportMessage = "PID turned";
+        if (myMachine->powerOffMode) {
+          reportMessage += " off";
+        } else {
+          reportMessage += " on";
+        }
         delay(1500);
+        if (digitalRead(BLACK_BUTTON) == LOW) {
+          myMachine->myInterface->report("PID turned " + reportMessage  ,"continue holding to reboot,");
+          String filler = ">";
+          for (int i = 0; i < 16; i++) {
+            myMachine->myInterface->report("Rebooting", filler);
+            delay(100);
+            filler = "#" + filler;
+          }
+        }
         blackToggleHandled = true;
         BlackToggleTime = now;
         changeToBeReported = true;
