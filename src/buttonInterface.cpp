@@ -32,6 +32,26 @@ bool runBlackButtonProgress(ESPressoMachine *myMachine, const String &message,
 
   return digitalRead(BLACK_BUTTON) == LOW;
 }
+
+bool showBlackButtonHoldMessage(ESPressoMachine *myMachine,
+                                const String &message,
+                                const String &detail,
+                                unsigned long durationMs) {
+  unsigned long startTime = millis();
+
+  while ((millis() - startTime) < durationMs) {
+    if (digitalRead(BLACK_BUTTON) != LOW) {
+      return false;
+    }
+    myMachine->myInterface->report(message, detail);
+    delay(100);
+    if (digitalRead(BLACK_BUTTON) != LOW) {
+      return false;
+    }
+  }
+
+  return digitalRead(BLACK_BUTTON) == LOW;
+}
 }  // namespace
 
 ButtonInterface::ButtonInterface() {
@@ -182,8 +202,12 @@ void ButtonInterface::loopButton(ESPressoMachine *myMachine) {
 
         changeToBeReported = true;
         if (pidToggleCompleted) {
-          String rebootMessage =  "rebooting";
-          if (runBlackButtonProgress(myMachine, rebootMessage, '#')) {
+          String pidStatusMessage = myMachine->powerOffMode ? "Pid off; continue"
+                                                            : "Pid on; continue";
+          if (showBlackButtonHoldMessage(myMachine, pidStatusMessage,
+                                         " press for reboot",
+                                         2000) &&
+              runBlackButtonProgress(myMachine, "rebooting", '#')) {
             LOGINFO("Rebooting after black-button hold");
             myMachine->myInterface->report("rebooting", "");
             delay(2000);
