@@ -149,6 +149,16 @@ Important files:
 
 The firmware serves generated page headers from `include/pages/` through macros such as `DEF_HANDLE_*`. If you change UI source files, confirm the generated page artifacts are refreshed by the repository's existing asset pipeline.
 
+This repository relies on the MinifyAll extension to generate `WEBsources/*-min.js`, `*-min.html`, and similar minified derivatives from the editable originals.
+
+Before changing a web asset, check the `Makefile` rule for the generated header you are touching. Some served assets are still packaged from the minified derivative rather than the editable source. For example, `include/pages/networkConfigPage.js.h` is generated from `WEBsources/networkConfigPage-min.js`, so edits made only in `WEBsources/networkConfigPage.js` will not reach the device unless the minified file is refreshed or the generation rule is changed.
+
+If browser behavior does not match your source edits, compare all three of these before debugging runtime code:
+
+- the editable asset in `WEBsources/`
+- the generated `*-min.*` derivative
+- the `Makefile` rule that produces the served header in `include/pages/`
+
 ## Hardware-Dependent Features
 
 The default build configuration in this repository enables:

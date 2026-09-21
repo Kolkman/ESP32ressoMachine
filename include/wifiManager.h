@@ -27,6 +27,7 @@ class ESPressoInterface; /// forward declaration
 #define CONFIGPORTAL_TIMEOUT 60 * 1000
 #define WIFI_MULTI_CONNECT_WAITING_MS 10 * 1000 // MultiWifi reconnects after 10 seconds.
 #define WIFI_MULTI_1ST_CONNECT_WAITING_MS 3 * 1000
+#define WIFI_MULTI_CONNECT_TRIALS 5
 
 class EspressoConfig;  // Forward declaration
 class ESPressoMachine; // Foraward declaration

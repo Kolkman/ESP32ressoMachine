@@ -311,6 +311,7 @@ void WebInterface::handleConfigConfig(AsyncWebServerRequest *request)
   json += "\"timeout\":" + String(remainingPortaltime());
   json += ",\"maxNets\":" + String(NUM_WIFI_CREDENTIALS);
   json += ",\"mqtt\":" + String(MQTT);
+  json += ",\"tset\":" + String(myMachine->myConfig->targetTemp);
 #if (defined(ENABLE_OLED) || defined(ENABLE_LIQUID)) && defined(ENABLE_BUTTON)
   json += ",\"wifiCanDisable\":true";
   json += ",\"wifiEnabled\":" + String(myMachine->myConfig->wifiEnable);

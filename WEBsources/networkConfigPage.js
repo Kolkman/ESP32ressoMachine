@@ -316,6 +316,10 @@ function updatePage() {
                 wifiEnable.checked = wifiEnabled;
                 toggleWifiSections(wifiEnabled);
             }
+            const targetTemp = document.getElementById("tset");
+            if (targetTemp && typeof data.tset !== "undefined") {
+                targetTemp.value = data.tset;
+            }
             if (!data.mqtt) {
                 // define ENABLE_MQTT is false in the main code.
                 const mqtt = document.getElementById("MQTTSettings");

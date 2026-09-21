@@ -110,6 +110,7 @@ void ESPressoInterface::setup()
 {
   bool _initConfig = true;
   bool wifiEnabled = myMachine->myConfig->wifiEnable;
+  bool forceCaptivePortal = myMachine->myConfig->forceCaptivePortal;
 
 #if defined(ENABLE_LIDUID) || defined(ENABLE_OLED)
 #ifdef ENABLE_LIQUID
@@ -140,7 +141,13 @@ void ESPressoInterface::setup()
   if (_waitingForClientAction)
     LOGINFO("NO WiFi NEtworks set, we'll later keep the captive portal open");
   // Config cycle only happens if the button is pressed or WiFi is enabled but unconfigured.
-  if (_initConfig || (wifiEnabled && _waitingForClientAction))
+  if (forceCaptivePortal)
+  {
+    LOGINFO("Starting captive portal because the last WiFi connection failed");
+    myMachine->myConfig->forceCaptivePortal = false;
+    myMachine->myConfig->saveConfig();
+  }
+  if (_initConfig || forceCaptivePortal || (wifiEnabled && _waitingForClientAction))
   {
     wifiMngr->setupWiFiAp(&myMachine->myConfig->WM_AP_IPconfig);
     server->reset();

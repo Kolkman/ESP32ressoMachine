@@ -56,6 +56,7 @@ void WiFiManager::setupWiFiAp(WiFi_AP_IPConfig *WifiApIP)
 
     // Random Channel Assignment
     static int channel = 10; // random(1, MAX_WIFI_CHANNEL);
+    WiFi.mode(WIFI_AP_STA);
     if (!WiFi.softAPConfig(WifiApIP->_ap_static_ip, WifiApIP->_ap_static_gw, WifiApIP->_ap_static_sn))
     {
         LOGINFO(F("Failed setting AP IP address from config"));
@@ -66,7 +67,7 @@ void WiFiManager::setupWiFiAp(WiFi_AP_IPConfig *WifiApIP)
     }
 
     // Strating the Access Point
-    WiFi.softAP(ApSSID.c_str()); 
+    WiFi.softAP(ApSSID.c_str(), ApPass.c_str(), channel);
     delay(100);
 
     // Future configurable AP IP stuff could go here.
@@ -180,10 +181,10 @@ uint8_t WiFiManager::connectMultiWiFi(EspressoConfig *myConfig)
 
     delay(WIFI_MULTI_1ST_CONNECT_WAITING_MS);
 
-    while ((i++ < 20) && (status != WL_CONNECTED))
+    while ((i++ < WIFI_MULTI_CONNECT_TRIALS) && (status != WL_CONNECTED))
     {
         status = WiFi.status();
-
+        LOGINFO1(F("WiFi status: "), status);
         if (status == WL_CONNECTED)
             break;
         else
@@ -199,7 +200,8 @@ uint8_t WiFiManager::connectMultiWiFi(EspressoConfig *myConfig)
     else
     {
         LOGERROR(F("WiFi not connected"));
-
+        myConfig->forceCaptivePortal = true;
+        myConfig->saveConfig();
         ESP.restart();
     }
 

@@ -122,6 +122,15 @@ bool EspressoConfig::loadConfig()
     wifiEnable = true;
   }
 
+  if (jsonDocument["forceCaptivePortal"].is<bool>())
+  {
+    forceCaptivePortal = jsonDocument["forceCaptivePortal"];
+  }
+  else
+  {
+    forceCaptivePortal = false;
+  }
+
 #ifdef ENABLE_MQTT
   if (jsonDocument["mqttEnable"].is<bool>())
   {
@@ -233,6 +242,7 @@ bool EspressoConfig::saveConfig()
   jsonDocument["maxcool"] = maxCool;
   jsonDocument["powersafeTimeout"] = powersafeTimeout;
   jsonDocument["wifiEnable"] = wifiEnable;
+  jsonDocument["forceCaptivePortal"] = forceCaptivePortal;
 #ifdef ENABLE_MQTT
   jsonDocument["mqttEnable"] = mqttEnable;
   if (mqttHost)
@@ -354,6 +364,7 @@ void EspressoConfig::resetConfig()
   sensorSampleInterval = MAX31855_SMP_TIME; ///<=== TODO
   powersafeTimeout = POWERSAFE_TIMEOUT;
   wifiEnable = true;
+  forceCaptivePortal = false;
 #ifdef ENABLE_MQTT
   mqttEnable = false;
 #endif
