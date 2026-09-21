@@ -153,6 +153,7 @@ void WebInterface::setConfigPortalPages()
 {
   server->InitPages();
   server->on("/scan", HTTP_GET, std::bind(&WebInterface::handleScan, this, std::placeholders::_1));
+  webOTAUpdate.begin(server);
 
   server->on("/", HTTP_GET, std::bind(&WebInterface::handleCaptivePortal, this, std::placeholders::_1));
   server->on("/configConfig", HTTP_GET, std::bind(&WebInterface::handleConfigConfig, this, std::placeholders::_1));

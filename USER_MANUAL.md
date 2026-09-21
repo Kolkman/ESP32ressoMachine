@@ -227,6 +227,7 @@ To update firmware:
 - Look for the `ESP32Mach` Wi-Fi network.
 - If your device does not auto-open the portal, browse to `http://192.168.100.1/`.
 - If the controller already has valid Wi-Fi credentials, it may go straight to normal operation.
+- If the controller has Wi-Fi credetnials but cannot connect (e.g. wifi password changed) then after some time it will boot to with ESP32Mach network.
 
 ### The device does not join Wi-Fi after setup
 
