@@ -46,8 +46,6 @@ private:
     unsigned long BlueLastPress;
     unsigned long RedLastPress;
     unsigned long BlackLastPress;
-    unsigned long BlackToggleTime;
-    bool blackToggleHandled;
 };
 
 #endif

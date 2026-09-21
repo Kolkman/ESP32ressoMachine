@@ -13,6 +13,27 @@
 #include "oledinterface.h"
 #endif
 
+namespace {
+bool runBlackButtonProgress(ESPressoMachine *myMachine, const String &message,
+                            char fillCharacter) {
+  String filler = ">";
+
+  for (int i = 0; i < 16; i++) {
+    if (digitalRead(BLACK_BUTTON) != LOW) {
+      return false;
+    }
+    myMachine->myInterface->report(message, filler);
+    delay(100);
+    if (digitalRead(BLACK_BUTTON) != LOW) {
+      return false;
+    }
+    filler = String(fillCharacter) + filler;
+  }
+
+  return digitalRead(BLACK_BUTTON) == LOW;
+}
+}  // namespace
+
 ButtonInterface::ButtonInterface() {
 #ifndef ONLY_BLACK_BUTTON
   BlueStartPress = 0;
@@ -24,8 +45,6 @@ ButtonInterface::ButtonInterface() {
 #endif
   BlackStartPress = 0;
   BlackLastPress = 0;
-  BlackToggleTime = 0;
-  blackToggleHandled = false;
 }
 
 bool ButtonInterface::setupButton(ESPressoMachine *myMachine) {
@@ -83,8 +102,6 @@ void ButtonInterface::loopButton(ESPressoMachine *myMachine) {
     LOGINFO("The black state changed from LOW to HIGH");
     BlackStartPress = 0;
     BlackLastPress = 0;
-    blackToggleHandled = false;
-    BlackToggleTime = 0;
   }
 
 #ifndef ONLY_BLACK_BUTTON
@@ -143,53 +160,37 @@ void ButtonInterface::loopButton(ESPressoMachine *myMachine) {
     if ((now - BlackLastPress) > SINGLEPRESS_T) {
       LOGINFO1("The black: ", now - BlackStartPress);
       BlackLastPress = now;
-      if (!blackToggleHandled && (now - BlackStartPress) > SINGLEPRESS_T * 3) {
+      if ((now - BlackStartPress) > SINGLEPRESS_T * 3) {
+        bool pidToggleCompleted = false;
+
         if (!myMachine->powerOffMode) {
           LOGINFO("Turning PID OFF")
-          String filler = ">";
-          for (int i = 0; i < 16; i++) {
-            myMachine->myInterface->report("Turning PID off", filler);
-            delay(100);
-            filler = "-" + filler;
+          pidToggleCompleted =
+              runBlackButtonProgress(myMachine, "Turning PID off", '-');
+          if (pidToggleCompleted) {
+            myMachine->powerOffMode = true;
           }
-          myMachine->powerOffMode = true;
         } else {
           LOGINFO("Turning PID ON")
-          myMachine->pwrSafeTimer = millis();
-          String filler = ">";
-          for (int i = 0; i < 16; i++) {
-            myMachine->myInterface->report("Turning PID on", filler);
-            delay(100);
-            filler = "+" + filler;
-          }
-          myMachine->powerOffMode = false;
-        }
-        String reportMessage = "PID turned";
-        if (myMachine->powerOffMode) {
-          reportMessage += " off";
-        } else {
-          reportMessage += " on";
-        }
-        delay(1500);
-        if (digitalRead(BLACK_BUTTON) == LOW) {
-          myMachine->myInterface->report("PID turned " + reportMessage  ,"continue holding to reboot,");
-          String filler = ">";
-          for (int i = 0; i < 16; i++) {
-            myMachine->myInterface->report("Rebooting", filler);
-            delay(100);
-            filler = "#" + filler;
+          pidToggleCompleted =
+              runBlackButtonProgress(myMachine, "Turning PID on", '+');
+          if (pidToggleCompleted) {
+            myMachine->pwrSafeTimer = millis();
+            myMachine->powerOffMode = false;
           }
         }
-        blackToggleHandled = true;
-        BlackToggleTime = now;
+
         changeToBeReported = true;
-      }
-      else if (blackToggleHandled && (now - BlackToggleTime) > REBOOT_CONFIRM_T) {
-        LOGINFO("Rebooting after very long black-button hold");
-        myMachine->myInterface->report("rebooting", "");
-        delay(2000);
-        ESP.restart();
-        return;
+        if (pidToggleCompleted) {
+          String rebootMessage =  "rebooting";
+          if (runBlackButtonProgress(myMachine, rebootMessage, '#')) {
+            LOGINFO("Rebooting after black-button hold");
+            myMachine->myInterface->report("rebooting", "");
+            delay(2000);
+            ESP.restart();
+            return;
+          }
+        }
       }
     }
   }
