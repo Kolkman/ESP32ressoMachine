@@ -156,26 +156,27 @@ void OledInterface::loopOled(ESPressoMachine *myMachine)
             oled->setFont(u8g2_font_10x20_tr);
             int xOffset;
 #ifdef ENABLE_NTPCLOCK
-            String headerString;
-            if (myMachine->clock->hasTime())
-            {
-                headerString = myMachine->clock->getTimeString();
-            }
-            else
-            {
-                headerString = String(myMachine->myConfig->targetTemp, 1);
-            }
+            String headerString = myMachine->clock->getTimeString();
             xOffset = oled->getStrWidth(headerString.c_str()) / 2;
             oled->drawStr(64 - xOffset, 15, headerString.c_str());
-#endif
+            oled->setFont(u8g2_font_ncenB08_tr);
+            String tmpOutput = String(myMachine->myConfig->targetTemp, 1);
+            xOffset = oled->getStrWidth(tmpOutput.c_str()) / 2;
+            oled->drawStr(64 - xOffset, 30, tmpOutput.c_str());
+            tmpOutput = String(myMachine->inputTemp, 1);
+            xOffset = oled->getStrWidth(tmpOutput.c_str()) / 2;
+            oled->drawStr(64 - xOffset, 60, tmpOutput.c_str());
+            oled->setFont(u8g2_font_10x20_tr);
+#else
             oled->setFont(u8g2_font_ncenB08_tr);
             String tmpOutput = String(myMachine->inputTemp, 1);
             xOffset = oled->getStrWidth(tmpOutput.c_str()) / 2;
             oled->drawStr(64 - xOffset, 60, tmpOutput.c_str());
             oled->setFont(u8g2_font_10x20_tr);
+#endif
             tmpOutput = String("Off");
             xOffset = oled->getStrWidth(tmpOutput.c_str()) / 2;
-            oled->drawStr(64 - xOffset, 40, tmpOutput.c_str());
+            oled->drawStr(64 - xOffset, 48, tmpOutput.c_str());
 
             oled->sendBuffer();
         }
@@ -186,24 +187,18 @@ void OledInterface::loopOled(ESPressoMachine *myMachine)
             DrawGauge(cx, cy, radius, percent, (int)myMachine->inputTemp, myMachine->myConfig->targetTemp, 5);
 #ifdef ENABLE_NTPCLOCK
             oled->setFont(u8g2_font_courR08_tf);
-            String headerString;
-            if (myMachine->clock->hasTime())
-            {
-                headerString = myMachine->clock->getTimeString();
-            }
-            else
-            {
-                headerString = String(myMachine->myConfig->targetTemp, 1);
-            }
+            String headerString = myMachine->clock->getTimeString();
             //LOGDEBUG1("oLED Display", headerString);
             oled->drawStr(2, 9, headerString.c_str());
+            String targetTempReport = String(myMachine->myConfig->targetTemp, 1);
+            oled->drawStr(2, 19, targetTempReport.c_str());
 #endif // ENABLE_NTPCLOCK
 
-            oled->setFont(u8g2_font_ncenB10_tr);
+            oled->setFont(u8g2_font_ncenB12_tr);
             //        String TempReport = String(myMachine->inputTemp, 1) + " / " + String(myMachine->myConfig->targetTemp, 1);
             String TempReport = String(myMachine->inputTemp, 1);
             int xOffset = oled->getStrWidth(TempReport.c_str()) / 2;
-            oled->drawStr(64 - xOffset, 60, TempReport.c_str());
+            oled->drawStr(64 - xOffset, 59, TempReport.c_str());
             u8g2_uint_t pwrX = (u8g2_uint_t)(log10(myMachine->outputPwr) / 3 * oled->getDisplayWidth());
             //    LOGDEBUG1("pwrX: ", pwrX);
             oled->drawBox(0, 62, pwrX, 3);
