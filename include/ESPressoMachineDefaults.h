@@ -72,8 +72,6 @@
 // OLDED_SH1106_I2C a 1.3 inch version
 #define OLED_SH1106_I2C
 
-#define ENABLE_NTPCLOCK // display a clock (only implemented on OLED)
-
 
 #if defined(ENABLE_LIQUID) || defined(ENABLE_OLED) // KEEP!  BUTTONS for Interfaces rely on the LCD
 #define ENABLE_BUTTON
@@ -82,11 +80,6 @@
 #endif
 
 #endif // ENABLED_LIQUIDE || ENABLED_OLED
-
-
-#if !defined(ENABLE_OLED) && defined(ENABLE_NTPCLOCK)
-#error You can only enable NTPCLOCK with an OLED display
-#endif
 
 
 // SSID password for configuration

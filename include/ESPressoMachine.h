@@ -9,9 +9,6 @@
 #include "ESPressoMachineDefaults.h"
 #include "sensor_max31855.h"
 #include "interface.h"
-#ifdef ENABLE_NTPCLOCK
-#include "ntpclock.h"
-#endif // ENABLE_NTPCLOCK
 
 #define CURRENTFIRMWARE "ESPressoMachine-PlatFormIO"
 #define MQTT_DEBUG
@@ -104,9 +101,6 @@ public:
   bool externalControlMode;
   int buttonState;
   unsigned long pwrSafeTimer;
-#ifdef ENABLE_NTPCLOCK
-  ntpClock *clock;
-#endif
   String machineStatus;
 
 private:

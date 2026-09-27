@@ -36,9 +36,6 @@ ESPressoMachine::ESPressoMachine()
     powerOffMode = false;
     externalControlMode = false;
     coldstart = true;
-#ifdef ENABLE_NTPCLOCK
-    clock = new ntpClock();
-#endif
 }
 
 void ESPressoMachine::startMachine()
@@ -62,10 +59,6 @@ void ESPressoMachine::startMachine()
     myPID->SetOutputLimits(0, 1000);
     myPID->SetMode(AUTOMATIC);
     myInterface->setup();
-
-#ifdef ENABLE_NTPCLOCK
-    clock->setup();
-#endif // ENABLE_NTPCLOCK
 
     outputPwr = myConfig->eqPwr;
     time_now = millis();
@@ -177,9 +170,6 @@ bool ESPressoMachine::heatLoop()
         returnval = true;
     }
     myHeater->updateHeater();
-#ifdef ENABLE_NTPCLOCK
-    clock->loop();
-#endif // ENABLE_NTPCLOCK
 
     return (returnval);
 }
